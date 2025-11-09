@@ -16,12 +16,33 @@ export default function LoginPage() {
   useEffect(() => {
     // Проверяем, авторизован ли пользователь
     checkUser();
+    // Проверяем ошибки в URL
+    checkUrlErrors();
   }, []);
 
   async function checkUser() {
     const { user } = await getCurrentUser();
     if (user) {
       router.push('/learn');
+    }
+  }
+
+  function checkUrlErrors() {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const errorParam = params.get('error');
+    const errorDescription = params.get('error_description');
+    const errorCode = params.get('error_code');
+
+    if (errorParam) {
+      if (errorCode === 'otp_expired') {
+        setError('Ссылка для входа истекла. Запросите новую ссылку.');
+      } else if (errorDescription) {
+        setError(decodeURIComponent(errorDescription.replace(/\+/g, ' ')));
+      } else {
+        setError('Ошибка входа. Попробуйте снова.');
+      }
+      // Очищаем URL от ошибок
+      window.history.replaceState({}, '', '/login');
     }
   }
 
@@ -111,6 +132,9 @@ export default function LoginPage() {
               <p className="text-sm font-semibold text-green-300">Письмо отправлено!</p>
               <p className="mt-1 text-xs text-green-300/80">
                 Проверьте почту <span className="font-semibold">{email}</span> и перейдите по ссылке для входа
+              </p>
+              <p className="mt-2 text-xs text-green-300/60">
+                ⏱️ Ссылка действительна 1 час
               </p>
             </motion.div>
           )}
