@@ -1,17 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Получаем переменные окружения
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Проверяем наличие переменных
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase environment variables are not set. Authentication will not work.');
-  console.warn('Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.');
+  console.error('❌ Missing Supabase environment variables!');
+  console.error('Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file');
+  throw new Error('Missing Supabase environment variables. Check console for details.');
 }
 
-// Создаём клиент даже если переменные не заданы (для избежания ошибок при сборке)
-// В production это будет работать, если переменные заданы в Vercel
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-);
+// Создаём клиент Supabase
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
