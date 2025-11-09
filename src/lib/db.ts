@@ -1,21 +1,44 @@
 import path from 'path';
 import fs from 'fs';
 
-const dataDir = path.join(process.cwd(), 'data');
+const isVercel = Boolean(process.env.VERCEL);
+const dataDir = isVercel ? path.join('/tmp', 'vibestudy-data') : path.join(process.cwd(), 'data');
 const contentFile = path.join(dataDir, 'generated-content.json');
 
-// Создаём папку data если её нет
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+let useMemoryStore = false;
+let memoryStore: Record<string, any> = {};
+let storageInitialized = false;
 
-// Инициализируем файл если его нет
-if (!fs.existsSync(contentFile)) {
-  fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
+function ensureStorageInitialized() {
+  if (storageInitialized || useMemoryStore) {
+    return;
+  }
+
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(contentFile)) {
+      fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
+    }
+
+    storageInitialized = true;
+  } catch (error) {
+    console.warn('⚠️ Файловое хранилище недоступно, используем память. Ошибка:', error);
+    useMemoryStore = true;
+    memoryStore = {};
+  }
 }
 
 // Читаем все данные
 function readData(): Record<string, any> {
+  ensureStorageInitialized();
+
+  if (useMemoryStore) {
+    return memoryStore;
+  }
+
   try {
     const data = fs.readFileSync(contentFile, 'utf-8');
     return JSON.parse(data);
@@ -27,6 +50,11 @@ function readData(): Record<string, any> {
 
 // Записываем все данные
 function writeData(data: Record<string, any>): void {
+  if (useMemoryStore) {
+    memoryStore = data;
+    return;
+  }
+
   try {
     fs.writeFileSync(contentFile, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
