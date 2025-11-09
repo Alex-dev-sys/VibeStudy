@@ -11,6 +11,7 @@ export interface DayContentData {
   day: number;
   theory: string;
   recap: string;
+  recapTask?: DayTask;
   tasks: DayTask[];
 }
 
