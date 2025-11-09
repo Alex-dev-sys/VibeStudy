@@ -6,11 +6,12 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Проверяем наличие переменных
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing Supabase environment variables!');
-  console.error('Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file');
-  throw new Error('Missing Supabase environment variables. Check console for details.');
+  console.warn('⚠️ Supabase не настроен. Работа в гостевом режиме (только localStorage).');
+  console.warn('Для сохранения прогресса в облаке добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY в .env.local');
 }
 
-// Создаём клиент Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Создаём клиент Supabase (или null, если переменные не заданы)
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 

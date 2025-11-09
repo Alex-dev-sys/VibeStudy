@@ -4,6 +4,10 @@ import { supabase } from './client';
  * Вход через Email (Magic Link)
  */
 export async function signInWithEmail(email: string) {
+  if (!supabase) {
+    return { error: new Error('Supabase не настроен') };
+  }
+
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
@@ -23,6 +27,10 @@ export async function signInWithEmail(email: string) {
  * Вход через Google
  */
 export async function signInWithGoogle() {
+  if (!supabase) {
+    return { error: new Error('Supabase не настроен') };
+  }
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -47,6 +55,12 @@ export async function signInWithGoogle() {
  * Выход
  */
 export async function signOut() {
+  if (!supabase) {
+    // В гостевом режиме просто очищаем localStorage
+    localStorage.removeItem('guestMode');
+    return { error: null };
+  }
+
   const { error } = await supabase.auth.signOut();
   
   if (error) {
@@ -61,6 +75,11 @@ export async function signOut() {
  * Получить текущего пользователя
  */
 export async function getCurrentUser() {
+  if (!supabase) {
+    // В гостевом режиме возвращаем null
+    return { user: null, error: null };
+  }
+
   const { data: { user }, error } = await supabase.auth.getUser();
   
   if (error) {
@@ -75,6 +94,12 @@ export async function getCurrentUser() {
  * Подписаться на изменения аутентификации
  */
 export function onAuthStateChange(callback: (user: any) => void) {
+  if (!supabase) {
+    // В гостевом режиме сразу вызываем callback с null
+    callback(null);
+    return { data: { subscription: { unsubscribe: () => {} } } };
+  }
+
   return supabase.auth.onAuthStateChange((event, session) => {
     callback(session?.user ?? null);
   });
