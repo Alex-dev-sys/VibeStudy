@@ -1,5 +1,16 @@
 import { supabase } from './client';
 
+type SupabaseInstance = NonNullable<typeof supabase>;
+
+function requireSupabase() {
+  if (!supabase) {
+    const error = new Error('Supabase client is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    console.warn(error.message);
+    throw error;
+  }
+  return supabase as SupabaseInstance;
+}
+
 export interface UserProgress {
   topicId: string;
   completed: boolean;
@@ -29,7 +40,9 @@ export interface TopicMastery {
  * Получить или создать пользователя
  */
 export async function getOrCreateUser(username: string, email?: string) {
-  const { data: existingUser, error: fetchError } = await supabase
+  const client = requireSupabase();
+
+  const { data: existingUser, error: fetchError } = await client
     .from('users')
     .select('*')
     .eq('username', username)
@@ -39,7 +52,11 @@ export async function getOrCreateUser(username: string, email?: string) {
     return { data: existingUser, error: null };
   }
 
-  const { data: newUser, error: createError } = await supabase
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    return { data: null, error: fetchError };
+  }
+
+  const { data: newUser, error: createError } = await client
     .from('users')
     .insert([{ username, email }])
     .select()
@@ -55,7 +72,9 @@ export async function saveProgress(
   userId: string,
   progress: UserProgress
 ) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('user_progress')
     .upsert({
       user_id: userId,
@@ -77,7 +96,9 @@ export async function saveProgress(
  * Получить весь прогресс пользователя
  */
 export async function getUserProgress(userId: string) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('user_progress')
     .select('*')
     .eq('user_id', userId);
@@ -92,7 +113,9 @@ export async function saveTaskAttempt(
   userId: string,
   attempt: TaskAttempt
 ) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('task_attempts')
     .insert([{
       user_id: userId,
@@ -113,7 +136,9 @@ export async function saveTaskAttempt(
  * Получить попытки решения задачи
  */
 export async function getTaskAttempts(userId: string, taskId?: string) {
-  let query = supabase
+  const client = requireSupabase();
+
+  let query = client
     .from('task_attempts')
     .select('*')
     .eq('user_id', userId)
@@ -135,8 +160,10 @@ export async function updateTopicMastery(
   topic: string,
   isCorrect: boolean
 ) {
+  const client = requireSupabase();
+
   // Получить текущее мастерство
-  const { data: existing } = await supabase
+  const { data: existing } = await client
     .from('topic_mastery')
     .select('*')
     .eq('user_id', userId)
@@ -147,7 +174,7 @@ export async function updateTopicMastery(
   const successfulAttempts = (existing?.successful_attempts || 0) + (isCorrect ? 1 : 0);
   const masteryLevel = successfulAttempts / totalAttempts;
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('topic_mastery')
     .upsert({
       user_id: userId,
@@ -169,7 +196,9 @@ export async function updateTopicMastery(
  * Получить мастерство по всем темам
  */
 export async function getTopicMastery(userId: string) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('topic_mastery')
     .select('*')
     .eq('user_id', userId)
@@ -182,7 +211,9 @@ export async function getTopicMastery(userId: string) {
  * Разблокировать достижение
  */
 export async function unlockAchievement(userId: string, achievementId: string) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('user_achievements')
     .insert([{
       user_id: userId,
@@ -198,7 +229,9 @@ export async function unlockAchievement(userId: string, achievementId: string) {
  * Получить достижения пользователя
  */
 export async function getUserAchievements(userId: string) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('user_achievements')
     .select('*')
     .eq('user_id', userId)
@@ -218,10 +251,12 @@ export async function cacheGeneratedContent(
   content: any,
   expiresInHours: number = 24
 ) {
+  const client = requireSupabase();
+
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + expiresInHours);
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('generated_content_cache')
     .insert([{
       content_type: contentType,
@@ -246,7 +281,9 @@ export async function getCachedContent(
   difficulty: string,
   language: string
 ) {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+
+  const { data, error } = await client
     .from('generated_content_cache')
     .select('*')
     .eq('content_type', contentType)
