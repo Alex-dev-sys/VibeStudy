@@ -81,6 +81,13 @@ export default function LoginPage() {
     }
   }
 
+  function handleGuestMode() {
+    // Устанавливаем флаг гостевого режима в localStorage
+    localStorage.setItem('guestMode', 'true');
+    // Перенаправляем на страницу обучения
+    router.push('/learn');
+  }
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-black via-purple-900/20 to-black">
       {/* Анимированный фон */}
@@ -249,6 +256,16 @@ export default function LoginPage() {
               </div>
             </div>
           )}
+
+          {/* Кнопка гостевого режима */}
+          <div className="mt-4">
+            <button
+              onClick={handleGuestMode}
+              className="w-full rounded-xl border border-white/20 bg-transparent px-6 py-3 font-semibold text-white transition-all hover:border-white/40 hover:bg-white/5"
+            >
+              🚀 Продолжить без регистрации
+            </button>
+          </div>
 
           {/* Информация */}
           <div className="mt-6 rounded-lg border border-white/10 bg-white/5 p-4">
