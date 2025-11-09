@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // Перенаправляем на дашборд после успешной аутентификации
-  return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
+  // Перенаправляем на страницу обучения после успешной аутентификации
+  return NextResponse.redirect(`${requestUrl.origin}/learn`);
 }
 

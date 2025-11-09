@@ -21,7 +21,7 @@ export default function LoginPage() {
   async function checkUser() {
     const { user } = await getCurrentUser();
     if (user) {
-      router.push('/dashboard');
+      router.push('/learn');
     }
   }
 
