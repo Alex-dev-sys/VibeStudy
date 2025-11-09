@@ -1,5 +1,18 @@
 import { supabase } from './client';
 
+const getBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  return 'http://localhost:3000';
+};
+
 /**
  * Вход через Email (Magic Link)
  */
@@ -11,7 +24,7 @@ export async function signInWithEmail(email: string) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/learn`,
+      emailRedirectTo: `${getBaseUrl()}/learn`,
     },
   });
 
@@ -34,7 +47,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${getBaseUrl()}/auth/callback`,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
