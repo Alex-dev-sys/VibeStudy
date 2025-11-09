@@ -53,7 +53,7 @@ ${code}
     {
       "type": "syntax" | "logic" | "style" | "performance",
       "message": "Описание проблемы",
-      "line": номер_строки_или_null
+      "line": номер_строки (number) или undefined если неизвестно
     }
   ]
 }
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         {
           type: 'logic' as const,
           message: 'Решение не завершено',
-          line: null
+          line: undefined
         }
       ]
     } as CheckCodeResponse);
