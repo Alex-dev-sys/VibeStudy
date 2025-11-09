@@ -43,6 +43,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
         setTaskSet({
           theory: dayContent.theory,
           recap: dayContent.recap,
+          recapTask: dayContent.recapTask,
           tasks: dayContent.tasks
         });
       } catch (err) {
@@ -69,38 +70,69 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
 
       const dayTopic = getDayTopic(currentDay.day);
       const previousDayTopic = previousDay ? getDayTopic(previousDay.day) : undefined;
+      const MAX_ATTEMPTS = 3;
 
-      const response = await fetch('/api/generate-tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          day: currentDay.day,
-          languageId,
-          dayTopic: dayTopic.topic,
-          dayDescription: dayTopic.description,
-          theorySummary: currentDay.theory,
-          previousDaySummary: previousDayTopic?.topic
-        })
-      });
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+        const response = await fetch('/api/generate-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            day: currentDay.day,
+            languageId,
+            dayTopic: dayTopic.topic,
+            dayDescription: dayTopic.description,
+            theorySummary: currentDay.theory,
+            previousDaySummary: previousDayTopic?.topic
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error('Не удалось получить задания от AI. Попробуйте позже.');
+        if (!response.ok) {
+          throw new Error('Не удалось получить задания от AI. Попробуйте позже.');
+        }
+
+        const data = (await response.json()) as TaskGenerationResponse;
+
+        if (!data.isFallback) {
+          setTaskSet(data);
+          return;
+        }
+
+        console.warn(`Попытка ${attempt} генерации вернула fallback.`);
+
+        if (attempt === MAX_ATTEMPTS) {
+          setError('AI пока возвращает шаблонные данные. Показываем программу курса.');
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1200));
       }
 
-      const data = (await response.json()) as TaskGenerationResponse;
-      setTaskSet(data);
+      setTaskSet({
+        theory: dayContent.theory,
+        recap: dayContent.recap,
+        recapTask: dayContent.recapTask,
+        tasks: dayContent.tasks
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка генерации.');
       // При ошибке возвращаемся к статическому контенту
       setTaskSet({
         theory: dayContent.theory,
         recap: dayContent.recap,
+        recapTask: dayContent.recapTask,
         tasks: dayContent.tasks
       });
     } finally {
       setLoading(false);
     }
-  }, [currentDay.day, currentDay.theory, languageId, previousDay?.theory, dayContent]);
+  }, [
+    currentDay.day,
+    currentDay.theory,
+    languageId,
+    previousDay?.day,
+    previousDay?.theory,
+    dayContent
+  ]);
 
   return {
     taskSet,

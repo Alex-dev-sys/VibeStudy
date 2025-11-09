@@ -15,12 +15,12 @@ function ensureStorageInitialized() {
   }
 
   try {
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
-    if (!fs.existsSync(contentFile)) {
-      fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
+if (!fs.existsSync(contentFile)) {
+  fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
     }
 
     storageInitialized = true;

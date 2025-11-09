@@ -259,7 +259,7 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     console.warn('HF_API_KEY не задан. Возвращаем fallback.');
-    return NextResponse.json(fallbackResponse, { status: 200 });
+    return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
 
   try {
@@ -291,7 +291,7 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Ошибка API HuggingFace:', response.status, errorText);
-      return NextResponse.json(fallbackResponse, { status: 200 });
+      return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
     }
 
     const data = await response.json();
@@ -312,28 +312,32 @@ export async function POST(request: Request) {
       : rawContent ?? '';
 
     const parsedResponse = parseAiResponse(String(content));
+    const isFallback =
+      parsedResponse.tasks?.[0]?.id?.startsWith('fallback-') ?? false;
 
     // Сохраняем в базу данных
-    try {
-      saveGeneratedContent({
-        day: body.day,
-        languageId: body.languageId,
-        topic: body.dayTopic ?? 'Тема дня',
-        theory: parsedResponse.theory,
-        recap: parsedResponse.recap,
-        recapTask: parsedResponse.recapTask,
-        tasks: parsedResponse.tasks
-      });
-      console.log(`✅ Контент для дня ${body.day} (${body.languageId}) сохранён в БД`);
-    } catch (dbError) {
-      console.error('Ошибка сохранения в БД:', dbError);
-      // Продолжаем работу даже если не удалось сохранить
+    if (!isFallback) {
+      try {
+        saveGeneratedContent({
+          day: body.day,
+          languageId: body.languageId,
+          topic: body.dayTopic ?? 'Тема дня',
+          theory: parsedResponse.theory,
+          recap: parsedResponse.recap,
+          recapTask: parsedResponse.recapTask,
+          tasks: parsedResponse.tasks
+        });
+        console.log(`✅ Контент для дня ${body.day} (${body.languageId}) сохранён в БД`);
+      } catch (dbError) {
+        console.error('Ошибка сохранения в БД:', dbError);
+        // Продолжаем работу даже если не удалось сохранить
+      }
     }
 
-    return NextResponse.json(parsedResponse);
+    return NextResponse.json({ ...parsedResponse, isFallback });
   } catch (error) {
     console.error('Ошибка при обращении к AI API', error);
-    return NextResponse.json(fallbackResponse, { status: 200 });
+    return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
 }
 

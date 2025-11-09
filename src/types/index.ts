@@ -47,6 +47,7 @@ export interface TaskGenerationResponse {
   recap: string;
   recapTask?: GeneratedTask;
   tasks: GeneratedTask[];
+  isFallback?: boolean;
 }
 
 export interface ProgressRecord {
