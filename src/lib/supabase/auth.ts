@@ -94,8 +94,16 @@ export async function getCurrentUser() {
   }
 
   const { data: { user }, error } = await supabase.auth.getUser();
-  
+
   if (error) {
+    const message = typeof error.message === 'string' ? error.message : '';
+    const code = (error as { code?: string }).code ?? '';
+
+    if (message.includes('Auth session missing') || code === 'AuthSessionMissingError') {
+      // Нет активной сессии — нормальная ситуация для гостевого режима
+      return { user: null, error: null };
+    }
+
     console.error('Ошибка получения пользователя:', error);
     return { user: null, error };
   }
