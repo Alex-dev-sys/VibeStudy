@@ -242,6 +242,13 @@ const fallbackResponse: GeneratedContent = {
 const parseAiResponse = (content: string): GeneratedContent => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
+    if (!sanitized || sanitized === 'null' || sanitized === 'undefined') {
+      return fallbackResponse;
+    }
+    if (!sanitized.startsWith('{')) {
+      console.warn('Ответ AI не похож на JSON, возвращаем fallback.', sanitized.slice(0, 120));
+      return fallbackResponse;
+    }
     const parsed = JSON.parse(sanitized) as GeneratedContent;
     if (!parsed.tasks || parsed.tasks.length === 0) {
       return fallbackResponse;

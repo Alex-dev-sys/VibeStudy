@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'lama_best_v2';
+const DEFAULT_MODEL = 'lama_best';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -39,7 +39,13 @@ export const isAiConfigured = () => {
   return apiKey.length > 0;
 };
 
-const parseSsePayload = (payload: string) => {
+interface SseParseResult {
+  chunks: Array<Record<string, any>>;
+  aggregatedContent: string;
+  responseLike: Record<string, any>;
+}
+
+const parseSsePayload = (payload: string): SseParseResult | null => {
   const dataLines = payload
     .split('\n')
     .map((line) => line.trim())
@@ -51,13 +57,56 @@ const parseSsePayload = (payload: string) => {
     return null;
   }
 
-  const lastChunk = dataLines[dataLines.length - 1];
+  const parsedChunks = dataLines
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    })
+    .filter((chunk): chunk is Record<string, any> => Boolean(chunk));
 
-  try {
-    return JSON.parse(lastChunk);
-  } catch {
+  if (parsedChunks.length === 0) {
     return null;
   }
+
+  const aggregatedContent = parsedChunks
+    .map((chunk) => {
+      const choice = chunk.choices?.[0];
+      if (!choice) return '';
+      if (typeof choice.delta?.content === 'string') return choice.delta.content;
+      if (typeof choice.message?.content === 'string') return choice.message.content;
+      return '';
+    })
+    .join('');
+
+  const lastChunk = parsedChunks[parsedChunks.length - 1];
+  const firstChunk = parsedChunks.find((chunk) => typeof chunk.choices?.[0]?.delta?.role === 'string');
+  const role = (firstChunk?.choices?.[0]?.delta?.role as string | undefined) ?? 'assistant';
+
+  return {
+    chunks: parsedChunks,
+    aggregatedContent,
+    responseLike: {
+      id: lastChunk?.id ?? 'gptlama-sse',
+      object: 'chat.completion',
+      created: lastChunk?.created ?? Date.now(),
+      model: lastChunk?.model,
+      choices: [
+        {
+          index: 0,
+          finish_reason: lastChunk?.choices?.[0]?.finish_reason ?? null,
+          message: {
+            role,
+            content: aggregatedContent
+          }
+        }
+      ],
+      usage: lastChunk?.usage ?? null,
+      raw_chunks: parsedChunks
+    }
+  };
 };
 
 const parseResponsePayload = (payload: string) => {
@@ -104,13 +153,23 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
   const parsedBody = parseResponsePayload(rawBody);
 
   if (!response.ok) {
+    const errorPayload = parsedBody && 'responseLike' in parsedBody ? (parsedBody as SseParseResult).responseLike : parsedBody;
     const message =
-      typeof (parsedBody as any)?.error?.message === 'string'
-        ? (parsedBody as any).error.message
+      typeof (errorPayload as any)?.error?.message === 'string'
+        ? (errorPayload as any).error.message
         : response.statusText;
     const error = new Error(`gptlama_request_failed: ${message}`);
     (error as Error & { status?: number }).status = response.status;
     throw error;
+  }
+
+  if (parsedBody && 'responseLike' in parsedBody) {
+    const sseResult = parsedBody as SseParseResult;
+    const aggregated = sseResult.aggregatedContent.trim();
+    return {
+      data: sseResult.responseLike,
+      raw: aggregated
+    } satisfies ChatCompletionResult;
   }
 
   const raw = extractMessageContent(parsedBody ?? rawBody);
@@ -148,6 +207,10 @@ export const extractMessageContent = (payload: unknown) => {
 
   const choice = (payload as any)?.choices?.[0];
   const rawContent = choice?.message?.content;
+
+  if (typeof choice?.delta?.content === 'string') {
+    return choice.delta.content;
+  }
 
   if (!choice && typeof payload === 'string') {
     return payload;
