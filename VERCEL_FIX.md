@@ -63,7 +63,7 @@ GPTLAMA_API_BASE_URL
 
 ```
 GPTLAMA_MODEL
-Значение: lama_pro (по умолчанию, можно не указывать). Доступные значения: `lama_best`, `lama_pro`
+Значение: "lama pro" (по умолчанию, можно не указывать). Можно указать `lama_pro`. Доступные значения: `lama_best`, `lama pro`
 Окружения: Production, Preview, Development
 ```
 

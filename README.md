@@ -100,7 +100,7 @@ cat > .env.local << 'EOF'
 GPTLAMA_API_KEY=your_gptlama_api_key
 # Необязательно: если нужно переопределить базовый URL/модель
 # GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL=lama_pro  # поддерживаются: lama_best, lama_pro (по умолчанию — lama_pro)
+# GPTLAMA_MODEL="lama pro"  # поддерживаются: lama_best, lama pro (по умолчанию — lama pro). Можно писать lama_pro.
 
 # Telegram Bot (опционально)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
@@ -144,8 +144,8 @@ npm run dev:next
 3. Добавьте его в `.env.local` как `GPTLAMA_API_KEY`
 4. (Опционально) настройте `GPTLAMA_API_BASE_URL` — по умолчанию `https://api.gptlama.ru/v1`
 5. (Опционально) задайте `GPTLAMA_MODEL`. Доступны:
-   - `lama_best` — агрегирует лучшие ответы (по умолчанию, совместима с текущим API)
-   - `lama_pro` — расширенная версия (Claude 4 Sonnet + GPT-5). Требует активной подписки.
+   - `lama_best` — агрегирует лучшие ответы.
+   - `lama pro` (можно указать `lama_pro`) — расширенная версия (Claude 4 Sonnet + GPT-5, используется по умолчанию). Требует активной подписки.
 
 #### 2. Supabase (опционально, для облачного сохранения)
 1. Создайте проект на [Supabase](https://supabase.com)

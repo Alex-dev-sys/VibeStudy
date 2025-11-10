@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'lama_pro';
+const DEFAULT_MODEL = 'lama pro';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -25,7 +25,8 @@ export interface ChatCompletionResult {
 const resolveConfig = () => {
   const apiKey = process.env.GPTLAMA_API_KEY ?? '';
   const baseUrl = (process.env.GPTLAMA_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/+$/, '');
-  const model = process.env.GPTLAMA_MODEL ?? DEFAULT_MODEL;
+  const rawModel = process.env.GPTLAMA_MODEL ?? DEFAULT_MODEL;
+  const model = rawModel.replace(/_/g, ' ').trim();
 
   return {
     apiKey: apiKey.trim(),
