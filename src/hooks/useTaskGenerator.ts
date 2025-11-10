@@ -8,16 +8,18 @@ interface UseTaskGeneratorParams {
   currentDay: CurriculumDay;
   previousDay?: CurriculumDay;
   languageId: string;
+  autoLoad?: boolean;
 }
 
 type ContentSource = 'pending' | 'database' | 'ai' | 'fallback';
 
-export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTaskGeneratorParams) => {
+export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad = true }: UseTaskGeneratorParams) => {
   const [taskSet, setTaskSet] = useState<TaskGenerationResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoLoad);
   const [error, setError] = useState<string | null>(null);
   const [contentSource, setContentSource] = useState<ContentSource>('pending');
   const [regeneratingTaskId, setRegeneratingTaskId] = useState<string | null>(null);
+  const [loadToken, setLoadToken] = useState<number>(autoLoad ? 1 : 0);
 
   const dayContent = useMemo(() => getDayContent(currentDay.day), [currentDay.day]);
 
@@ -105,18 +107,45 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
   }, [currentDay.day, currentDay.theory, languageId, previousDay, dayContent, resetDayProgress]);
 
   useEffect(() => {
+    if (autoLoad) {
+      setLoadToken((token) => (token === 0 ? 1 : token + 1));
+    } else {
+      setLoadToken(0);
+      setTaskSet(null);
+      setContentSource('pending');
+      setError(null);
+      setLoading(false);
+      setRegeneratingTaskId(null);
+    }
+  }, [autoLoad, currentDay.day, languageId]);
+
+  useEffect(() => {
+    if (loadToken === 0) {
+      return;
+    }
+
     let cancelled = false;
 
     const loadContent = async () => {
+      let fetchedFromDatabase = false;
+
       try {
         setLoading(true);
         setError(null);
 
         const response = await fetch(`/api/get-content?day=${currentDay.day}&languageId=${languageId}`);
 
+        if (cancelled) {
+          return;
+        }
+
         if (response.ok) {
           const data = await response.json();
-          if (data.exists && !cancelled) {
+          if (cancelled) {
+            return;
+          }
+
+          if (data.exists) {
             setTaskSet({
               theory: data.theory,
               recap: data.recap,
@@ -124,31 +153,31 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
               tasks: data.tasks
             });
             setContentSource('database');
+            fetchedFromDatabase = true;
+            setLoading(false);
             return;
           }
         }
 
-        if (!cancelled) {
-          await generateWithAI();
-        }
       } catch (err) {
         console.error('Ошибка загрузки контента:', err);
-        if (!cancelled) {
-          await generateWithAI();
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!fetchedFromDatabase) {
+        await generateWithAI();
       }
     };
 
-    loadContent();
+    void loadContent();
 
     return () => {
       cancelled = true;
     };
-  }, [currentDay.day, languageId, generateWithAI]);
+  }, [loadToken, currentDay.day, languageId, generateWithAI]);
 
   const regenerateTask = useCallback(
     async (taskId: string) => {
@@ -211,6 +240,10 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
     [currentDay.day, languageId, taskSet, markTaskRegenerated]
   );
 
+  const requestInitialGeneration = useCallback(() => {
+    setLoadToken((token) => (token === 0 ? 1 : token + 1));
+  }, []);
+
   return {
     taskSet,
     loading,
@@ -218,7 +251,8 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
     regenerate: generateWithAI,
     contentSource,
     regenerateTask,
-    regeneratingTaskId
+    regeneratingTaskId,
+    requestInitialGeneration
   };
 };
 
