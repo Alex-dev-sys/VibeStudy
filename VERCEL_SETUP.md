@@ -24,13 +24,15 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GPTLAMA_API_KEY=your_gptlama_api_key
 # Необязательно
 # GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL=lama_best
+# GPTLAMA_MODEL=lama_best   # поддерживаются: lama_best (по умолчанию) и lama_pro
 ```
 
 **Где взять:**
 - Откройте кабинет [GPTLama](https://gptlama.ru/) и создайте API-токен
 - Скопируйте ключ
 - (Опционально) убедитесь, что используете правильный base URL и модель
+  - `lama_best` — базовая модель (по умолчанию, совместима с код-агентом)
+  - `lama_pro` — расширенная модель (требует платной подписки)
 
 #### 3. **Telegram Bot (опционально)**
 
