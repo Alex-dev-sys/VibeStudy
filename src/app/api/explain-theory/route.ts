@@ -103,6 +103,7 @@ function buildCodeExample(languageId: string, expression: string, result: number
 
 function tryComputeArithmetic(question: string) {
   const normalized = question.toLowerCase().replace(/,/g, '.');
+  const sanitized = normalized.replace(/[?!]+/g, ' ');
 
   const patterns: Array<{ regex: RegExp; op: (a: number, b: number) => number; symbol: string }> = [
     { regex: /(\d+(?:\.\d+)?)\s*(?:\+|плюс|сложить|добавить|прибавить)\s*(\d+(?:\.\d+)?)/, op: (a, b) => a + b, symbol: '+' },
@@ -114,7 +115,7 @@ function tryComputeArithmetic(question: string) {
   ];
 
   for (const { regex, op, symbol } of patterns) {
-    const match = normalized.match(regex);
+    const match = sanitized.match(regex);
     if (match) {
       const [_, firstRaw, secondRaw] = match;
       const a = parseFloat(firstRaw);
@@ -138,7 +139,7 @@ function tryComputeArithmetic(question: string) {
     }
   }
 
-  const expression = normalized
+  const expression = sanitized
     .replace(/\b(умножить|умножь|умножаем)\s+на\b/g, '*')
     .replace(/\bразделить\s+на\b/g, '/')
     .replace(/\bделить\s+на\b/g, '/')
