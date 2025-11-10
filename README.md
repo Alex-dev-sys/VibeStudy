@@ -96,8 +96,11 @@ npm install
 # Создать .env.local файл с необходимыми ключами (опционально)
 # Для гостевого режима можно пропустить этот шаг!
 cat > .env.local << 'EOF'
-# Hugging Face API (обязательно для AI)
-HF_API_KEY=your_huggingface_api_key
+# GPTLama API (обязательно для AI)
+GPTLAMA_API_KEY=your_gptlama_api_key
+# Необязательно: если нужно переопределить базовый URL/модель
+# GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
+# GPTLAMA_MODEL=meta-llama-3-70b-instruct
 
 # Telegram Bot (опционально)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
@@ -135,11 +138,11 @@ npm run dev:next
 
 ---
 
-#### 1. HuggingFace API (обязательно для AI)
-1. Зарегистрируйтесь на [HuggingFace](https://huggingface.co/)
-2. Перейдите в [Settings → Access Tokens](https://huggingface.co/settings/tokens)
-3. Создайте новый токен
-4. Добавьте в `.env.local` как `HF_API_KEY`
+#### 1. GPTLama API (обязательно для AI)
+1. Получите доступ к [GPTLama](https://gptlama.ru/) и создайте токен
+2. Скопируйте токен из личного кабинета
+3. Добавьте его в `.env.local` как `GPTLAMA_API_KEY`
+4. При необходимости настройте `GPTLAMA_API_BASE_URL` (по умолчанию `https://api.gptlama.ru/v1`) и `GPTLAMA_MODEL`
 
 #### 2. Supabase (опционально, для облачного сохранения)
 1. Создайте проект на [Supabase](https://supabase.com)
@@ -227,7 +230,7 @@ VibeStudy/
 - **Code Editor:** Monaco Editor
 - **Animations:** Framer Motion
 - **UI Components:** Radix UI
-- **AI Integration:** HuggingFace API
+- **AI Integration:** GPTLama API
 
 ## 📝 Скрипты
 
@@ -256,7 +259,7 @@ MIT License - см. файл [LICENSE](LICENSE)
 
 - [Next.js](https://nextjs.org/)
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-- [HuggingFace](https://huggingface.co/)
+- [GPTLama](https://gptlama.ru/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [Framer Motion](https://www.framer.com/motion/)
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { saveGeneratedContent } from '@/lib/db';
+import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 
 interface RequestBody {
   day: number;
@@ -255,61 +256,31 @@ const parseAiResponse = (content: string): GeneratedContent => {
 export async function POST(request: Request) {
   const body = (await request.json()) as ExtendedRequestBody;
 
-  const apiKey = process.env.HF_API_KEY;
-
-  if (!apiKey) {
-    console.warn('HF_API_KEY не задан. Возвращаем fallback.');
+  if (!isAiConfigured()) {
+    console.warn('GPTLAMA_API_KEY не задан. Возвращаем fallback.');
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
 
   try {
     const prompt = buildPrompt(body);
 
-    const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-oss-20b:groq',
-        messages: [
-          {
-            role: 'system',
-            content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 2000
-      })
+    const { data, raw } = await callChatCompletion({
+      messages: [
+        {
+          role: 'system',
+          content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.8,
+      maxTokens: 2000,
+      responseFormat: { type: 'json_object' }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Ошибка API HuggingFace:', response.status, errorText);
-      return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
-    }
-
-    const data = await response.json();
-    const choice = data.choices?.[0];
-    const rawContent = choice?.message?.content;
-
-    const content = Array.isArray(rawContent)
-      ? rawContent
-          .map((part: any) => {
-            if (typeof part === 'string') return part;
-            if ('text' in part && typeof part.text === 'string') return part.text;
-            if ('text' in part && part.text && 'value' in part.text) {
-              return typeof part.text.value === 'string' ? part.text.value : '';
-            }
-            return '';
-          })
-          .join('\n')
-      : rawContent ?? '';
+    const content = raw || extractMessageContent(data);
 
     const parsedResponse = parseAiResponse(String(content));
     const isFallback =

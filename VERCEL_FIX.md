@@ -50,8 +50,20 @@ SUPABASE_SERVICE_ROLE_KEY
 ```
 
 ```
-HF_API_KEY
-Значение: ваш_huggingface_api_key
+GPTLAMA_API_KEY
+Значение: ваш_gptlama_api_key
+Окружения: Production, Preview, Development
+```
+
+```
+GPTLAMA_API_BASE_URL
+Значение: https://api.gptlama.ru/v1 (по умолчанию, можно не указывать)
+Окружения: Production, Preview, Development
+```
+
+```
+GPTLAMA_MODEL
+Значение: meta-llama-3-70b-instruct (по умолчанию, можно не указывать)
 Окружения: Production, Preview, Development
 ```
 
@@ -82,10 +94,10 @@ CRON_SECRET
    - **anon public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - **service_role secret** → `SUPABASE_SERVICE_ROLE_KEY`
 
-### **Hugging Face:**
-1. Откройте [HuggingFace Settings](https://huggingface.co/settings/tokens)
-2. Создайте новый Access Token
-3. Скопируйте → `HF_API_KEY`
+### **GPTLama:**
+1. Откройте [GPTLama](https://gptlama.ru/) и перейдите в раздел API-токенов
+2. Создайте новый токен (если его ещё нет)
+3. Скопируйте → `GPTLAMA_API_KEY`
 
 ---
 

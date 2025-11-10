@@ -18,16 +18,19 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 - Settings → API
 - Скопируйте: Project URL, anon public key, service_role key
 
-#### 2. **Hugging Face API (обязательно для AI функций)**
+#### 2. **GPTLama API (обязательно для AI функций)**
 
 ```
-HF_API_KEY=your_huggingface_api_key
+GPTLAMA_API_KEY=your_gptlama_api_key
+# Необязательно
+# GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
+# GPTLAMA_MODEL=meta-llama-3-70b-instruct
 ```
 
 **Где взять:**
-- Откройте [HuggingFace Settings](https://huggingface.co/settings/tokens)
-- Создайте новый Access Token
+- Откройте кабинет [GPTLama](https://gptlama.ru/) и создайте API-токен
 - Скопируйте ключ
+- (Опционально) убедитесь, что используете правильный base URL и модель
 
 #### 3. **Telegram Bot (опционально)**
 
@@ -110,7 +113,7 @@ CRON_SECRET=your_random_secret_string
 ### AI функции не работают
 
 **Решение:**
-1. Убедитесь, что добавлена переменная `HF_API_KEY`
+1. Убедитесь, что добавлена переменная `GPTLAMA_API_KEY`
 2. Проверьте, что ключ действителен
 3. Сделайте **Redeploy**
 
@@ -123,7 +126,9 @@ CRON_SECRET=your_random_secret_string
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ Да | URL Supabase проекта |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Да | Публичный ключ Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Да | Серверный ключ Supabase |
-| `HF_API_KEY` | ✅ Да | Hugging Face API для AI |
+| `GPTLAMA_API_KEY` | ✅ Да | GPTLama API для AI |
+| `GPTLAMA_API_BASE_URL` | ⚙️ Нет | Переопределение базового URL GPTLama |
+| `GPTLAMA_MODEL` | ⚙️ Нет | Явный выбор модели GPTLama |
 | `TELEGRAM_BOT_TOKEN` | ⚙️ Нет | Токен Telegram бота |
 | `CRON_SECRET` | ⚙️ Нет | Секрет для cron задач |
 
@@ -136,7 +141,7 @@ CRON_SECRET=your_random_secret_string
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - защищён RLS
 
 ### ⚠️ НИКОГДА не публикуйте:
-- `HF_API_KEY` - секретный ключ
+- `GPTLAMA_API_KEY` - секретный ключ
 - `SUPABASE_SERVICE_ROLE_KEY` - полный доступ к БД
 - `TELEGRAM_BOT_TOKEN` - токен бота
 - `CRON_SECRET` - секрет
