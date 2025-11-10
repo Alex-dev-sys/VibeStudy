@@ -85,7 +85,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as CheckCodeRequest;
 
   if (!isAiConfigured()) {
-    console.warn('GPTLAMA_API_KEY не задан. Возвращаем fallback.');
+    console.warn('HF_TOKEN не задан. Возвращаем fallback.');
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 

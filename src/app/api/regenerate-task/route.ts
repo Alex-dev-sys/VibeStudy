@@ -61,7 +61,7 @@ const parseTask = (content: string): GeneratedTask => {
 export async function POST(request: Request) {
   const body = (await request.json()) as RequestBody;
   if (!isAiConfigured()) {
-    return NextResponse.json({ error: 'GPTLAMA_API_KEY не задан' }, { status: 500 });
+    return NextResponse.json({ error: 'HF_TOKEN не задан' }, { status: 500 });
   }
 
   try {

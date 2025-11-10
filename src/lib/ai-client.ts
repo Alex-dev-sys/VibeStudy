@@ -1,5 +1,5 @@
-const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'lama pro';
+const DEFAULT_API_BASE_URL = 'https://router.huggingface.co/v1';
+const DEFAULT_MODEL = 'MiniMaxAI/MiniMax-M2:novita';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -23,10 +23,10 @@ export interface ChatCompletionResult {
 }
 
 const resolveConfig = () => {
-  const apiKey = process.env.GPTLAMA_API_KEY ?? '';
-  const baseUrl = (process.env.GPTLAMA_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/+$/, '');
-  const rawModel = process.env.GPTLAMA_MODEL ?? DEFAULT_MODEL;
-  const model = rawModel.replace(/_/g, ' ').trim();
+  const apiKey = process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
+  const baseUrl = (process.env.HF_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+  const rawModel = process.env.HF_MODEL ?? DEFAULT_MODEL;
+  const model = rawModel.trim();
 
   return {
     apiKey: apiKey.trim(),
@@ -90,7 +90,7 @@ const parseSsePayload = (payload: string): SseParseResult | null => {
     chunks: parsedChunks,
     aggregatedContent,
     responseLike: {
-      id: lastChunk?.id ?? 'gptlama-sse',
+      id: lastChunk?.id ?? 'hf-sse',
       object: 'chat.completion',
       created: lastChunk?.created ?? Date.now(),
       model: lastChunk?.model,
@@ -126,7 +126,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
   const { apiKey, baseUrl, model: defaultModel } = resolveConfig();
 
   if (!apiKey) {
-    throw new Error('GPTLAMA_API_KEY is not defined');
+    throw new Error('HF_TOKEN is not defined');
   }
 
   const body: Record<string, unknown> = {
@@ -159,7 +159,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
       typeof (errorPayload as any)?.error?.message === 'string'
         ? (errorPayload as any).error.message
         : response.statusText;
-    const error = new Error(`gptlama_request_failed: ${message}`);
+    const error = new Error(`huggingface_request_failed: ${message}`);
     (error as Error & { status?: number }).status = response.status;
     throw error;
   }

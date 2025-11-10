@@ -216,7 +216,7 @@ export async function POST(request: Request) {
   }
 
   if (!isAiConfigured()) {
-    console.warn('GPTLAMA_API_KEY не задан. Возвращаем fallback объяснение.');
+    console.warn('HF_TOKEN не задан. Возвращаем fallback объяснение.');
     return NextResponse.json(createFallbackResponse(body, 'missing_api_key'));
   }
 

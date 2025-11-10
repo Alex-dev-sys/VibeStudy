@@ -18,21 +18,20 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 - Settings → API
 - Скопируйте: Project URL, anon public key, service_role key
 
-#### 2. **GPTLama API (обязательно для AI функций)**
+#### 2. **Hugging Face API (обязательно для AI функций)**
 
 ```
-GPTLAMA_API_KEY=your_gptlama_api_key
+HF_TOKEN=hf_your_access_token
 # Необязательно
-# GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL="lama pro"   # поддерживаются: lama_best и lama pro (по умолчанию — lama pro). Можно указать lama_pro.
+# HF_API_BASE_URL=https://router.huggingface.co/v1
+# HF_MODEL=MiniMaxAI/MiniMax-M2:novita
 ```
 
 **Где взять:**
-- Откройте кабинет [GPTLama](https://gptlama.ru/) и создайте API-токен
-- Скопируйте ключ
-- (Опционально) убедитесь, что используете правильный base URL и модель
-  - `lama_best` — базовая модель (по умолчанию, совместима с код-агентом)
-  - `lama_pro` — расширенная модель (требует платной подписки)
+- Откройте [Hugging Face Settings](https://huggingface.co/settings/tokens)
+- Создайте токен с правами `read`
+- Скопируйте ключ и добавьте его как `HF_TOKEN`
+- (Опционально) укажите собственную модель через `HF_MODEL`
 
 #### 3. **Telegram Bot (опционально)**
 
@@ -115,7 +114,7 @@ CRON_SECRET=your_random_secret_string
 ### AI функции не работают
 
 **Решение:**
-1. Убедитесь, что добавлена переменная `GPTLAMA_API_KEY`
+1. Убедитесь, что добавлена переменная `HF_TOKEN`
 2. Проверьте, что ключ действителен
 3. Сделайте **Redeploy**
 
@@ -128,9 +127,9 @@ CRON_SECRET=your_random_secret_string
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ Да | URL Supabase проекта |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Да | Публичный ключ Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Да | Серверный ключ Supabase |
-| `GPTLAMA_API_KEY` | ✅ Да | GPTLama API для AI |
-| `GPTLAMA_API_BASE_URL` | ⚙️ Нет | Переопределение базового URL GPTLama |
-| `GPTLAMA_MODEL` | ⚙️ Нет | Явный выбор модели GPTLama |
+| `HF_TOKEN` | ✅ Да | Hugging Face токен доступа |
+| `HF_API_BASE_URL` | ⚙️ Нет | Переопределение базового URL Hugging Face Router |
+| `HF_MODEL` | ⚙️ Нет | Явный выбор модели Hugging Face |
 | `TELEGRAM_BOT_TOKEN` | ⚙️ Нет | Токен Telegram бота |
 | `CRON_SECRET` | ⚙️ Нет | Секрет для cron задач |
 
@@ -143,7 +142,7 @@ CRON_SECRET=your_random_secret_string
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - защищён RLS
 
 ### ⚠️ НИКОГДА не публикуйте:
-- `GPTLAMA_API_KEY` - секретный ключ
+- `HF_TOKEN` - секретный ключ Hugging Face
 - `SUPABASE_SERVICE_ROLE_KEY` - полный доступ к БД
 - `TELEGRAM_BOT_TOKEN` - токен бота
 - `CRON_SECRET` - секрет

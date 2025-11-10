@@ -32,7 +32,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token_here
 CRON_SECRET=your_random_secret_key_here
 
 # Уже существующие
-GPTLAMA_API_KEY=your_gptlama_api_key
+HF_TOKEN=hf_your_access_token
 ```
 
 **Генерация CRON_SECRET:**

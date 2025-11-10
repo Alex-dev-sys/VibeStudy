@@ -96,11 +96,11 @@ npm install
 # Создать .env.local файл с необходимыми ключами (опционально)
 # Для гостевого режима можно пропустить этот шаг!
 cat > .env.local << 'EOF'
-# GPTLama API (обязательно для AI)
-GPTLAMA_API_KEY=your_gptlama_api_key
+# Hugging Face API (обязательно для AI)
+HF_TOKEN=hf_your_access_token
 # Необязательно: если нужно переопределить базовый URL/модель
-# GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL="lama pro"  # поддерживаются: lama_best, lama pro (по умолчанию — lama pro). Можно писать lama_pro.
+# HF_API_BASE_URL=https://router.huggingface.co/v1
+# HF_MODEL=MiniMaxAI/MiniMax-M2:novita
 
 # Telegram Bot (опционально)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
@@ -138,14 +138,12 @@ npm run dev:next
 
 ---
 
-#### 1. GPTLama API (обязательно для AI)
-1. Получите доступ к [GPTLama](https://gptlama.ru/) и создайте токен
-2. Скопируйте токен из личного кабинета
-3. Добавьте его в `.env.local` как `GPTLAMA_API_KEY`
-4. (Опционально) настройте `GPTLAMA_API_BASE_URL` — по умолчанию `https://api.gptlama.ru/v1`
-5. (Опционально) задайте `GPTLAMA_MODEL`. Доступны:
-   - `lama_best` — агрегирует лучшие ответы.
-   - `lama pro` (можно указать `lama_pro`) — расширенная версия (Claude 4 Sonnet + GPT-5, используется по умолчанию). Требует активной подписки.
+#### 1. Hugging Face API (обязательно для AI)
+1. Зарегистрируйтесь на [Hugging Face](https://huggingface.co/)
+2. Перейдите в [Settings → Access Tokens](https://huggingface.co/settings/tokens) и создайте токен с правами `read`
+3. Добавьте его в `.env.local` как `HF_TOKEN`
+4. (Опционально) настройте `HF_API_BASE_URL` — по умолчанию `https://router.huggingface.co/v1`
+5. (Опционально) задайте `HF_MODEL`. По умолчанию используется `MiniMaxAI/MiniMax-M2:novita` (поддерживает генерацию текста и кода). Вы можете указать любую другую модель, доступную через Router.
 
 #### 2. Supabase (опционально, для облачного сохранения)
 1. Создайте проект на [Supabase](https://supabase.com)
@@ -233,7 +231,7 @@ VibeStudy/
 - **Code Editor:** Monaco Editor
 - **Animations:** Framer Motion
 - **UI Components:** Radix UI
-- **AI Integration:** GPTLama API
+- **AI Integration:** Hugging Face Router
 
 ## 📝 Скрипты
 
@@ -262,7 +260,7 @@ MIT License - см. файл [LICENSE](LICENSE)
 
 - [Next.js](https://nextjs.org/)
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-- [GPTLama](https://gptlama.ru/)
+- [Hugging Face](https://huggingface.co/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [Framer Motion](https://www.framer.com/motion/)
 

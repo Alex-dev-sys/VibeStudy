@@ -50,20 +50,20 @@ SUPABASE_SERVICE_ROLE_KEY
 ```
 
 ```
-GPTLAMA_API_KEY
-Значение: ваш_gptlama_api_key
+HF_TOKEN
+Значение: hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Окружения: Production, Preview, Development
 ```
 
 ```
-GPTLAMA_API_BASE_URL
-Значение: https://api.gptlama.ru/v1 (по умолчанию, можно не указывать)
+HF_API_BASE_URL
+Значение: https://router.huggingface.co/v1 (по умолчанию, можно не указывать)
 Окружения: Production, Preview, Development
 ```
 
 ```
-GPTLAMA_MODEL
-Значение: "lama pro" (по умолчанию, можно не указывать). Можно указать `lama_pro`. Доступные значения: `lama_best`, `lama pro`
+HF_MODEL
+Значение: MiniMaxAI/MiniMax-M2:novita (по умолчанию, можно не указывать)
 Окружения: Production, Preview, Development
 ```
 
@@ -94,10 +94,10 @@ CRON_SECRET
    - **anon public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - **service_role secret** → `SUPABASE_SERVICE_ROLE_KEY`
 
-### **GPTLama:**
-1. Откройте [GPTLama](https://gptlama.ru/) и перейдите в раздел API-токенов
-2. Создайте новый токен (если его ещё нет)
-3. Скопируйте → `GPTLAMA_API_KEY`
+### **Hugging Face:**
+1. Откройте [Hugging Face Settings](https://huggingface.co/settings/tokens)
+2. Создайте новый Access Token с правами `read`
+3. Скопируйте → `HF_TOKEN`
 
 ---
 

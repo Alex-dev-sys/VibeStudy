@@ -92,7 +92,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as GetHintRequest;
 
   if (!isAiConfigured()) {
-    console.warn('GPTLAMA_API_KEY не задан. Возвращаем fallback подсказку.');
+    console.warn('HF_TOKEN не задан. Возвращаем fallback подсказку.');
     return NextResponse.json(fallbackResponse);
   }
 

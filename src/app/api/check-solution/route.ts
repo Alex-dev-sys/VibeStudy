@@ -107,7 +107,7 @@ export async function POST(request: Request) {
   }
 
   if (!isAiConfigured()) {
-    console.warn('GPTLAMA_API_KEY не задан. Возвращаем fallback для проверки кода.');
+    console.warn('HF_TOKEN не задан. Возвращаем fallback для проверки кода.');
     return NextResponse.json({
       success: true,
       message: 'Код принят! (проверка в демо-режиме)',
