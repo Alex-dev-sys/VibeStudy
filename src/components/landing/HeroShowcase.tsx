@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
+import { MagicCard } from '@/components/ui/magic-card';
 
 const stats = [
   { value: '90', label: 'дней обучения' },
@@ -67,11 +69,11 @@ export function HeroShowcase() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, duration: 0.6 }}
           >
-            Твой прорыв в&nbsp;
-            <span className="bg-gradient-to-r from-accent via-blue-400 to-accent-soft bg-clip-text text-transparent">
+            Твой прорыв в{' '}
+            <AnimatedGradientText className="px-2">
               карьеру разработчика
-            </span>
-            &nbsp;за 90 дней.
+            </AnimatedGradientText>
+            {' '}за 90 дней.
           </motion.h1>
 
           <motion.p
@@ -117,19 +119,16 @@ export function HeroShowcase() {
           </motion.div>
 
           <motion.div
-            className="grid gap-4 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur xl:max-w-lg"
+            className="grid gap-4 xl:max-w-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
             {stats.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-2xl border border-white/5 bg-black/50 px-5 py-3 shadow-[0_12px_30px_rgba(68,50,255,0.18)]"
-              >
+              <MagicCard key={item.label} className="rounded-[24px] p-[1.5px]" innerClassName="flex items-center justify-between rounded-[22px] px-5 py-3">
                 <div className="text-2xl font-semibold text-accent sm:text-3xl">{item.value}</div>
                 <p className="max-w-[160px] text-xs text-white/60 sm:text-sm">{item.label}</p>
-              </div>
+              </MagicCard>
             ))}
           </motion.div>
         </div>
@@ -154,20 +153,19 @@ export function HeroShowcase() {
 
             <div className="space-y-5">
               {featureCards.map((card, index) => (
-                <motion.div
-                  key={card.title}
-                  className="relative flex items-start gap-4 rounded-3xl border border-white/10 bg-white/5 p-5"
-                  animate={{ y: [0, index % 2 === 0 ? -12 : 12, 0] }}
-                  transition={{ duration: 8 + index, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/30 text-xl">
+                <MagicCard key={card.title} className="p-[2px]" innerClassName="relative flex items-start gap-4 rounded-[28px] bg-black/60 p-5">
+                  <motion.div
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/30 text-xl"
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: index * 0.2 }}
+                  >
                     {card.icon}
-                  </div>
+                  </motion.div>
                   <div className="space-y-2 text-sm">
                     <p className="font-semibold text-white">{card.title}</p>
                     <p className="text-white/65">{card.description}</p>
                   </div>
-                </motion.div>
+                </MagicCard>
               ))}
 
               <motion.div

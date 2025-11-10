@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { signInWithEmail, signInWithGoogle, getCurrentUser } from '@/lib/supabase/auth';
+import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
+import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
+import { MagicCard } from '@/components/ui/magic-card';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -89,41 +92,60 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-black via-purple-900/20 to-black">
-      {/* Анимированный фон */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 animate-pulse rounded-full bg-purple-500/10 blur-3xl" />
-        <div className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 animate-pulse rounded-full bg-blue-500/10 blur-3xl" />
-      </div>
+    <main className="relative overflow-hidden bg-gradient-to-b from-[#04010b] via-[#0a0522] to-[#04010b] text-white">
+      <GradientBackdrop />
 
-      {/* Контент */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md px-6"
-      >
-        {/* Логотип */}
-        <div className="mb-8 text-center">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col-reverse items-center gap-10 px-5 py-16 lg:flex-row lg:items-center lg:justify-between lg:gap-14">
+        {/* Информационный блок */}
+        <div className="w-full max-w-2xl space-y-8 text-center lg:text-left">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="mb-4 inline-block text-6xl"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-white/70 backdrop-blur"
           >
-            🎓
+            <span className="text-xl">🚀</span>
+            <span>Войди и продолжи обучение вместе с ИИ-наставником</span>
           </motion.div>
-          <h1 className="mb-2 text-4xl font-bold text-white">VibeStudy</h1>
-          <p className="text-lg text-white/60">Начни своё путешествие в программирование</p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.6 }}
+            className="text-4xl font-semibold leading-tight sm:text-5xl"
+          >
+            <AnimatedGradientText className="px-1">VibeStudy</AnimatedGradientText> встречает тебя!
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.6 }}
+            className="text-base text-white/70 sm:text-lg"
+          >
+            Возвращайся к прогрессу, получай подсказки от ИИ, фиксируй успехи и строй свою карьеру разработчика.
+            Доступен полный режим с Google, email или гостевым входом.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28, duration: 0.6 }}
+            className="grid gap-4 text-sm text-white/60 sm:grid-cols-2"
+          >
+            <MagicCard innerClassName="rounded-[26px] p-5 text-left">
+              <p className="mb-2 text-sm font-semibold text-white">🧠 AI-помощник</p>
+              <p>Круглосуточные подсказки, проверка кода и объяснение теории.</p>
+            </MagicCard>
+            <MagicCard innerClassName="rounded-[26px] p-5 text-left">
+              <p className="mb-2 text-sm font-semibold text-white">📊 Адаптивный прогресс</p>
+              <p>Аналитика, рекомендации и Telegram-напоминания, чтобы не сбиться с курса.</p>
+            </MagicCard>
+          </motion.div>
         </div>
 
         {/* Карточка входа */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-2xl border border-white/10 bg-black/40 p-8 backdrop-blur-xl"
-        >
+        <MagicCard className="w-full max-w-xl" innerClassName="relative w-full rounded-[28px] px-6 py-8 sm:px-8">
           <h2 className="mb-6 text-center text-2xl font-semibold text-white">
             Войти или зарегистрироваться
           </h2>
@@ -273,30 +295,9 @@ export default function LoginPage() {
               Нажимая кнопку входа, вы соглашаетесь с условиями использования и политикой конфиденциальности
             </p>
           </div>
-        </motion.div>
-
-        {/* Преимущества */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 space-y-3"
-        >
-          <div className="flex items-center gap-3 text-white/70">
-            <span className="text-2xl">🤖</span>
-            <span className="text-sm">AI-помощник для обучения</span>
-          </div>
-          <div className="flex items-center gap-3 text-white/70">
-            <span className="text-2xl">📊</span>
-            <span className="text-sm">Отслеживание прогресса</span>
-          </div>
-          <div className="flex items-center gap-3 text-white/70">
-            <span className="text-2xl">🎯</span>
-            <span className="text-sm">Персональный план обучения</span>
-          </div>
-        </motion.div>
-      </motion.div>
-    </div>
+        </MagicCard>
+      </div>
+    </main>
   );
 }
 
