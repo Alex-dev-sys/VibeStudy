@@ -32,10 +32,11 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
     requestInitialGeneration
   } = useTaskGenerator({ currentDay: day, previousDay, languageId, autoLoad: false });
   const markDayComplete = useProgressStore((state) => state.markDayComplete);
+  const completedTasks = useProgressStore((state) => state.dayStates[day.day]?.completedTasks ?? []);
   const language = useMemo(() => LANGUAGES.find((item) => item.id === languageId)!, [languageId]);
   const dayTopic = getDayTopic(day.day);
 
-  const tasks = taskSet?.tasks ?? [];
+  const tasks = useMemo(() => taskSet?.tasks ?? [], [taskSet]);
   const theory = taskSet?.theory ?? day.theory;
   const recapTask = taskSet?.recapTask;
   const generationStatus = useMemo(() => {
@@ -55,12 +56,28 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
   }, [contentSource, loading]);
   const isPending = contentSource === 'pending';
   const hasGenerated = !isPending && !!taskSet;
+  const requiredTaskIds = useMemo(() => {
+    const ids = tasks.map((task) => task.id);
+    if (recapTask && day.day > 1) {
+      ids.push(recapTask.id);
+    }
+    return ids;
+  }, [tasks, recapTask, day.day]);
+  const allTasksCompleted = requiredTaskIds.length > 0 && requiredTaskIds.every((id) => completedTasks.includes(id));
+  const finishDisabled = loading || !hasGenerated || !allTasksCompleted;
   const generationButtonLabel = loading
     ? 'Генерируем…'
     : isPending
       ? 'Сгенерировать теорию и задания'
       : '↻ Обновить день';
   const generationButtonVariant = isPending ? 'primary' : 'secondary';
+  const finishButtonTitle = isPending
+    ? 'Сначала сгенерируйте теорию и задания'
+    : !hasGenerated
+      ? 'Сначала получите контент для этого дня'
+      : !allTasksCompleted
+        ? 'Выполните все задания и контрольный вопрос, чтобы завершить день'
+        : undefined;
 
   return (
     <motion.section
@@ -100,7 +117,14 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
           <p className="mt-2 text-[10px] text-white/40 sm:text-xs">{generationStatus}</p>
         </CardHeader>
         <div className="flex flex-col gap-3 px-4 pb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-6">
-          <Button variant="primary" size="md" onClick={() => markDayComplete(day.day)} className="w-full text-xs sm:w-auto sm:text-sm">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => markDayComplete(day.day)}
+            disabled={finishDisabled}
+            title={finishButtonTitle}
+            className="w-full text-xs sm:w-auto sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
+          >
             Завершить день
           </Button>
         </div>
@@ -185,6 +209,11 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
                 onRegenerateTask={regenerateTask}
                 regeneratingTaskId={regeneratingTaskId}
               />
+              {!allTasksCompleted && (
+                <p className="mt-3 text-[11px] text-white/40 sm:text-xs">
+                  Выполните все задания (включая контрольный вопрос), чтобы закрыть этот день.
+                </p>
+              )}
             </div>
           </Card> 
         </>

@@ -3,6 +3,7 @@ import { getDayContent } from '@/data/curriculum-content';
 import { getDayTopic } from '@/lib/curriculum';
 import { useProgressStore } from '@/store/progress-store';
 import type { CurriculumDay, GeneratedTask, TaskGenerationResponse } from '@/types';
+import { formatTheoryContent, trimPrompt } from '@/lib/content-formatting';
 
 interface UseTaskGeneratorParams {
   currentDay: CurriculumDay;
@@ -34,6 +35,20 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
       store.replaceTask(currentDay.day, oldTaskId, newTaskId);
     },
     [currentDay.day]
+  );
+
+  const formattedContent = useCallback(
+    (content: TaskGenerationResponse): TaskGenerationResponse => {
+      const dayTopic = getDayTopic(currentDay.day);
+      return {
+        ...content,
+        theory: formatTheoryContent(content.theory, { topic: dayTopic.topic, languageId }),
+        recap: content.recap?.trim() ?? '',
+        recapTask: content.recapTask ? trimPrompt(content.recapTask) : content.recapTask,
+        tasks: content.tasks.map((task) => trimPrompt(task))
+      };
+    },
+    [currentDay.day, languageId]
   );
 
   const generateWithAI = useCallback(async () => {
@@ -68,7 +83,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         const data = (await response.json()) as TaskGenerationResponse;
 
         if (!data.isFallback) {
-          setTaskSet(data);
+          setTaskSet(formattedContent(data));
           setContentSource('ai');
           resetDayProgress();
           return;
@@ -84,27 +99,31 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         await new Promise((resolve) => setTimeout(resolve, 1200));
       }
 
-      setTaskSet({
-        theory: dayContent.theory,
-        recap: dayContent.recap,
-        recapTask: dayContent.recapTask,
-        tasks: dayContent.tasks
-      });
+      setTaskSet(
+        formattedContent({
+          theory: dayContent.theory,
+          recap: dayContent.recap,
+          recapTask: dayContent.recapTask,
+          tasks: dayContent.tasks
+        })
+      );
       setContentSource('fallback');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка генерации.');
       // При ошибке возвращаемся к статическому контенту
-      setTaskSet({
-        theory: dayContent.theory,
-        recap: dayContent.recap,
-        recapTask: dayContent.recapTask,
-        tasks: dayContent.tasks
-      });
+      setTaskSet(
+        formattedContent({
+          theory: dayContent.theory,
+          recap: dayContent.recap,
+          recapTask: dayContent.recapTask,
+          tasks: dayContent.tasks
+        })
+      );
       setContentSource('fallback');
     } finally {
       setLoading(false);
     }
-  }, [currentDay.day, currentDay.theory, languageId, previousDay, dayContent, resetDayProgress]);
+  }, [currentDay.day, currentDay.theory, languageId, previousDay, dayContent, resetDayProgress, formattedContent]);
 
   useEffect(() => {
     if (autoLoad) {
@@ -146,12 +165,14 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
           }
 
           if (data.exists) {
-            setTaskSet({
-              theory: data.theory,
-              recap: data.recap,
-              recapTask: data.recapTask,
-              tasks: data.tasks
-            });
+            setTaskSet(
+              formattedContent({
+                theory: data.theory,
+                recap: data.recap,
+                recapTask: data.recapTask,
+                tasks: data.tasks
+              })
+            );
             setContentSource('database');
             fetchedFromDatabase = true;
             setLoading(false);
@@ -163,12 +184,12 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         console.error('Ошибка загрузки контента:', err);
       }
 
-      if (cancelled) {
-        return;
-      }
-
-      if (!fetchedFromDatabase) {
-        await generateWithAI();
+      if (!cancelled) {
+        if (!fetchedFromDatabase) {
+          await generateWithAI();
+        } else {
+          setLoading(false);
+        }
       }
     };
 
@@ -177,7 +198,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
     return () => {
       cancelled = true;
     };
-  }, [loadToken, currentDay.day, languageId, generateWithAI]);
+  }, [loadToken, currentDay.day, languageId, generateWithAI, formattedContent]);
 
   const regenerateTask = useCallback(
     async (taskId: string) => {
@@ -225,7 +246,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
           if (!prev) return prev;
           return {
             ...prev,
-            tasks: prev.tasks.map((task) => (task.id === taskId ? newTask : task))
+            tasks: prev.tasks.map((task) => (task.id === taskId ? trimPrompt(newTask) : task))
           };
         });
         setContentSource('ai');
