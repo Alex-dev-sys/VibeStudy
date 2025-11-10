@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'lama_best';
+const DEFAULT_MODEL = 'lama_pro';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
