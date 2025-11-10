@@ -24,7 +24,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GPTLAMA_API_KEY=your_gptlama_api_key
 # Необязательно
 # GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL=meta-llama-3-70b-instruct
+# GPTLAMA_MODEL=lama_best_v2
 ```
 
 **Где взять:**

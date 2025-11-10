@@ -140,7 +140,7 @@ curl -X POST "https://api.gptlama.ru/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_GPTLAMA_API_KEY" \
   -d '{
-    "model": "meta-llama-3-70b-instruct",
+    "model": "lama_best_v2",
     "messages": [
       {"role": "user", "content": "Привет"}
     ],

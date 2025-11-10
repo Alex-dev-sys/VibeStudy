@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'meta-llama-3-70b-instruct';
+const DEFAULT_MODEL = 'lama_best_v2';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -39,6 +39,39 @@ export const isAiConfigured = () => {
   return apiKey.length > 0;
 };
 
+const parseSsePayload = (payload: string) => {
+  const dataLines = payload
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => line.slice('data:'.length).trim())
+    .filter((line) => line && line !== '[DONE]');
+
+  if (dataLines.length === 0) {
+    return null;
+  }
+
+  const lastChunk = dataLines[dataLines.length - 1];
+
+  try {
+    return JSON.parse(lastChunk);
+  } catch {
+    return null;
+  }
+};
+
+const parseResponsePayload = (payload: string) => {
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(payload);
+  } catch {
+    return parseSsePayload(payload);
+  }
+};
+
 export const callChatCompletion = async ({ messages, temperature, maxTokens, model, responseFormat }: CallChatCompletionParams) => {
   const { apiKey, baseUrl, model: defaultModel } = resolveConfig();
 
@@ -50,7 +83,8 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
     model: model ?? defaultModel,
     messages,
     temperature,
-    max_tokens: maxTokens
+    max_tokens: maxTokens,
+    stream: false
   };
 
   if (responseFormat) {
@@ -66,26 +100,58 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
     body: JSON.stringify(body)
   });
 
-  const data = await response.json();
+  const rawBody = await response.text();
+  const parsedBody = parseResponsePayload(rawBody);
 
   if (!response.ok) {
-    const message = typeof data?.error === 'string' ? data.error : response.statusText;
+    const message =
+      typeof (parsedBody as any)?.error?.message === 'string'
+        ? (parsedBody as any).error.message
+        : response.statusText;
     const error = new Error(`gptlama_request_failed: ${message}`);
     (error as Error & { status?: number }).status = response.status;
     throw error;
   }
 
-  const raw = extractMessageContent(data);
+  const raw = extractMessageContent(parsedBody ?? rawBody);
 
   return {
-    data,
+    data: parsedBody ?? rawBody,
     raw
   } satisfies ChatCompletionResult;
 };
 
 export const extractMessageContent = (payload: unknown) => {
+  const extractFromChoice = (choice: any) => {
+    const rawContent = choice?.message?.content;
+
+    if (Array.isArray(rawContent)) {
+      return rawContent
+        .map((part) => {
+          if (typeof part === 'string') return part;
+          if (part && typeof part === 'object') {
+            if ('text' in part && typeof part.text === 'string') {
+              return part.text;
+            }
+            if ('text' in part && part.text && typeof part.text === 'object' && 'value' in part.text && typeof part.text.value === 'string') {
+              return part.text.value;
+            }
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    return typeof rawContent === 'string' ? rawContent : '';
+  };
+
   const choice = (payload as any)?.choices?.[0];
   const rawContent = choice?.message?.content;
+
+  if (!choice && typeof payload === 'string') {
+    return payload;
+  }
 
   if (Array.isArray(rawContent)) {
     return rawContent

@@ -100,7 +100,7 @@ cat > .env.local << 'EOF'
 GPTLAMA_API_KEY=your_gptlama_api_key
 # Необязательно: если нужно переопределить базовый URL/модель
 # GPTLAMA_API_BASE_URL=https://api.gptlama.ru/v1
-# GPTLAMA_MODEL=meta-llama-3-70b-instruct
+# GPTLAMA_MODEL=lama_best_v2
 
 # Telegram Bot (опционально)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
