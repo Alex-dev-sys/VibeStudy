@@ -14,6 +14,9 @@ interface ProgressStore {
   toggleTask: (day: number, taskId: string) => void;
   updateCode: (day: number, code: string) => void;
   updateNotes: (day: number, notes: string) => void;
+  updateRecapAnswer: (day: number, answer: string) => void;
+  resetDayTasks: (day: number) => void;
+  replaceTask: (day: number, previousTaskId: string, newTaskId: string) => void;
   markDayComplete: (day: number) => void;
   resetProgress: () => void;
 }
@@ -23,7 +26,8 @@ const defaultDayState: DayStateSnapshot = {
   notes: '',
   completedTasks: [],
   isLocked: false,
-  lastUpdated: Date.now()
+  lastUpdated: Date.now(),
+  recapAnswer: ''
 };
 
 const defaultRecord: ProgressRecord = {
@@ -115,6 +119,46 @@ export const useProgressStore = create<ProgressStore>()(
             }
           }
         })),
+      updateRecapAnswer: (day, answer) =>
+        set((state) => ({
+          dayStates: {
+            ...state.dayStates,
+            [day]: {
+              ...(state.dayStates[day] ?? defaultDayState),
+              recapAnswer: answer,
+              lastUpdated: Date.now()
+            }
+          }
+        })),
+      resetDayTasks: (day) =>
+        set((state) => ({
+          dayStates: {
+            ...state.dayStates,
+            [day]: {
+              ...(state.dayStates[day] ?? defaultDayState),
+              completedTasks: [],
+              lastUpdated: Date.now()
+            }
+          }
+        })),
+      replaceTask: (day, previousTaskId, newTaskId) =>
+        set((state) => {
+          const snapshot = state.dayStates[day] ?? { ...defaultDayState, lastUpdated: Date.now() };
+          const completedTasks = snapshot.completedTasks.includes(previousTaskId)
+            ? snapshot.completedTasks.map((id) => (id === previousTaskId ? newTaskId : id))
+            : snapshot.completedTasks;
+
+          return {
+            dayStates: {
+              ...state.dayStates,
+              [day]: {
+                ...snapshot,
+                completedTasks,
+                lastUpdated: Date.now()
+              }
+            }
+          };
+        }),
       markDayComplete: (day) =>
         set((state) => {
           if (state.record.completedDays.includes(day)) {

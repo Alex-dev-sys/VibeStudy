@@ -12,6 +12,7 @@ import type { CurriculumDay } from '@/types';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { getDayTopic } from '@/lib/curriculum';
+import { RecapQuestionCard } from './RecapQuestionCard';
 
 interface DayCardProps {
   day: CurriculumDay;
@@ -20,7 +21,15 @@ interface DayCardProps {
 }
 
 export function DayCard({ day, previousDay, languageId }: DayCardProps) {
-  const { taskSet, loading, error, regenerate } = useTaskGenerator({ currentDay: day, previousDay, languageId });
+  const {
+    taskSet,
+    loading,
+    error,
+    regenerate,
+    contentSource,
+    regenerateTask,
+    regeneratingTaskId
+  } = useTaskGenerator({ currentDay: day, previousDay, languageId });
   const markDayComplete = useProgressStore((state) => state.markDayComplete);
   const language = useMemo(() => LANGUAGES.find((item) => item.id === languageId)!, [languageId]);
   const dayTopic = getDayTopic(day.day);
@@ -28,6 +37,18 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
   const tasks = taskSet?.tasks ?? [];
   const theory = taskSet?.theory ?? day.theory;
   const recapTask = taskSet?.recapTask;
+  const generationStatus = useMemo(() => {
+    switch (contentSource) {
+      case 'ai':
+        return 'Контент подготовлен ИИ под текущий день.';
+      case 'database':
+        return 'Используем ранее сохранённый набор заданий.';
+      case 'fallback':
+        return 'Показываем стандартный набор заданий.';
+      default:
+        return 'Подбираем персональные задания для этого дня...';
+    }
+  }, [contentSource]);
 
   return (
     <motion.section
@@ -48,13 +69,30 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">{dayTopic.description}</CardDescription>
             </div>
-            <Badge tone="accent" className="text-xs sm:text-sm">Язык: {language.label}</Badge>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={regenerate}
+                disabled={loading}
+                className="hidden rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] text-white/60 transition hover:border-white/20 hover:text-white disabled:opacity-40 sm:inline-flex sm:text-xs"
+              >
+                {loading ? 'Обновляем…' : '↻ Обновить день'}
+              </button>
+              <Badge tone="accent" className="text-xs sm:text-sm">Язык: {language.label}</Badge>
+            </div>
           </div>
           {taskSet?.recap && <p className="mt-3 text-xs text-white/60 sm:text-sm">❓ Контрольный вопрос: {taskSet.recap}</p>}
+          <p className="mt-2 text-[10px] text-white/40 sm:text-xs">{generationStatus}</p>
         </CardHeader>
         <div className="flex flex-col gap-3 px-4 pb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-6">
-          <Button variant="secondary" size="md" onClick={regenerate} disabled={loading} className="w-full text-xs sm:w-auto sm:text-sm">
-            {loading ? 'Генерация...' : 'Сгенерировать теорию и задания'}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={regenerate}
+            disabled={loading}
+            className="w-full text-xs sm:hidden"
+          >
+            {loading ? 'Обновляем…' : '↻ Обновить день'}
           </Button>
           <Button variant="primary" size="md" onClick={() => markDayComplete(day.day)} className="w-full text-xs sm:w-auto sm:text-sm">
             Завершить день
@@ -78,6 +116,9 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
           {/* Блок теории */}
           <TheoryBlock theory={theory} dayNumber={day.day} topic={dayTopic.topic} />
 
+          {/* Контрольный вопрос */}
+          {taskSet?.recap && <RecapQuestionCard day={day.day} question={taskSet.recap} hasPreviousDay={day.day > 1} />}
+
           {/* Контрольное задание по предыдущему дню */}
           {recapTask && day.day > 1 && (
             <Card className="border-amber-500/30 bg-amber-500/5">
@@ -91,7 +132,14 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
                 </div>
               </CardHeader>
               <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-                <TaskList day={day.day} tasks={[recapTask]} languageId={language.id} monacoLanguage={language.monacoLanguage} topic={dayTopic.topic} />
+                <TaskList
+                  day={day.day}
+                  tasks={[recapTask]}
+                  languageId={language.id}
+                  monacoLanguage={language.monacoLanguage}
+                  topic={dayTopic.topic}
+                  isLoading={loading}
+                />
               </div>
             </Card>
           )}
@@ -103,12 +151,20 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               <CardDescription className="text-xs sm:text-sm">Нажми на любую задачу, чтобы открыть редактор и начать решение</CardDescription>
             </CardHeader>
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <TaskList day={day.day} tasks={tasks} languageId={language.id} monacoLanguage={language.monacoLanguage} topic={dayTopic.topic} />
+              <TaskList
+                day={day.day}
+              tasks={tasks}
+              languageId={language.id}
+              monacoLanguage={language.monacoLanguage}
+              topic={dayTopic.topic}
+              isLoading={loading}
+              onRegenerateTask={regenerateTask}
+              regeneratingTaskId={regeneratingTaskId}
+            />
             </div>
-          </Card>
+        </Card>
         </>
       )}
     </motion.section>
   );
 }
-

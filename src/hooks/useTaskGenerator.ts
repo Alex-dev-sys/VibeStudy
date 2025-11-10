@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDayContent } from '@/data/curriculum-content';
 import { getDayTopic } from '@/lib/curriculum';
-import type { CurriculumDay, TaskGenerationResponse } from '@/types';
+import { useProgressStore } from '@/store/progress-store';
+import type { CurriculumDay, GeneratedTask, TaskGenerationResponse } from '@/types';
 
 interface UseTaskGeneratorParams {
   currentDay: CurriculumDay;
@@ -9,64 +10,36 @@ interface UseTaskGeneratorParams {
   languageId: string;
 }
 
+type ContentSource = 'pending' | 'database' | 'ai' | 'fallback';
+
 export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTaskGeneratorParams) => {
   const [taskSet, setTaskSet] = useState<TaskGenerationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contentSource, setContentSource] = useState<ContentSource>('pending');
+  const [regeneratingTaskId, setRegeneratingTaskId] = useState<string | null>(null);
 
   const dayContent = useMemo(() => getDayContent(currentDay.day), [currentDay.day]);
 
-  // Проверяем, есть ли сохранённый контент в БД
-  useEffect(() => {
-    const loadContent = async () => {
-      try {
-        setLoading(true);
-        
-        // Пытаемся загрузить из БД
-        const response = await fetch(`/api/get-content?day=${currentDay.day}&languageId=${languageId}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.exists) {
-            setTaskSet({
-              theory: data.theory,
-              recap: data.recap,
-              recapTask: data.recapTask,
-              tasks: data.tasks
-            });
-            setLoading(false);
-            return;
-          }
-        }
-        
-        // Если нет в БД, используем статический контент
-        setTaskSet({
-          theory: dayContent.theory,
-          recap: dayContent.recap,
-          recapTask: dayContent.recapTask,
-          tasks: dayContent.tasks
-        });
-      } catch (err) {
-        console.error('Ошибка загрузки контента:', err);
-        // При ошибке используем статический контент
-        setTaskSet({
-          theory: dayContent.theory,
-          recap: dayContent.recap,
-          tasks: dayContent.tasks
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const resetDayProgress = useCallback(() => {
+    const store = useProgressStore.getState();
+    store.resetDayTasks(currentDay.day);
+  }, [currentDay.day]);
 
-    loadContent();
-  }, [currentDay.day, languageId, dayContent]);
+  const markTaskRegenerated = useCallback(
+    (oldTaskId: string, newTaskId: string) => {
+      const store = useProgressStore.getState();
+      store.replaceTask(currentDay.day, oldTaskId, newTaskId);
+    },
+    [currentDay.day]
+  );
 
-  // Функция для AI-генерации
   const generateWithAI = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      setRegeneratingTaskId(null);
+      setContentSource('pending');
 
       const dayTopic = getDayTopic(currentDay.day);
       const previousDayTopic = previousDay ? getDayTopic(previousDay.day) : undefined;
@@ -94,6 +67,8 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
 
         if (!data.isFallback) {
           setTaskSet(data);
+          setContentSource('ai');
+          resetDayProgress();
           return;
         }
 
@@ -113,6 +88,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
         recapTask: dayContent.recapTask,
         tasks: dayContent.tasks
       });
+      setContentSource('fallback');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка генерации.');
       // При ошибке возвращаемся к статическому контенту
@@ -122,23 +98,127 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId }: UseTas
         recapTask: dayContent.recapTask,
         tasks: dayContent.tasks
       });
+      setContentSource('fallback');
     } finally {
       setLoading(false);
     }
-  }, [
-    currentDay.day,
-    currentDay.theory,
-    languageId,
-    previousDay?.day,
-    previousDay?.theory,
-    dayContent
-  ]);
+  }, [currentDay.day, currentDay.theory, languageId, previousDay, dayContent, resetDayProgress]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/get-content?day=${currentDay.day}&languageId=${languageId}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.exists && !cancelled) {
+            setTaskSet({
+              theory: data.theory,
+              recap: data.recap,
+              recapTask: data.recapTask,
+              tasks: data.tasks
+            });
+            setContentSource('database');
+            return;
+          }
+        }
+
+        if (!cancelled) {
+          await generateWithAI();
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки контента:', err);
+        if (!cancelled) {
+          await generateWithAI();
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentDay.day, languageId, generateWithAI]);
+
+  const regenerateTask = useCallback(
+    async (taskId: string) => {
+      if (!taskSet?.tasks) return;
+
+      const targetTask = taskSet.tasks.find((task) => task.id === taskId);
+      if (!targetTask) return;
+
+      try {
+        setRegeneratingTaskId(taskId);
+        setError(null);
+
+        const dayTopic = getDayTopic(currentDay.day);
+        const response = await fetch('/api/regenerate-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            day: currentDay.day,
+            languageId,
+            taskId,
+            difficulty: targetTask.difficulty,
+            dayTopic: dayTopic.topic,
+            dayDescription: dayTopic.description,
+            existingTasks: taskSet.tasks
+              .filter((task) => task.id !== taskId)
+              .map((task) => ({
+                id: task.id,
+                difficulty: task.difficulty,
+                prompt: task.prompt
+              }))
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Не удалось перегенерировать задачу. Попробуйте позже.');
+        }
+
+        const { task: newTask } = (await response.json()) as { task: GeneratedTask };
+
+        if (!newTask) {
+          throw new Error('Сервис вернул пустой ответ при перегенерации задачи.');
+        }
+
+        setTaskSet((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            tasks: prev.tasks.map((task) => (task.id === taskId ? newTask : task))
+          };
+        });
+        setContentSource('ai');
+        markTaskRegenerated(taskId, newTask.id);
+      } catch (err) {
+        console.error('Ошибка перегенерации задачи:', err);
+        setError(err instanceof Error ? err.message : 'Не удалось обновить задачу.');
+      } finally {
+        setRegeneratingTaskId(null);
+      }
+    },
+    [currentDay.day, languageId, taskSet, markTaskRegenerated]
+  );
 
   return {
     taskSet,
     loading,
     error,
-    regenerate: generateWithAI
+    regenerate: generateWithAI,
+    contentSource,
+    regenerateTask,
+    regeneratingTaskId
   };
 };
 

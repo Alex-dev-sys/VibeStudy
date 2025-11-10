@@ -29,6 +29,7 @@ export interface DayStateSnapshot {
   completedTasks: string[];
   isLocked: boolean;
   lastUpdated: number;
+  recapAnswer?: string;
 }
 
 export interface CurriculumDay extends DayContent {

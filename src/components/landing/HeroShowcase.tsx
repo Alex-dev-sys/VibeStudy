@@ -38,7 +38,7 @@ const orbs = [
 
 export function HeroShowcase() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#040208] via-[#090422] to-[#070115] text-white">
+    <section className="relative isolate flex min-h-[100svh] items-center bg-gradient-to-b from-[#040208] via-[#090422] to-[#070115] text-white">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,_rgba(97,87,255,0.22),_transparent_55%)]" />
       <div className="absolute inset-0 -z-10">
         {orbs.map((orb) => (
@@ -140,15 +140,15 @@ export function HeroShowcase() {
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="relative w-full max-w-lg overflow-hidden rounded-[36px] border border-white/10 bg-black/60 p-8 shadow-[0_35px_90px_rgba(45,35,122,0.45)] backdrop-blur-lg"
+            className="relative w-full max-w-lg rounded-[36px] border border-white/10 bg-black/60 p-8 shadow-[0_35px_90px_rgba(45,35,122,0.45)] backdrop-blur-lg"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
             <motion.div
-              className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(98,86,255,0.35),_transparent_70%)]"
+              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(98,86,255,0.35),_transparent_70%)]"
               animate={{ opacity: [0.6, 0.9, 0.6] }}
-              transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'linear', repeatType: 'mirror' }}
             />
 
             <div className="space-y-5">
@@ -156,8 +156,8 @@ export function HeroShowcase() {
                 <MagicCard key={card.title} className="p-[2px]" innerClassName="relative flex items-start gap-4 rounded-[28px] bg-black/60 p-5">
                   <motion.div
                     className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/30 text-xl"
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: index * 0.2 }}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 4.2, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut', delay: index * 0.2 }}
                   >
                     {card.icon}
                   </motion.div>
@@ -170,8 +170,8 @@ export function HeroShowcase() {
 
               <motion.div
                 className="rounded-3xl border border-white/10 bg-black/40 p-5 text-sm text-white/70"
-                animate={{ opacity: [0.55, 1, 0.55] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 7, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
               >
                 «Команда VibeStudy помогла мне построить персональный план, а AI-помощник моментально объяснял сложные
                 темы. Через 90 дней я прошёл собеседование и получил оффер.»

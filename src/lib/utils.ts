@@ -30,3 +30,7 @@ export const difficultyColorMap: Record<string, string> = {
   challenge: 'text-rose-300'
 };
 
+export function cn(...inputs: Array<string | false | null | undefined>) {
+  return inputs.filter(Boolean).join(' ');
+}
+

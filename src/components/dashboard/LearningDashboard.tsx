@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Toaster, toast } from 'sonner';
+import { useMemo, useState } from 'react';
+import { Toaster } from 'sonner';
 import { buildCurriculum, getDayTopic } from '@/lib/curriculum';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
@@ -17,11 +17,10 @@ import { Button } from '@/components/ui/Button';
 const TOTAL_DAYS = 90;
 
 export default function LearningDashboard() {
-  const { activeDay, languageId, setActiveDay, record } = useProgressStore((state) => ({
+  const { activeDay, languageId, setActiveDay } = useProgressStore((state) => ({
     activeDay: state.activeDay,
     languageId: state.languageId,
-    setActiveDay: state.setActiveDay,
-    record: state.record
+    setActiveDay: state.setActiveDay
   }));
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -33,12 +32,6 @@ export default function LearningDashboard() {
 
   const goToNext = () => setActiveDay(activeDay >= TOTAL_DAYS ? TOTAL_DAYS : activeDay + 1);
   const goToPrev = () => setActiveDay(activeDay <= 1 ? 1 : activeDay - 1);
-
-  useEffect(() => {
-    if (record.completedDays.includes(activeDay)) {
-      toast(`День ${activeDay} отмечен как выполненный`, { description: 'Не забывай повторять материал из истории.' });
-    }
-  }, [activeDay, record.completedDays]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 overflow-hidden px-0 sm:gap-6 md:gap-8">

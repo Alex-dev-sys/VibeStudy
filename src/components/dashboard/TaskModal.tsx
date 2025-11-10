@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface TaskModalProps {
   task: GeneratedTask;
@@ -62,6 +63,8 @@ export function TaskModal({
   
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
   const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
+
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -207,7 +210,7 @@ export function TaskModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overscroll-contain">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

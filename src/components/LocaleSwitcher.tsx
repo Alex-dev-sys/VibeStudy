@@ -1,30 +1,35 @@
 'use client';
 
-import { Button } from '@/components/ui/Button';
 import { useLocaleStore } from '@/store/locale-store';
 import type { Locale } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
-const LOCALE_LABELS: Record<Locale, string> = {
-  ru: '🇷🇺 Русский',
-  en: '🇬🇧 English'
-};
+const OPTIONS: Array<{ value: Locale; label: string }> = [
+  { value: 'ru', label: 'RU' },
+  { value: 'en', label: 'EN' }
+];
 
 export function LocaleSwitcher() {
   const { locale, setLocale } = useLocaleStore();
 
   return (
-    <div className="flex gap-2">
-      {(Object.keys(LOCALE_LABELS) as Locale[]).map((loc) => (
-        <Button
-          key={loc}
-          variant={locale === loc ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => setLocale(loc)}
-          className="text-xs sm:text-sm"
-        >
-          {LOCALE_LABELS[loc]}
-        </Button>
-      ))}
+    <div className="flex items-center rounded-full border border-white/10 bg-black/30 p-0.5">
+      {OPTIONS.map((option) => {
+        const isActive = option.value === locale;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setLocale(option.value)}
+            className={cn(
+              'min-w-[44px] rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors sm:text-xs',
+              isActive ? 'bg-accent text-white shadow-glow' : 'text-white/60 hover:text-white'
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

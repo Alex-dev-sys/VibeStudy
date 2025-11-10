@@ -24,6 +24,15 @@ export function ProgressOverview() {
     return `Сильнейший результат! Серия ${record.streak} дней — почти на финише.`;
   }, [record.streak]);
 
+  const handleResetClick = () => {
+    if (typeof window === 'undefined') return;
+
+    const confirmed = window.confirm('Точно сбросить весь прогресс курса? Действие нельзя отменить.');
+    if (confirmed) {
+      resetProgress();
+    }
+  };
+
   return (
     <section className="glass-panel flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
@@ -43,7 +52,7 @@ export function ProgressOverview() {
               🎨 {t.dashboard.playground}
             </Button>
           </Link>
-          <Button variant="ghost" size="sm" onClick={resetProgress} className="text-xs sm:text-sm">
+          <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm">
             {t.common.reset}
           </Button>
         </div>

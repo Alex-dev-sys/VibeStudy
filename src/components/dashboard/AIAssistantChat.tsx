@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface AIAssistantChatProps {
   day: number;
@@ -32,6 +33,8 @@ export function AIAssistantChat({ day, topic, theory, languageId, isOpen, onClos
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useScrollLock(isOpen);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,117 +125,136 @@ export function AIAssistantChat({ day, topic, theory, languageId, isOpen, onClos
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="glass-panel relative flex h-[90vh] max-h-[700px] w-full max-w-2xl flex-col rounded-3xl p-6"
+          className="glass-panel relative flex h-[90vh] w-full max-w-4xl flex-col gap-4 overflow-hidden rounded-3xl p-4 md:h-[85vh] md:flex-row md:p-6"
         >
-          {/* Заголовок */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🤖</span>
-              <div>
-                <h2 className="text-xl font-semibold text-white">ИИ-помощник</h2>
-                <p className="text-sm text-white/60">День {day}: {topic}</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Сообщения */}
-          <div className="mb-4 flex-1 space-y-4 overflow-y-auto rounded-2xl border border-white/10 bg-black/40 p-4">
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-accent text-white'
-                      : 'border border-white/10 bg-white/5 text-white/90'
-                  }`}
-                >
-                  <pre className="whitespace-pre-wrap text-sm font-sans">{message.content}</pre>
-                  <p className="mt-2 text-xs opacity-60">
-                    {new Date(message.timestamp).toLocaleTimeString('ru-RU', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+          <div className="flex h-full flex-1 flex-col overflow-hidden">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🤖</span>
+                <div>
+                  <h2 className="text-lg font-semibold text-white sm:text-xl">ИИ-помощник</h2>
+                  <p className="text-xs text-white/60 sm:text-sm">
+                    День {day} · {topic}
                   </p>
                 </div>
-              </motion.div>
-            ))}
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex justify-start"
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
               >
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="flex items-center gap-2 text-white/60">
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '0ms' }} />
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '150ms' }} />
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+              <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 pr-3">
+                {messages.map((message) => (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                        message.role === 'user'
+                          ? 'bg-accent text-white shadow-glow'
+                          : 'border border-white/10 bg-white/5 text-white/90'
+                      }`}
+                    >
+                      <pre className="whitespace-pre-wrap text-sm font-sans">{message.content}</pre>
+                      <p className="mt-2 text-xs opacity-60">
+                        {new Date(message.timestamp).toLocaleTimeString('ru-RU', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+                {isLoading && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '0ms' }} />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '150ms' }} />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Задайте вопрос по теории или задачам..."
+                disabled={isLoading}
+                className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none disabled:opacity-50"
+                rows={2}
+              />
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="sm:self-end"
+              >
+                {isLoading ? '⏳' : '📤'}
+              </Button>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => setInput('Объясни основную концепцию темы')}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
+              >
+                💡 Объясни концепцию
+              </button>
+              <button
+                onClick={() => setInput('Покажи примеры использования')}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
+              >
+                📝 Покажи примеры
+              </button>
+              <button
+                onClick={() => setInput('Какие частые ошибки допускают новички?')}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
+              >
+                ⚠️ Частые ошибки
+              </button>
+            </div>
           </div>
 
-          {/* Ввод */}
-          <div className="flex gap-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Задайте вопрос по теории..."
-              disabled={isLoading}
-              className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none disabled:opacity-50"
-              rows={2}
-            />
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="self-end"
-            >
-              {isLoading ? '⏳' : '📤'}
-            </Button>
-          </div>
-
-          {/* Подсказки */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              onClick={() => setInput('Объясни основную концепцию темы')}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
-            >
-              💡 Объясни концепцию
-            </button>
-            <button
-              onClick={() => setInput('Покажи примеры использования')}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
-            >
-              📝 Покажи примеры
-            </button>
-            <button
-              onClick={() => setInput('Какие частые ошибки допускают новички?')}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/10"
-            >
-              ⚠️ Частые ошибки
-            </button>
-          </div>
+          <aside className="flex w-full flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 md:max-w-[260px]">
+            <div>
+              <h3 className="text-sm font-semibold text-white/80">Контекст дня</h3>
+              <p className="mt-1 text-xs text-white/60">
+                Здесь сохраняются ответы ассистента. Пересмотри их в любое время.
+              </p>
+            </div>
+            <div className="space-y-2 rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-white/70">
+              <p className="font-semibold text-white">Тема</p>
+              <p>{topic}</p>
+              <p className="pt-2 font-semibold text-white">Теория в двух словах</p>
+              <p className="max-h-44 overflow-y-auto whitespace-pre-wrap pr-1 text-white/60">{theory}</p>
+            </div>
+            <div className="rounded-xl border border-accent/20 bg-accent/10 p-3 text-xs text-white/80">
+              <p className="font-semibold">Совет</p>
+              <p className="mt-1">
+                Формулируй вопросы конкретно: укажи, где застрял, какое решение пробовал и какой результат ожидаешь.
+              </p>
+            </div>
+          </aside>
         </motion.div>
       </div>
     </AnimatePresence>
