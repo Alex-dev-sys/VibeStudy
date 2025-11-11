@@ -68,17 +68,17 @@ export async function POST(request: Request) {
     const prompt = buildPrompt(body);
 
     const { data, raw } = await callChatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
+        messages: [
+          {
+            role: 'system',
+            content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
       maxTokens: 800,
       responseFormat: { type: 'json_object' }
     });

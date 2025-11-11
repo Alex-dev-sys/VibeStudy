@@ -202,13 +202,13 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               <TaskList
                 day={day.day}
                 tasks={tasks}
-                languageId={language.id}
-                monacoLanguage={language.monacoLanguage}
-                topic={dayTopic.topic}
-                isLoading={loading}
-                onRegenerateTask={regenerateTask}
-                regeneratingTaskId={regeneratingTaskId}
-              />
+                  languageId={language.id}
+                  monacoLanguage={language.monacoLanguage}
+                  topic={dayTopic.topic}
+                  isLoading={loading}
+                  onRegenerateTask={regenerateTask}
+                  regeneratingTaskId={regeneratingTaskId}
+                />
               {!allTasksCompleted && (
                 <p className="mt-3 text-[11px] text-white/40 sm:text-xs">
                   Выполните все задания (включая контрольный вопрос), чтобы закрыть этот день.
