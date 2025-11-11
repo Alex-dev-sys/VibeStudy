@@ -35,7 +35,7 @@ export function TaskList({
 
   if (!tasks.length) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-white/60 sm:rounded-3xl sm:p-6 sm:text-sm">
+      <div className="rounded-2xl border border-white/12 bg-[rgba(255,255,255,0.18)] p-4 text-xs text-white/70 sm:rounded-3xl sm:p-6 sm:text-sm">
         {isLoading ? 'Подбираем задачи под этот день…' : 'Задания появятся здесь, как только генерация завершится.'}
       </div>
     );
@@ -51,8 +51,10 @@ export function TaskList({
             <li
               key={task.id}
               className={clsx(
-                'cursor-pointer rounded-2xl border border-white/10 bg-black/40 p-3 transition-all duration-200 sm:rounded-3xl sm:p-4',
-                isCompleted ? 'border-accent/60 bg-accent/10 shadow-glow' : 'hover:border-white/20 hover:bg-black/60'
+                'cursor-pointer rounded-2xl border border-white/12 bg-[rgba(255,255,255,0.15)] p-3 transition-all duration-200 sm:rounded-3xl sm:p-4',
+                isCompleted
+                  ? 'border-transparent bg-gradient-to-br from-[#ff0094]/35 to-[#ffd200]/25 shadow-[0_20px_55px_rgba(255,0,148,0.35)]'
+                  : 'hover:border-white/18 hover:bg-[rgba(255,255,255,0.25)]'
               )}
               onClick={() => setSelectedTask({ task, index })}
             >
@@ -75,7 +77,7 @@ export function TaskList({
                       }}
                       disabled={isRegenerating}
                       className={clsx(
-                        'flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xs transition hover:border-white/30 hover:text-white sm:h-8 sm:w-8',
+                        'flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-[rgba(255,255,255,0.2)] text-xs transition hover:border-white/25 hover:text-white sm:h-8 sm:w-8',
                         isRegenerating && 'cursor-wait opacity-70'
                       )}
                       aria-label="Перегенерировать задачу"
@@ -91,8 +93,8 @@ export function TaskList({
                   <span className="text-[10px] text-white/50 sm:hidden">→</span>
                 </div>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-white/80 sm:mt-3 sm:text-sm">{task.prompt}</p>
-              {task.solutionHint && <p className="mt-1.5 text-[10px] text-white/50 sm:mt-2 sm:text-xs">💡 {task.solutionHint}</p>}
+              <p className="mt-2 text-xs leading-relaxed text-white/85 sm:mt-3 sm:text-sm">{task.prompt}</p>
+              {task.solutionHint && <p className="mt-1.5 text-[10px] text-white/60 sm:mt-2 sm:text-xs">💡 {task.solutionHint}</p>}
             </li>
           );
         })}

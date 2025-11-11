@@ -107,7 +107,9 @@ export async function POST(request: Request) {
   }
 
   if (!isAiConfigured()) {
-    console.warn('HF_TOKEN не задан. Возвращаем fallback для проверки кода.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Возвращаем fallback для проверки кода.');
+    }
     return NextResponse.json({
       success: true,
       message: 'Код принят! (проверка в демо-режиме)',

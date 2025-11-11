@@ -88,15 +88,16 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
       className="flex w-full max-w-full flex-col gap-6 overflow-hidden"
     >
       {/* Заголовок дня */}
-      <Card className="relative overflow-hidden border border-white/10 bg-black/40">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-transparent" />
-        <CardHeader>
+      <Card className="relative overflow-hidden glow-border">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,0,148,0.18),transparent_62%)]" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#ff0094]/70 via-transparent to-transparent opacity-80" />
+        <CardHeader className="relative">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex-1">
-              <CardTitle className="text-base sm:text-lg md:text-xl">
-                <span className="text-white/60">День {day.day}</span> · {dayTopic.topic}
+              <CardTitle className="text-base text-white/95 sm:text-lg md:text-xl">
+                <span className="text-white/70">День {day.day}</span> · {dayTopic.topic}
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">{dayTopic.description}</CardDescription>
+              <CardDescription className="text-xs text-white/70 sm:text-sm">{dayTopic.description}</CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -108,22 +109,22 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               >
                 {generationButtonLabel}
               </Button>
-              <Badge tone="accent" className="text-xs sm:text-sm">Язык: {language.label}</Badge>
+              <Badge tone="accent" className="text-xs text-white sm:text-sm">Язык: {language.label}</Badge>
             </div>
           </div>
           {hasGenerated && taskSet?.recap && (
-            <p className="mt-3 text-xs text-white/60 sm:text-sm">❓ Контрольный вопрос: {taskSet.recap}</p>
+            <p className="mt-3 text-xs text-white/70 sm:text-sm">❓ Контрольный вопрос: {taskSet.recap}</p>
           )}
-          <p className="mt-2 text-[10px] text-white/40 sm:text-xs">{generationStatus}</p>
+          <p className="mt-2 text-[10px] text-white/55 sm:text-xs">{generationStatus}</p>
         </CardHeader>
-        <div className="flex flex-col gap-3 px-4 pb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-6">
+        <div className="flex flex-col gap-3 px-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <Button
             variant="primary"
             size="md"
             onClick={() => markDayComplete(day.day)}
             disabled={finishDisabled}
             title={finishButtonTitle}
-            className="w-full text-xs sm:w-auto sm:text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full text-xs sm:w-auto sm:text-sm disabled:cursor-not-allowed disabled:opacity-70"
           >
             Завершить день
           </Button>
@@ -131,29 +132,29 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
       </Card>
 
       {error && (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="rounded-2xl border border-rose-400/35 bg-rose-400/15 p-4 text-sm text-white/90 shadow-[0_20px_45px_rgba(12,6,28,0.35)]">
           <p>{error}</p>
         </div>
       )}
 
       {loading && (
-        <div className="rounded-3xl border border-white/10 bg-black/40 p-6 text-center text-sm text-white/60 shadow-lg shadow-accent/10">
-          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        <div className="rounded-3xl border border-white/12 bg-[rgba(255,255,255,0.2)] p-6 text-center text-sm text-white/70 shadow-[0_28px_70px_rgba(12,6,28,0.45)]">
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-[#ff0094] border-t-transparent" />
           Генерируем теорию и задания для этого дня...
         </div>
       )}
 
       {!loading && !hasGenerated && (
-        <Card className="border border-dashed border-white/15 bg-gradient-to-br from-white/5 via-black/40 to-black/60">
+        <Card className="relative border border-dashed border-white/15 bg-[rgba(255,255,255,0.18)] glow-border">
           <CardHeader className="space-y-3">
-            <CardTitle className="text-base sm:text-lg">Готовы начать изучение дня {day.day}?</CardTitle>
-            <CardDescription className="text-xs text-white/60 sm:text-sm">
+            <CardTitle className="text-base text-white/90 sm:text-lg">Готовы начать изучение дня {day.day}?</CardTitle>
+            <CardDescription className="text-xs text-white/70 sm:text-sm">
               Нажмите «Сгенерировать теорию», чтобы получить пояснения, контрольный вопрос и практику точно по теме «{dayTopic.topic}».
               Контент подберётся индивидуально и не смешается с другими днями.
             </CardDescription>
-            <div className="flex flex-wrap gap-2 text-[11px] text-white/40 sm:text-xs">
+            <div className="flex flex-wrap gap-2 text-[11px] text-white/60 sm:text-xs">
               <span className="rounded-full border border-white/15 px-3 py-1">Тема: {dayTopic.topic}</span>
-              <span className="rounded-full border border-white/10 px-3 py-1">День {day.day} из 90</span>
+              <span className="rounded-full border border-white/12 px-3 py-1">День {day.day} из 90</span>
             </div>
           </CardHeader>
         </Card>
@@ -169,13 +170,13 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
 
           {/* Контрольное задание по предыдущему дню */}
           {recapTask && day.day > 1 && (
-            <Card className="border-amber-500/30 bg-amber-500/5">
+            <Card className="border border-amber-300/40 bg-amber-200/12 glow-border">
               <CardHeader>
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-xl sm:h-10 sm:w-10 sm:text-2xl">🔄</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-300/30 text-xl sm:h-10 sm:w-10 sm:text-2xl">🔄</span>
                   <div>
-                    <CardTitle className="text-sm sm:text-base">Контрольное задание</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">Повторение материала предыдущего дня — не забывай изученное!</CardDescription>
+                    <CardTitle className="text-sm text-white/90 sm:text-base">Контрольное задание</CardTitle>
+                    <CardDescription className="text-xs text-white/75 sm:text-sm">Повторение материала предыдущего дня — не забывай изученное!</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -193,7 +194,7 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
           )}
 
           {/* Список задач */}
-          <Card>
+          <Card className="bg-[rgba(255,255,255,0.18)] glow-border">
             <CardHeader>
               <CardTitle className="text-base sm:text-lg">Задачи дня ({tasks.length})</CardTitle>
               <CardDescription className="text-xs sm:text-sm">Нажми на любую задачу, чтобы открыть редактор и начать решение</CardDescription>
@@ -202,13 +203,13 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               <TaskList
                 day={day.day}
                 tasks={tasks}
-                languageId={language.id}
-                monacoLanguage={language.monacoLanguage}
-                topic={dayTopic.topic}
-                isLoading={loading}
-                onRegenerateTask={regenerateTask}
-                regeneratingTaskId={regeneratingTaskId}
-              />
+                  languageId={language.id}
+                  monacoLanguage={language.monacoLanguage}
+                  topic={dayTopic.topic}
+                  isLoading={loading}
+                  onRegenerateTask={regenerateTask}
+                  regeneratingTaskId={regeneratingTaskId}
+                />
               {!allTasksCompleted && (
                 <p className="mt-3 text-[11px] text-white/40 sm:text-xs">
                   Выполните все задания (включая контрольный вопрос), чтобы закрыть этот день.

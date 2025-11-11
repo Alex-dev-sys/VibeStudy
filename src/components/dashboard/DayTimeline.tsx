@@ -31,25 +31,25 @@ export function DayTimeline() {
   }, [completedDays]);
 
   return (
-    <section className="glass-panel rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+    <section className="relative glass-panel-soft glow-border rounded-2xl p-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-white sm:text-lg">Навигация по дням</h2>
-          <p className="mt-1 text-xs text-white/50 sm:text-sm">Следи за темпом и переходи к любому дню плана</p>
+          <h2 className="text-base font-semibold text-white/95 sm:text-lg">Навигация по дням</h2>
+          <p className="mt-1 text-xs text-white/60 sm:text-sm">Следи за темпом и переходи к любому дню плана</p>
         </div>
-        <p className="text-xs text-white/40 sm:text-right sm:text-sm">Совет: используй клавиши ← → для быстрого переключения</p>
+        <p className="text-xs text-white/55 sm:text-right sm:text-sm">Совет: используй клавиши ← → для быстрого переключения</p>
       </div>
-      <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-white/50 sm:mt-4 sm:text-xs">
+      <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-white/55 sm:mt-4 sm:text-xs">
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-accent bg-accent/30 shadow-glow" aria-hidden />
+          <span className="h-3 w-3 rounded-full border border-transparent bg-gradient-to-br from-[#ff0094]/70 to-[#ffd200]/60 shadow-[0_0_15px_rgba(255,0,148,0.6)]" aria-hidden />
           Активный день
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-accent/40 bg-accent/10" aria-hidden />
+          <span className="h-3 w-3 rounded-full border border-[#ff84ff]/30 bg-[#ff84ff]/15" aria-hidden />
           Завершён
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-white/15 bg-black/40" aria-hidden />
+          <span className="h-3 w-3 rounded-full border border-white/12 bg-[rgba(255,255,255,0.15)]" aria-hidden />
           Впереди
         </span>
       </div>
@@ -74,10 +74,10 @@ export function DayTimeline() {
                     className={clsx(
                       'flex h-10 items-center justify-center rounded-xl border text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-12 sm:rounded-2xl sm:text-sm',
                       isActive
-                        ? 'border-accent bg-accent/30 text-white shadow-glow'
+                        ? 'border-transparent bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-white shadow-[0_0_18px_rgba(255,0,148,0.6)]'
                         : isCompleted
-                          ? 'border-accent/50 bg-accent/10 text-accent'
-                          : 'border-white/10 bg-black/40 text-white/60 hover:border-white/20'
+                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7]'
+                          : 'border-white/12 bg-[rgba(255,255,255,0.15)] text-white/60 hover:border-white/25'
                     )}
                   >
                     {day}

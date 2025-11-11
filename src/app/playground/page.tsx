@@ -129,8 +129,10 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <main className="relative overflow-hidden bg-gradient-to-b from-[#04010b] via-[#08062a] to-[#050213] text-white">
-      <GradientBackdrop />
+    <main className="relative min-h-screen overflow-hidden text-white">
+      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
+      <GradientBackdrop blur className="-z-20" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
       <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 py-16 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-3">

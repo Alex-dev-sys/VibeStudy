@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
+import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 
 const stats = [
   { value: '90', label: 'дней обучения' },
@@ -30,31 +31,17 @@ const featureCards = [
   }
 ];
 
-const orbs = [
-  { className: 'left-[-10%] top-[-20%] h-[420px] w-[420px] bg-accent/30', delay: 0 },
-  { className: 'right-[-18%] top-[15%] h-[480px] w-[480px] bg-accent-soft/25', delay: 0.4 },
-  { className: 'left-[35%] bottom-[-25%] h-[520px] w-[520px] bg-blue-500/20', delay: 0.8 }
-];
-
 export function HeroShowcase() {
   return (
-    <section className="relative isolate flex min-h-[100svh] items-center bg-gradient-to-b from-[#040208] via-[#090422] to-[#070115] text-white">
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,_rgba(97,87,255,0.22),_transparent_55%)]" />
-      <div className="absolute inset-0 -z-10">
-        {orbs.map((orb) => (
-          <motion.div
-            key={orb.className}
-            className={`absolute rounded-full blur-3xl ${orb.className}`}
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: orb.delay }}
-          />
-        ))}
-      </div>
+    <section className="relative isolate flex min-h-[100svh] items-center overflow-hidden text-white">
+      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
+      <GradientBackdrop blur className="-z-20" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-20 sm:px-8 lg:flex-row lg:items-center lg:gap-20 lg:py-28">
         <div className="flex-1 space-y-8">
           <motion.div
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-white/70 shadow-[0_10px_30px_rgba(88,70,255,0.24)] backdrop-blur"
+            className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/10/60 px-5 py-2 text-sm text-white/80 shadow-[0_18px_40px_rgba(12,6,28,0.35)] backdrop-blur-xl"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -77,7 +64,7 @@ export function HeroShowcase() {
           </motion.h1>
 
           <motion.p
-            className="max-w-xl text-base text-white/70 sm:text-lg"
+            className="max-w-xl text-base text-white/80 sm:text-lg"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6 }}
@@ -108,11 +95,7 @@ export function HeroShowcase() {
               </Button>
             </Link>
             <Link href="/playground">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full border border-white/20 px-8 py-4 text-base font-semibold text-white transition sm:w-auto"
-              >
+              <Button variant="secondary" size="lg" className="w-full px-8 py-4 text-base font-semibold sm:w-auto">
                 Попробовать Playground
               </Button>
             </Link>
@@ -135,47 +118,44 @@ export function HeroShowcase() {
 
         <div className="relative flex flex-1 items-center justify-center">
           <motion.div
-            className="absolute inset-0 -z-10 rounded-[36px] border border-white/10 bg-white/5/40 backdrop-blur-xl"
-            animate={{ opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="relative w-full max-w-lg rounded-[36px] border border-white/10 bg-black/60 p-8 shadow-[0_35px_90px_rgba(45,35,122,0.45)] backdrop-blur-lg"
+            className="absolute inset-0 -z-10 rounded-[36px] bg-[rgba(255,255,255,0.18)] backdrop-blur-3xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
-            <motion.div
-              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(98,86,255,0.35),_transparent_70%)]"
-              animate={{ opacity: [0.6, 0.9, 0.6] }}
-              transition={{ duration: 7, repeat: Infinity, ease: 'linear', repeatType: 'mirror' }}
-            />
-
+            <div className="pointer-events-none absolute inset-0 -z-10 rounded-[36px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_70%)]" />
+          </motion.div>
+          <motion.div
+            className="relative w-full max-w-lg rounded-[36px] border border-white/12 bg-[rgba(12,6,28,0.82)] p-8 shadow-[0_40px_110px_rgba(8,3,20,0.65)] backdrop-blur-3xl"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+          >
             <div className="space-y-5">
               {featureCards.map((card, index) => (
-                <MagicCard key={card.title} className="p-[2px]" innerClassName="relative flex items-start gap-4 rounded-[28px] bg-black/60 p-5">
+                <MagicCard key={card.title} className="p-[2px]" innerClassName="relative flex items-start gap-4 rounded-[28px] p-5">
                   <motion.div
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black/30 text-xl"
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-xl shadow-[0_12px_30px_rgba(12,6,28,0.4)]"
                     animate={{ y: [0, -6, 0] }}
                     transition={{ duration: 4.2, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut', delay: index * 0.2 }}
                   >
                     {card.icon}
                   </motion.div>
                   <div className="space-y-2 text-sm">
-                    <p className="font-semibold text-white">{card.title}</p>
-                    <p className="text-white/65">{card.description}</p>
+                    <p className="text-gradient font-semibold">{card.title}</p>
+                    <p className="text-white/75">{card.description}</p>
                   </div>
                 </MagicCard>
               ))}
 
               <motion.div
-                className="rounded-3xl border border-white/10 bg-black/40 p-5 text-sm text-white/70"
-                animate={{ opacity: [0.7, 1, 0.7] }}
+                className="rounded-3xl border border-white/10 bg-[rgba(255,255,255,0.2)] p-5 text-sm text-white/80"
+                animate={{ opacity: [0.8, 1, 0.8] }}
                 transition={{ duration: 7, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
               >
-                «Команда VibeStudy помогла мне построить персональный план, а AI-помощник моментально объяснял сложные
+                «Команда VibeStudy помогла мне построить персональный план, а AI-наставник моментально объяснял сложные
                 темы. Через 90 дней я прошёл собеседование и получил оффер.»
-                <span className="mt-3 block text-xs text-white/40">— Влад, выпускник 2025 года</span>
+                <span className="mt-3 block text-xs text-white/50">— Влад, выпускник 2025 года</span>
               </motion.div>
             </div>
           </motion.div>

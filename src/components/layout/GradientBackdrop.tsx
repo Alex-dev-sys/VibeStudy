@@ -9,9 +9,9 @@ interface GradientBackdropProps {
 }
 
 const ORBS = [
-  { className: 'left-[-20%] top-[-10%] h-[420px] w-[420px] bg-[rgba(255,59,92,0.35)]', delay: 0 },
-  { className: 'right-[-15%] top-[25%] h-[500px] w-[500px] bg-[rgba(69,160,255,0.3)]', delay: 0.4 },
-  { className: 'left-[30%] bottom-[-25%] h-[460px] w-[460px] bg-[rgba(155,85,255,0.28)]', delay: 0.8 }
+  { className: 'left-[-22%] top-[-12%] h-[420px] w-[420px] bg-[rgba(255,0,148,0.38)]', delay: 0 },
+  { className: 'right-[-18%] top-[28%] h-[520px] w-[520px] bg-[rgba(255,218,0,0.28)]', delay: 0.35 },
+  { className: 'left-[30%] bottom-[-25%] h-[480px] w-[480px] bg-[rgba(255,118,240,0.32)]', delay: 0.7 }
 ];
 
 export function GradientBackdrop({ className, blur = true }: GradientBackdropProps) {

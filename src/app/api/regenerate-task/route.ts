@@ -61,7 +61,10 @@ const parseTask = (content: string): GeneratedTask => {
 export async function POST(request: Request) {
   const body = (await request.json()) as RequestBody;
   if (!isAiConfigured()) {
-    return NextResponse.json({ error: 'HF_TOKEN не задан' }, { status: 500 });
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Перегенерация задачи недоступна.');
+    }
+    return NextResponse.json({ error: 'AI недоступен: отсутствует ключ API' }, { status: 500 });
   }
 
   try {

@@ -92,7 +92,9 @@ export async function POST(request: Request) {
   const body = (await request.json()) as GetHintRequest;
 
   if (!isAiConfigured()) {
-    console.warn('HF_TOKEN не задан. Возвращаем fallback подсказку.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Возвращаем fallback подсказку.');
+    }
     return NextResponse.json(fallbackResponse);
   }
 
@@ -100,17 +102,17 @@ export async function POST(request: Request) {
     const prompt = buildHintPrompt(body);
 
     const { data, raw } = await callChatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'Ты — терпеливый наставник по программированию. Помогай студентам подсказками, но не решай задачи за них. Отвечай строго в JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
+        messages: [
+          {
+            role: 'system',
+            content: 'Ты — терпеливый наставник по программированию. Помогай студентам подсказками, но не решай задачи за них. Отвечай строго в JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
       maxTokens: 1000,
       responseFormat: { type: 'json_object' }
     });

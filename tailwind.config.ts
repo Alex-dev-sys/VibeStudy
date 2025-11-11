@@ -9,20 +9,20 @@ const config: Config = {
         sans: ['"Inter"', 'system-ui', 'sans-serif']
       },
       colors: {
-        background: '#0b0b0f',
-        foreground: '#f5f5f5',
+        background: '#080312',
+        foreground: '#f8f6ff',
         accent: {
-          DEFAULT: '#ff3b5c',
-          soft: '#ff6b6b'
+          DEFAULT: '#ff4bc1',
+          soft: '#ffd34f'
         },
-        surface: '#14141a'
+        surface: '#15072a'
       },
       boxShadow: {
-        glow: '0 0 20px rgba(255, 59, 92, 0.35)'
+        glow: '0 0 28px rgba(255, 0, 148, 0.35)'
       },
       backgroundImage: {
-        'gradient-soft': 'linear-gradient(135deg, rgba(11,11,15,0.95), rgba(34,10,25,0.95))',
-        'gradient-accent': 'radial-gradient(circle at top right, rgba(255,59,92,0.35), transparent 55%)'
+        'gradient-soft': 'linear-gradient(135deg, rgba(10,3,18,0.92), rgba(36,7,45,0.88))',
+        'gradient-accent': 'radial-gradient(circle at top right, rgba(255,0,148,0.35), transparent 55%)'
       },
       keyframes: {
         'gradient-x': {

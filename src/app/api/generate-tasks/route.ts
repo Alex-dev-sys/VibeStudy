@@ -264,7 +264,9 @@ export async function POST(request: Request) {
   const body = (await request.json()) as ExtendedRequestBody;
 
   if (!isAiConfigured()) {
-    console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+    }
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
 
@@ -272,17 +274,17 @@ export async function POST(request: Request) {
     const prompt = buildPrompt(body);
 
     const { data, raw } = await callChatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
+        messages: [
+          {
+            role: 'system',
+            content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
       maxTokens: 2000,
       responseFormat: { type: 'json_object' }
     });

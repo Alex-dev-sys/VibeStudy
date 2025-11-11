@@ -216,7 +216,9 @@ export async function POST(request: Request) {
   }
 
   if (!isAiConfigured()) {
-    console.warn('HF_TOKEN не задан. Возвращаем fallback объяснение.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Возвращаем fallback объяснение.');
+    }
     return NextResponse.json(createFallbackResponse(body, 'missing_api_key'));
   }
 

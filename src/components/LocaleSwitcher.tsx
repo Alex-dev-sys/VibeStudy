@@ -13,7 +13,7 @@ export function LocaleSwitcher() {
   const { locale, setLocale } = useLocaleStore();
 
   return (
-    <div className="flex items-center rounded-full border border-white/10 bg-black/30 p-0.5">
+    <div className="flex items-center rounded-full border border-white/12 bg-[rgba(255,255,255,0.18)] p-0.5 shadow-[0_12px_28px_rgba(12,6,28,0.35)] backdrop-blur-lg">
       {OPTIONS.map((option) => {
         const isActive = option.value === locale;
         return (
@@ -23,7 +23,9 @@ export function LocaleSwitcher() {
             onClick={() => setLocale(option.value)}
             className={cn(
               'min-w-[44px] rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors sm:text-xs',
-              isActive ? 'bg-accent text-white shadow-glow' : 'text-white/60 hover:text-white'
+              isActive
+                ? 'bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] text-[#22021b] shadow-[0_12px_24px_rgba(255,0,148,0.4)]'
+                : 'text-white/65 hover:text-white'
             )}
           >
             {option.label}

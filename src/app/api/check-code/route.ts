@@ -85,7 +85,9 @@ export async function POST(request: Request) {
   const body = (await request.json()) as CheckCodeRequest;
 
   if (!isAiConfigured()) {
-    console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+    }
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 

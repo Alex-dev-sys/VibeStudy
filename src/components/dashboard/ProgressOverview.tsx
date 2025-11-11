@@ -34,11 +34,11 @@ export function ProgressOverview() {
   };
 
   return (
-    <section className="glass-panel flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
+    <section className="relative glass-panel-soft glow-border flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-white sm:text-xl md:text-2xl">{t.dashboard.title}</h1>
-          <p className="mt-1 text-xs text-white/60 sm:text-sm">{t.dashboard.subtitle}</p>
+          <h1 className="text-lg font-semibold text-white/95 sm:text-xl md:text-2xl">{t.dashboard.title}</h1>
+          <p className="mt-1 text-xs text-white/65 sm:text-sm">{t.dashboard.subtitle}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <LocaleSwitcher />
@@ -52,19 +52,19 @@ export function ProgressOverview() {
               🎨 {t.dashboard.playground}
             </Button>
           </Link>
-          <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm">
+          <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm hover:text-white">
             {t.common.reset}
           </Button>
         </div>
       </div>
       <div>
-        <div className="mb-2 flex items-center justify-between text-xs text-white/60 sm:text-sm">
+        <div className="mb-2 flex items-center justify-between text-xs text-white/65 sm:text-sm">
           <span>{t.dashboard.completed}: {record.completedDays.length} / {TOTAL_DAYS}</span>
           <span>{completionRate.toFixed(0)}%</span>
         </div>
         <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10 sm:h-4">
           <motion.div
-            className="absolute inset-y-0 left-0 rounded-full bg-accent shadow-glow"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] shadow-[0_12px_30px_rgba(255,0,148,0.45)]"
             initial={{ width: 0 }}
             animate={{ width: `${completionRate}%` }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -76,7 +76,7 @@ export function ProgressOverview() {
           <span>🔥 {t.dashboard.streak}: {record.streak} {t.dashboard.days}</span>
           <span>🏆 {t.dashboard.achievements}: {unlockedAchievements}</span>
         </div>
-        <span className="text-white/50 sm:text-white/70">{streakMessage}</span>
+        <span className="text-white/55 sm:text-white/70">{streakMessage}</span>
       </div>
     </section>
   );
