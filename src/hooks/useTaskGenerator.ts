@@ -101,10 +101,10 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
 
       setTaskSet(
         formattedContent({
-        theory: dayContent.theory,
-        recap: dayContent.recap,
-        recapTask: dayContent.recapTask,
-        tasks: dayContent.tasks
+          theory: dayContent.theory,
+          recap: dayContent.recap,
+          recapTask: dayContent.recapTask,
+          tasks: dayContent.tasks
         })
       );
       setContentSource('fallback');
@@ -113,10 +113,10 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
       // При ошибке возвращаемся к статическому контенту
       setTaskSet(
         formattedContent({
-        theory: dayContent.theory,
-        recap: dayContent.recap,
-        recapTask: dayContent.recapTask,
-        tasks: dayContent.tasks
+          theory: dayContent.theory,
+          recap: dayContent.recap,
+          recapTask: dayContent.recapTask,
+          tasks: dayContent.tasks
         })
       );
       setContentSource('fallback');
@@ -167,10 +167,10 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
           if (data.exists) {
             setTaskSet(
               formattedContent({
-              theory: data.theory,
-              recap: data.recap,
-              recapTask: data.recapTask,
-              tasks: data.tasks
+                theory: data.theory,
+                recap: data.recap,
+                recapTask: data.recapTask,
+                tasks: data.tasks
               })
             );
             setContentSource('database');
@@ -184,7 +184,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         console.error('Ошибка загрузки контента:', err);
       }
 
-        if (!cancelled) {
+      if (!cancelled) {
         if (!fetchedFromDatabase) {
           await generateWithAI();
         } else {

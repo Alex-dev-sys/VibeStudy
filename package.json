@@ -9,8 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "bot": "node scripts/telegram-bot-local.js",
-    "test:e2e": "playwright test"
+    "bot": "node scripts/telegram-bot-local.js"
   },
   "dependencies": {
     "@monaco-editor/react": "4.6.0",
@@ -22,13 +21,11 @@
     "framer-motion": "11.2.6",
     "next": "14.2.8",
     "react": "18.3.1",
-    "react-chatbotify": "^2.4.1",
     "react-dom": "18.3.1",
     "sonner": "1.5.0",
     "zustand": "4.5.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
     "@types/node": "20.12.12",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",

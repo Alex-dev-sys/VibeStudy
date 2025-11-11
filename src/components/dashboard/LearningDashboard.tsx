@@ -5,7 +5,6 @@ import { Toaster } from 'sonner';
 import { buildCurriculum, getDayTopic } from '@/lib/curriculum';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
-import { useTaskGenerator } from '@/hooks/useTaskGenerator';
 import { ProgressOverview } from './ProgressOverview';
 import { LanguageSelector } from './LanguageSelector';
 import { DayTimeline } from './DayTimeline';
@@ -30,10 +29,6 @@ export default function LearningDashboard() {
   const currentDay = curriculum.find((day) => day.day === activeDay) ?? curriculum[0];
   const previousDay = curriculum.find((day) => day.day === activeDay - 1);
   const dayTopic = getDayTopic(activeDay);
-
-  // Получаем реальную теорию из useTaskGenerator
-  const { taskSet } = useTaskGenerator({ currentDay, previousDay, languageId, autoLoad: false });
-  const actualTheory = taskSet?.theory ?? currentDay.theory;
 
   const goToNext = () => setActiveDay(activeDay >= TOTAL_DAYS ? TOTAL_DAYS : activeDay + 1);
   const goToPrev = () => setActiveDay(activeDay <= 1 ? 1 : activeDay - 1);
@@ -62,7 +57,7 @@ export default function LearningDashboard() {
       <AIAssistantChat
         day={activeDay}
         topic={dayTopic.topic}
-        theory={actualTheory}
+        theory={currentDay.theory}
         languageId={languageId}
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
