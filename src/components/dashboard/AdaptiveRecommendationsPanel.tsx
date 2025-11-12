@@ -76,79 +76,79 @@ export function AdaptiveRecommendationsPanel({ currentDay, languageId }: Adaptiv
           </div>
 
             <div className="grid grid-cols-2 gap-3 rounded-xl border border-white/12 bg-[rgba(255,255,255,0.15)] p-3 sm:grid-cols-4">
-              <div>
+            <div>
                 <p className="text-xs text-white/60">Средний балл</p>
                 <p className="text-lg font-semibold text-white/95">{Math.round(averageScore)}</p>
-              </div>
-              <div>
+            </div>
+            <div>
                 <p className="text-xs text-white/60">Попыток</p>
                 <p className="text-lg font-semibold text-white/95">{totalAttempts}</p>
-              </div>
-              <div>
+            </div>
+            <div>
                 <p className="text-xs text-white/60">Рекомендуемая сложность</p>
-                <p className={`text-lg font-semibold ${getDifficultyColor(recommendations.difficulty)}`}>
-                  {getDifficultyLabel(recommendations.difficulty)}
-                </p>
-              </div>
-              <div>
+              <p className={`text-lg font-semibold ${getDifficultyColor(recommendations.difficulty)}`}>
+                {getDifficultyLabel(recommendations.difficulty)}
+              </p>
+            </div>
+            <div>
                 <p className="text-xs text-white/60">Слабых мест</p>
                 <p className="text-lg font-semibold text-white/95">{weakAreas.length}</p>
-              </div>
             </div>
+          </div>
 
-            {recommendations.nextActions.length > 0 && (
+          {recommendations.nextActions.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold text-white/85">📋 Что делать дальше:</h4>
-                <ul className="space-y-2">
-                  {recommendations.nextActions.map((action, i) => (
-                    <li
-                      key={i}
+              <ul className="space-y-2">
+                {recommendations.nextActions.map((action, i) => (
+                  <li
+                    key={i}
                       className="flex items-start gap-2 rounded-lg border border-white/12 bg-[rgba(255,255,255,0.18)] p-2 text-xs text-white/75 sm:text-sm"
-                    >
+                  >
                       <span className="text-gradient">•</span>
-                      <span>{action}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-            {recommendations.reviewTopics.length > 0 && (
+          {recommendations.reviewTopics.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold text-white/85">🔄 Рекомендуем повторить:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {recommendations.reviewTopics.map((topic, i) => (
-                    <Badge key={i} tone="accent" className="text-xs">
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {recommendations.reviewTopics.map((topic, i) => (
+                  <Badge key={i} tone="accent" className="text-xs">
+                    {topic}
+                  </Badge>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {weakAreas.length > 0 && (
+          {weakAreas.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold text-white/85">⚠️ Требуют внимания:</h4>
-                <div className="space-y-2">
-                  {weakAreas.slice(0, 3).map((area, i) => (
+              <div className="space-y-2">
+                {weakAreas.slice(0, 3).map((area, i) => (
                     <div key={i} className="rounded-lg border border-rose-400/35 bg-rose-400/15 p-2 text-xs text-white/90 sm:text-sm">
-                      <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                         <span className="font-semibold text-white">{area.topic}</span>
                         <Badge tone="accent" className="bg-rose-400/30 text-white">
-                          {Math.round(area.failureRate)}% ошибок
-                        </Badge>
-                      </div>
-                      {area.commonErrors.length > 0 && (
-                        <p className="mt-1 text-white/75">Частые ошибки: {area.commonErrors.join(', ')}</p>
-                      )}
-                      <p className="mt-1 text-white/70">
-                        Действие: {area.recommendedAction === 'review' ? '📖 Повторить теорию' : area.recommendedAction === 'practice' ? '💪 Больше практики' : '⏭️ Перейти дальше'}
-                      </p>
+                        {Math.round(area.failureRate)}% ошибок
+                      </Badge>
                     </div>
-                  ))}
-                </div>
+                    {area.commonErrors.length > 0 && (
+                        <p className="mt-1 text-white/75">Частые ошибки: {area.commonErrors.join(', ')}</p>
+                    )}
+                      <p className="mt-1 text-white/70">
+                      Действие: {area.recommendedAction === 'review' ? '📖 Повторить теорию' : area.recommendedAction === 'practice' ? '💪 Больше практики' : '⏭️ Перейти дальше'}
+                    </p>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
           </div>
         </div>
       </Card>

@@ -90,7 +90,6 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
       {/* Заголовок дня */}
       <Card className="relative overflow-hidden glow-border">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,0,148,0.18),transparent_62%)]" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#ff0094]/70 via-transparent to-transparent opacity-80" />
         <CardHeader className="relative">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex-1">

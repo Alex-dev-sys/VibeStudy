@@ -9,7 +9,7 @@ export function LanguageSelector() {
   const setLanguage = useProgressStore((state) => state.setLanguage);
 
   return (
-    <section className="relative glass-panel-soft glow-border rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+    <section className="relative glass-panel-soft rounded-2xl p-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-col gap-2 sm:gap-3">
         <h2 className="text-base font-semibold text-white/95 sm:text-lg">Выбери язык обучения</h2>
         <p className="text-xs text-white/65 sm:text-sm">Можно менять язык на любом этапе — задания и теория перестроятся автоматически.</p>
@@ -26,7 +26,7 @@ export function LanguageSelector() {
               className={`group flex flex-col gap-1.5 rounded-2xl border p-3 text-left transition-all duration-200 sm:gap-2 sm:rounded-3xl sm:p-4 ${
                 isActive
                   ? 'border-transparent bg-gradient-to-br from-[#ff0094]/25 to-[#ffd200]/15 shadow-[0_22px_55px_rgba(255,0,148,0.35)]'
-                  : 'border-white/12 bg-[rgba(255,255,255,0.1)] hover:border-white/25 hover:bg-[rgba(255,255,255,0.2)]'
+                  : 'border-white/5 bg-[rgba(255,255,255,0.01)] hover:border-white/20 hover:bg-[rgba(255,255,255,0.06)]'
               }`}
             >
               <div className="flex items-center justify-between">

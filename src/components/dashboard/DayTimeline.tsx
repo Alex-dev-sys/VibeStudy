@@ -31,7 +31,7 @@ export function DayTimeline() {
   }, [completedDays]);
 
   return (
-    <section className="relative glass-panel-soft glow-border rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+    <section className="relative glass-panel-soft rounded-2xl p-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-white/95 sm:text-lg">Навигация по дням</h2>

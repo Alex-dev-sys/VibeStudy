@@ -149,17 +149,17 @@ export async function POST(request: Request) {
     const prompt = buildRecommendationsPrompt(body);
 
     const { data, raw } = await callChatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'Ты — адаптивная система обучения. Анализируй профиль студента и давай персональные рекомендации. Отвечай строго в JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
+        messages: [
+          {
+            role: 'system',
+            content: 'Ты — адаптивная система обучения. Анализируй профиль студента и давай персональные рекомендации. Отвечай строго в JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
       maxTokens: 2000,
       responseFormat: { type: 'json_object' }
     });

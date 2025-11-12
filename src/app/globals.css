@@ -8,9 +8,9 @@
     to bottom left in lab,
     oklch(55% .45 350) 13%,
     45%,
-    oklch(95% .4 95) 93% 0%
+    oklch(95% .55 85) 93% 0%
   );
-  --sdr-gradient: linear-gradient(to bottom left, #ff0094 13%, 45%, #ffda00 93% 0%);
+  --sdr-gradient: linear-gradient(to bottom left, #ff0094 13%, 45%, #fff200 93% 0%);
   --surface-glass: rgba(12, 6, 28, 0.75);
   --surface-glass-strong: rgba(12, 6, 28, 0.82);
   --surface-border: rgba(255, 255, 255, 0.12);

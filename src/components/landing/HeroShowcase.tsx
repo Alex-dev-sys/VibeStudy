@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 
 const stats = [
   { value: '90', label: 'дней обучения' },
@@ -34,9 +33,6 @@ const featureCards = [
 export function HeroShowcase() {
   return (
     <section className="relative isolate flex min-h-[100svh] items-center overflow-hidden text-white">
-      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-      <GradientBackdrop blur className="-z-20" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-20 sm:px-8 lg:flex-row lg:items-center lg:gap-20 lg:py-28">
         <div className="flex-1 space-y-8">
@@ -125,7 +121,7 @@ export function HeroShowcase() {
           >
             <div className="pointer-events-none absolute inset-0 -z-10 rounded-[36px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_70%)]" />
           </motion.div>
-          <motion.div
+            <motion.div
             className="relative w-full max-w-lg rounded-[36px] border border-white/12 bg-[rgba(12,6,28,0.82)] p-8 shadow-[0_40px_110px_rgba(8,3,20,0.65)] backdrop-blur-3xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}

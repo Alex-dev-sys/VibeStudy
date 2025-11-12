@@ -34,7 +34,7 @@ export function ProgressOverview() {
   };
 
   return (
-    <section className="relative glass-panel-soft glow-border flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
+    <section className="relative glass-panel-soft flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
         <div className="flex-1">
           <h1 className="text-lg font-semibold text-white/95 sm:text-xl md:text-2xl">{t.dashboard.title}</h1>
