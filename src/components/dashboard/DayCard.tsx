@@ -164,6 +164,17 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
           {/* Блок теории */}
           <TheoryBlock theory={theory} dayNumber={day.day} topic={dayTopic.topic} />
 
+          {/* Визуальный разделитель между теорией и практикой */}
+          <div className="relative flex items-center justify-center py-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gradient-to-r from-transparent via-white/20 to-transparent" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent) 1' }} />
+            </div>
+            <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 backdrop-blur-sm">
+              <span className="text-sm font-medium text-white/70">Практика</span>
+              <span className="text-lg">💪</span>
+            </div>
+          </div>
+
           {/* Контрольный вопрос */}
           {taskSet?.recap && <RecapQuestionCard day={day.day} question={taskSet.recap} hasPreviousDay={day.day > 1} />}
 

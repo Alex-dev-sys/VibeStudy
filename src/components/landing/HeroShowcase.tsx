@@ -60,7 +60,7 @@ export function HeroShowcase() {
           </motion.h1>
 
           <motion.p
-            className="max-w-xl text-base text-white/80 sm:text-lg"
+            className="max-w-xl text-base font-medium text-white/90 leading-relaxed sm:text-lg"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6 }}
@@ -127,11 +127,11 @@ export function HeroShowcase() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <div className="space-y-5">
+            <div className="space-y-6">
               {featureCards.map((card, index) => (
                 <MagicCard key={card.title} className="p-[2px]" innerClassName="relative flex items-start gap-4 rounded-[28px] p-5">
                   <motion.div
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-xl shadow-[0_12px_30px_rgba(12,6,28,0.4)]"
+                    className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl shadow-[0_12px_30px_rgba(12,6,28,0.4)] sm:h-16 sm:w-16 sm:text-3xl"
                     animate={{ y: [0, -6, 0] }}
                     transition={{ duration: 4.2, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut', delay: index * 0.2 }}
                   >
@@ -139,7 +139,7 @@ export function HeroShowcase() {
                   </motion.div>
                   <div className="space-y-2 text-sm">
                     <p className="text-gradient font-semibold">{card.title}</p>
-                    <p className="text-white/75">{card.description}</p>
+                    <p className="text-white/90 font-medium">{card.description}</p>
                   </div>
                 </MagicCard>
               ))}

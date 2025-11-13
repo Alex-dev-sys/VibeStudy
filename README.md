@@ -98,9 +98,8 @@ npm install
 cat > .env.local << 'EOF'
 # Hugging Face API (обязательно для AI)
 HF_TOKEN=hf_your_access_token
-# Необязательно: если нужно переопределить базовый URL/модель
-# HF_API_BASE_URL=https://router.huggingface.co/v1
-# HF_MODEL=MiniMaxAI/MiniMax-M2:novita
+HF_API_BASE_URL=https://router.huggingface.co/v1
+HF_MODEL=MiniMaxAI/MiniMax-M2:novita
 
 # Telegram Bot (опционально)
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
@@ -143,7 +142,7 @@ npm run dev:next
 2. Перейдите в [Settings → Access Tokens](https://huggingface.co/settings/tokens) и создайте токен с правами `read`
 3. Добавьте его в `.env.local` как `HF_TOKEN`
 4. (Опционально) настройте `HF_API_BASE_URL` — по умолчанию `https://router.huggingface.co/v1`
-5. (Опционально) задайте `HF_MODEL`. По умолчанию используется `MiniMaxAI/MiniMax-M2:novita` (поддерживает генерацию текста и кода). Вы можете указать любую другую модель, доступную через Router.
+5. (Опционально) задайте `HF_MODEL`. По умолчанию используется `MiniMaxAI/MiniMax-M2:novita`
 
 #### 2. Supabase (опционально, для облачного сохранения)
 1. Создайте проект на [Supabase](https://supabase.com)
@@ -232,6 +231,8 @@ VibeStudy/
 - **Animations:** Framer Motion
 - **UI Components:** Radix UI
 - **AI Integration:** Hugging Face Router
+- **Database:** Supabase (PostgreSQL)
+- **Authentication:** Supabase Auth (Google OAuth, Magic Link)
 
 ## 📝 Скрипты
 

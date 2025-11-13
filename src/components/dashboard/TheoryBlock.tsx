@@ -16,19 +16,19 @@ export function TheoryBlock({ theory, dayNumber, topic }: TheoryBlockProps) {
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-xl text-white sm:h-10 sm:w-10 sm:text-2xl">📚</span>
           <div>
             <CardTitle className="text-sm sm:text-base">Теория дня {dayNumber}</CardTitle>
-            <p className="text-xs text-white/75 sm:text-sm">{topic}</p>
+            <p className="text-xs text-white/90 sm:text-sm">{topic}</p>
           </div>
         </div>
       </CardHeader>
       <div className="space-y-3 px-4 pb-4 sm:space-y-4 sm:px-6 sm:pb-6">
         <div className="overflow-hidden rounded-xl border border-white/12 bg-[rgba(255,255,255,0.18)] p-4 sm:rounded-2xl sm:p-6 shadow-[0_20px_60px_rgba(12,6,28,0.35)]">
           <div className="prose prose-invert max-w-none">
-            <div className="break-words text-xs leading-relaxed text-white/90 sm:text-sm" style={{ fontFamily: 'system-ui, sans-serif', wordWrap: 'break-word', overflowWrap: 'anywhere' }}>
+            <div className="break-words text-sm leading-relaxed font-medium text-white/90 sm:text-base" style={{ fontFamily: 'system-ui, sans-serif', wordWrap: 'break-word', overflowWrap: 'anywhere' }}>
               {theory.split('\n').map((line, index) => {
                 // Подсветка заголовков
                 if (line.trim().endsWith(':') && line.trim().length < 50 && !line.includes('=')) {
                   return (
-                    <p key={index} className="mt-3 mb-1.5 break-words text-xs font-semibold text-gradient sm:mt-4 sm:mb-2 sm:text-sm">
+                    <p key={index} className="mt-3 mb-1.5 break-words text-sm font-semibold text-gradient sm:mt-4 sm:mb-2 sm:text-base">
                       {line}
                     </p>
                   );
@@ -36,7 +36,7 @@ export function TheoryBlock({ theory, dayNumber, topic }: TheoryBlockProps) {
                 // Подсветка кода
                 if (line.trim().startsWith('#') || (line.includes('=') && line.trim().length < 100) || (line.includes('(') && line.includes(')'))) {
                   return (
-                    <pre key={index} className="my-1 break-all rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-emerald-300 sm:px-2 sm:py-1 sm:text-xs">
+                    <pre key={index} className="my-1 break-all rounded bg-black/60 px-2 py-1 font-mono text-xs text-emerald-300 leading-relaxed sm:text-sm">
                       <code className="break-all whitespace-pre-wrap">{line}</code>
                     </pre>
                   );
@@ -54,7 +54,7 @@ export function TheoryBlock({ theory, dayNumber, topic }: TheoryBlockProps) {
           </div>
         </div>
         <div className="rounded-xl border border-[#ff0094]/30 bg-[#ff0094]/12 p-2.5 sm:rounded-2xl sm:p-3">
-          <p className="text-[10px] text-white/80 sm:text-xs">
+          <p className="text-xs text-white/90 font-medium sm:text-sm">
             💡 <strong>Совет:</strong> Внимательно изучи теорию перед выполнением заданий. Все задачи можно решить, используя
             только материал из этой теории.
           </p>

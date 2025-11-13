@@ -6,10 +6,19 @@ import { ACHIEVEMENTS, checkNewAchievements } from '@/lib/achievements';
 interface AchievementsStore {
   unlockedAchievements: Achievement[];
   stats: UserStats;
+  
+  // Sync state
+  isSyncing: boolean;
+  lastSyncTime: number;
+  
   unlockAchievement: (achievementId: string) => void;
   updateStats: (stats: Partial<UserStats>) => void;
   checkAndUnlockAchievements: () => Achievement[];
   resetAchievements: () => void;
+  
+  // Sync methods
+  syncToCloud: () => Promise<void>;
+  fetchFromCloud: () => Promise<void>;
 }
 
 const defaultStats: UserStats = {
@@ -30,6 +39,10 @@ export const useAchievementsStore = create<AchievementsStore>()(
     (set, get) => ({
       unlockedAchievements: [],
       stats: defaultStats,
+      
+      // Sync state
+      isSyncing: false,
+      lastSyncTime: 0,
 
       unlockAchievement: (achievementId) =>
         set((state) => {
@@ -38,6 +51,16 @@ export const useAchievementsStore = create<AchievementsStore>()(
 
           const alreadyUnlocked = state.unlockedAchievements.some((a) => a.id === achievementId);
           if (alreadyUnlocked) return state;
+
+          // Trigger sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              await syncManager.syncAchievementUnlock(achievementId);
+            }
+          }, 0);
 
           return {
             unlockedAchievements: [
@@ -48,9 +71,21 @@ export const useAchievementsStore = create<AchievementsStore>()(
         }),
 
       updateStats: (newStats) =>
-        set((state) => ({
-          stats: { ...state.stats, ...newStats }
-        })),
+        set((state) => {
+          // Trigger sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              await syncManager.syncUserStats({ ...state.stats, ...newStats });
+            }
+          }, 0);
+
+          return {
+            stats: { ...state.stats, ...newStats }
+          };
+        }),
 
       checkAndUnlockAchievements: () => {
         const { stats, unlockedAchievements } = get();
@@ -68,10 +103,90 @@ export const useAchievementsStore = create<AchievementsStore>()(
         set({
           unlockedAchievements: [],
           stats: defaultStats
-        })
+        }),
+      
+      // Sync methods
+      syncToCloud: async () => {
+        const state = get();
+        const { getCurrentUser } = await import('@/lib/supabase/auth');
+        const { syncManager } = await import('@/lib/sync');
+        
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('No user logged in, skipping achievements sync');
+          return;
+        }
+        
+        set({ isSyncing: true });
+        
+        try {
+          // Sync all unlocked achievements
+          for (const achievement of state.unlockedAchievements) {
+            await syncManager.syncAchievementUnlock(achievement.id);
+          }
+          
+          // Sync stats
+          await syncManager.syncUserStats(state.stats);
+          
+          set({ isSyncing: false, lastSyncTime: Date.now() });
+          console.log('✅ Achievements synced to cloud');
+        } catch (error) {
+          set({ isSyncing: false });
+          console.error('❌ Failed to sync achievements:', error);
+        }
+      },
+      
+      fetchFromCloud: async () => {
+        const { getCurrentUser } = await import('@/lib/supabase/auth');
+        const { syncManager } = await import('@/lib/sync');
+        
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('No user logged in, skipping achievements fetch');
+          return;
+        }
+        
+        set({ isSyncing: true });
+        
+        try {
+          const remoteData = await syncManager.fetchFromCloud('achievement');
+          
+          if (remoteData && remoteData.length > 0) {
+            // Merge with local achievements
+            const localIds = get().unlockedAchievements.map(a => a.id);
+            const remoteIds = remoteData.map((a: any) => a.achievement_id);
+            const allIds = Array.from(new Set([...localIds, ...remoteIds]));
+            
+            const mergedAchievements = allIds.map(id => {
+              const achievement = ACHIEVEMENTS.find(a => a.id === id);
+              const remote = remoteData.find((a: any) => a.achievement_id === id);
+              return {
+                ...achievement!,
+                unlockedAt: remote?.unlocked_at ? new Date(remote.unlocked_at).getTime() : Date.now()
+              };
+            }).filter(a => a.id);
+            
+            set({ 
+              unlockedAchievements: mergedAchievements,
+              isSyncing: false,
+              lastSyncTime: Date.now()
+            });
+            console.log('✅ Achievements fetched from cloud');
+          } else {
+            set({ isSyncing: false });
+          }
+        } catch (error) {
+          set({ isSyncing: false });
+          console.error('❌ Failed to fetch achievements:', error);
+        }
+      }
     }),
     {
-      name: 'vibestudy-achievements'
+      name: 'vibestudy-achievements',
+      partialize: (state) => ({
+        unlockedAchievements: state.unlockedAchievements,
+        stats: state.stats
+      })
     }
   )
 );

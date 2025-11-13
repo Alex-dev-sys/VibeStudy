@@ -21,7 +21,7 @@ export default function LearningDashboard() {
   const previousDay = curriculum.find((day) => day.day === activeDay - 1);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 overflow-hidden px-0 sm:gap-6 md:gap-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 overflow-hidden px-4 sm:gap-8 sm:px-6 md:gap-10 lg:gap-12 lg:px-8">
       <Toaster richColors position="top-right" />
       <ProgressOverview />
       <LanguageSelector />

@@ -273,7 +273,13 @@ export async function POST(request: Request) {
   try {
     const prompt = buildPrompt(body);
 
-    const { data, raw } = await callChatCompletion({
+    // Add timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('AI request timeout')), 60000) // 60 seconds
+    );
+
+    const { data, raw } = await Promise.race([
+      callChatCompletion({
         messages: [
           {
             role: 'system',
@@ -285,15 +291,22 @@ export async function POST(request: Request) {
           }
         ],
         temperature: 0.8,
-      maxTokens: 2000,
-      responseFormat: { type: 'json_object' }
-    });
+      maxTokens: 1500  // Reduced for faster generation
+      // responseFormat removed - gptlama.ru may not support it
+    }),
+      timeoutPromise
+    ]) as any;
 
     const content = raw || extractMessageContent(data);
+    
+    // Логируем ответ API для отладки
+    console.log('🤖 AI Response (first 500 chars):', String(content).slice(0, 500));
 
     const parsedResponse = parseAiResponse(String(content));
     const isFallback =
       parsedResponse.tasks?.[0]?.id?.startsWith('fallback-') ?? false;
+    
+    console.log('📊 Parsed response:', isFallback ? 'FALLBACK' : 'SUCCESS', 'Tasks:', parsedResponse.tasks?.length);
 
     // Сохраняем в базу данных
     if (!isFallback) {

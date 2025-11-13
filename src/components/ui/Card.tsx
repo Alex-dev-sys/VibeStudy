@@ -7,8 +7,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={clsx(
-        'relative glass-panel-soft rounded-3xl p-6 transition-all duration-300 hover:shadow-[0_32px_90px_rgba(6,3,18,0.6)]',
-        'before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-white/4 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-20',
+        'relative glass-panel-enhanced glass-panel-hover rounded-3xl p-6',
         className
       )}
       {...props}
@@ -25,6 +24,6 @@ export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingEle
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={clsx('text-sm text-white/70', className)} {...props} />;
+  return <p className={clsx('text-sm text-white/90', className)} {...props} />;
 }
 

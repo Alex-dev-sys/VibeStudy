@@ -4,14 +4,15 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from '@radix-ui/react-slot';
 import { clsx } from 'clsx';
 import type { ButtonHTMLAttributes } from 'react';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/70 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-60',
+  'inline-flex items-center justify-center gap-2 rounded-full transition-all duration-200 transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/70 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]',
   {
     variants: {
       variant: {
         primary:
-          'bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] text-[#25031f] font-semibold shadow-[0_18px_38px_rgba(255,0,148,0.35)] hover:brightness-110 hover:shadow-[0_24px_50px_rgba(255,0,148,0.45)]',
+          'bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] text-[#25031f] font-semibold shadow-[0_18px_38px_rgba(255,0,148,0.35)] hover:brightness-110 hover:shadow-[0_24px_50px_rgba(255,0,148,0.45)] hover:-translate-y-0.5',
         secondary:
           'bg-transparent border border-white/5 text-white/90 hover:border-white/15 hover:bg-white/5 shadow-[0_15px_35px_rgba(12,6,28,0.35)]',
         ghost: 'bg-transparent text-white/80 hover:bg-white/5 border border-transparent hover:border-white/5'
@@ -31,10 +32,21 @@ const buttonVariants = cva(
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  isLoading?: boolean;
 }
 
-export function Button({ variant, size, asChild = false, className, ...props }: ButtonProps) {
+export function Button({ variant, size, asChild = false, className, isLoading, children, disabled, ...props }: ButtonProps) {
   const Comp = asChild ? Slot : 'button';
-  return <Comp className={clsx(buttonVariants({ variant, size }), className)} {...props} />;
+  
+  return (
+    <Comp 
+      className={clsx(buttonVariants({ variant, size }), className)} 
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading && <LoadingSpinner size={size === 'sm' ? 'sm' : size === 'lg' ? 'md' : 'sm'} />}
+      {children}
+    </Comp>
+  );
 }
 

@@ -151,6 +151,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
   });
 
   const rawBody = await response.text();
+  console.log('🔍 Raw API Response (first 500 chars):', rawBody.slice(0, 500));
   const parsedBody = parseResponsePayload(rawBody);
 
   if (!response.ok) {

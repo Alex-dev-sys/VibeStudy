@@ -1,128 +1,206 @@
-import { supabase } from './client';
-
-const getBaseUrl = () => {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (envUrl) {
-    return envUrl.replace(/\/$/, '');
-  }
-
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-
-  return 'http://localhost:3000';
-};
+import { getSupabaseClient, isSupabaseConfigured } from './client';
+import type { AuthResult, AuthCallback, Unsubscribe, User, Session, ProfileUpdates } from './types';
 
 /**
- * Вход через Email (Magic Link)
+ * Authentication Service
+ * Handles user authentication with Google OAuth and Email Magic Link
  */
-export async function signInWithEmail(email: string) {
-  if (!supabase) {
-    return { error: new Error('Supabase не настроен') };
-  }
-
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${getBaseUrl()}/learn`,
-    },
-  });
-
-  if (error) {
-    console.error('Ошибка входа через Email:', error);
-    return { error };
-  }
-
-  return { data };
-}
 
 /**
- * Вход через Google
+ * Sign in with Google OAuth
  */
-export async function signInWithGoogle() {
-  if (!supabase) {
-    return { error: new Error('Supabase не настроен') };
-  }
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${getBaseUrl()}/auth/callback`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  });
-
-  if (error) {
-    console.error('Ошибка входа через Google:', error);
-    return { error };
-  }
-
-  return { data };
-}
-
-
-/**
- * Выход
- */
-export async function signOut() {
-  if (!supabase) {
-    // В гостевом режиме просто очищаем localStorage
-    localStorage.removeItem('guestMode');
-    return { error: null };
-  }
-
-  const { error } = await supabase.auth.signOut();
+export async function signInWithGoogle(): Promise<AuthResult> {
+  const supabase = getSupabaseClient();
   
-  if (error) {
-    console.error('Ошибка выхода:', error);
-    return { error };
-  }
-
-  return { error: null };
-}
-
-/**
- * Получить текущего пользователя
- */
-export async function getCurrentUser() {
   if (!supabase) {
-    // В гостевом режиме возвращаем null
-    return { user: null, error: null };
+    return {
+      user: null,
+      session: null,
+      error: new Error('Supabase is not configured. Please set up environment variables.')
+    };
   }
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error) {
-    const message = typeof error.message === 'string' ? error.message : '';
-    const code = (error as { code?: string }).code ?? '';
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
 
-    if (message.includes('Auth session missing') || code === 'AuthSessionMissingError') {
-      // Нет активной сессии — нормальная ситуация для гостевого режима
-      return { user: null, error: null };
+    if (error) {
+      return { user: null, session: null, error };
     }
 
-    console.error('Ошибка получения пользователя:', error);
-    return { user: null, error };
+    // OAuth redirects, so we won't have user/session immediately
+    return { user: null, session: null, error: null };
+  } catch (error) {
+    return {
+      user: null,
+      session: null,
+      error: error instanceof Error ? error : new Error('Unknown error during Google sign in')
+    };
   }
-
-  return { user, error: null };
 }
 
 /**
- * Подписаться на изменения аутентификации
+ * Sign in with Email (Magic Link)
  */
-export function onAuthStateChange(callback: (user: any) => void) {
+export async function signInWithEmail(email: string): Promise<AuthResult> {
+  const supabase = getSupabaseClient();
+  
   if (!supabase) {
-    // В гостевом режиме сразу вызываем callback с null
-    callback(null);
-    return { data: { subscription: { unsubscribe: () => {} } } };
+    return {
+      user: null,
+      session: null,
+      error: new Error('Supabase is not configured. Please set up environment variables.')
+    };
   }
 
-  return supabase.auth.onAuthStateChange((event, session) => {
-    callback(session?.user ?? null);
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+
+    if (error) {
+      return { user: null, session: null, error };
+    }
+
+    // Magic link sent, user needs to check email
+    return { user: null, session: null, error: null };
+  } catch (error) {
+    return {
+      user: null,
+      session: null,
+      error: error instanceof Error ? error : new Error('Unknown error during email sign in')
+    };
+  }
 }
 
+/**
+ * Sign out current user
+ */
+export async function signOut(): Promise<void> {
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    console.warn('Supabase not configured, nothing to sign out from');
+    return;
+  }
+
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get current session
+ */
+export async function getSession(): Promise<Session | null> {
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error getting session:', error);
+      return null;
+    }
+    
+    return data.session;
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
+}
+
+/**
+ * Get current user
+ */
+export async function getCurrentUser(): Promise<User | null> {
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      console.error('Error getting user:', error);
+      return null;
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return null;
+  }
+}
+
+/**
+ * Listen to auth state changes
+ */
+export function onAuthStateChange(callback: AuthCallback): Unsubscribe {
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    console.warn('Supabase not configured, auth state changes will not be tracked');
+    return () => {}; // Return empty unsubscribe function
+  }
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}
+
+/**
+ * Update user profile metadata
+ */
+export async function updateUserProfile(updates: ProfileUpdates): Promise<void> {
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    throw new Error('Supabase is not configured');
+  }
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      data: updates
+    });
+
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if user is authenticated
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    return false;
+  }
+
+  const session = await getSession();
+  return session !== null;
+}

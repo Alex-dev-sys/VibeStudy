@@ -8,6 +8,18 @@ const config: Config = {
       fontFamily: {
         sans: ['"Inter"', 'system-ui', 'sans-serif']
       },
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1.5' }],
+        sm: ['0.875rem', { lineHeight: '1.6' }],
+        base: ['1rem', { lineHeight: '1.7' }],
+        lg: ['1.125rem', { lineHeight: '1.7' }],
+        xl: ['1.25rem', { lineHeight: '1.7' }],
+        '2xl': ['1.5rem', { lineHeight: '1.6' }],
+        '3xl': ['1.875rem', { lineHeight: '1.5' }],
+        '4xl': ['2.25rem', { lineHeight: '1.4' }],
+        '5xl': ['3rem', { lineHeight: '1.3' }],
+        '6xl': ['3.75rem', { lineHeight: '1.2' }]
+      },
       colors: {
         background: '#080312',
         foreground: '#f8f6ff',
@@ -16,6 +28,11 @@ const config: Config = {
           soft: '#ffd34f'
         },
         surface: '#15072a'
+      },
+      spacing: {
+        touch: '44px',
+        'mobile-padding': '1.5rem',
+        'desktop-padding': '2rem'
       },
       boxShadow: {
         glow: '0 0 28px rgba(255, 0, 148, 0.35)'
@@ -37,12 +54,32 @@ const config: Config = {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-12px)' }
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' }
+        },
+        'pulse-glow': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(255, 0, 148, 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgba(255, 0, 148, 0.6)' }
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
+        'scale-in': {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' }
         }
       },
       animation: {
         'gradient-x': 'gradient-x 8s ease infinite',
         'border-glow': 'border-glow 12s linear infinite',
-        'slow-float': 'float 6s ease-in-out infinite'
+        'slow-float': 'float 6s ease-in-out infinite',
+        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'spin-slow': 'spin-slow 1s linear infinite',
+        'scale-in': 'scale-in 0.2s ease-out'
       },
       gridTemplateColumns: {
         '15': 'repeat(15, minmax(0, 1fr))'

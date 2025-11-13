@@ -18,10 +18,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-    const { user } = await getCurrentUser();
-    if (user) {
-      router.push('/learn');
-    }
+      const user = await getCurrentUser();
+      if (user) {
+        router.push('/learn');
+      }
     };
 
     checkUser().catch((error) => {

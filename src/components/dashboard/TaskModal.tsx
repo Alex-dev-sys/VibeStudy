@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
+import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { difficultyColorMap } from '@/lib/utils';
@@ -60,11 +61,26 @@ export function TaskModal({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [editorLoading, setEditorLoading] = useState(true);
   const [editorError, setEditorError] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
   const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
 
   useScrollLock(isOpen);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      
+      const handleResize = () => {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,6 +92,7 @@ export function TaskModal({
       setShowSuggestions(false);
       setEditorLoading(true);
       setEditorError(false);
+      setShowConfetti(false);
     }
   }, [isOpen, task.id]);
 
@@ -147,6 +164,7 @@ export function TaskModal({
       if (result.success) {
         updateTopicMastery(topic, day, result.score || 100, newAttemptsCount);
         onComplete(task.id);
+        setShowConfetti(true);
       }
     } catch (error) {
       setCheckResult(null);
@@ -211,11 +229,21 @@ export function TaskModal({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overscroll-contain">
+        {showConfetti && (
+          <Confetti
+            width={windowSize.width}
+            height={windowSize.height}
+            recycle={false}
+            numberOfPieces={200}
+            colors={['#ff0094', '#ff5bc8', '#ffd200', '#ff84ff']}
+            onConfettiComplete={() => setShowConfetti(false)}
+          />
+        )}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6"
+          className="glass-panel-foreground relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
         >
           {/* Заголовок */}
           <div className="flex items-start justify-between gap-2 sm:gap-4">
@@ -257,7 +285,7 @@ export function TaskModal({
               </div>
             ) : (
               <Editor
-                height="300px"
+                height="250px"
                 language={monacoLanguage}
                 theme="vs-dark"
                 value={code}
@@ -266,7 +294,7 @@ export function TaskModal({
                   setEditorLoading(false);
                 }}
                 loading={
-                  <div className="flex h-[300px] items-center justify-center bg-black/60">
+                  <div className="flex h-[250px] items-center justify-center bg-black/60">
                     <div className="text-center">
                       <div className="mb-3 text-2xl">⏳</div>
                       <p className="text-sm text-white/60">Загрузка редактора...</p>
@@ -343,7 +371,7 @@ export function TaskModal({
 
           {/* Кнопки */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-            <Button variant="ghost" size="md" onClick={onClose} className="order-3 w-full text-xs sm:order-1 sm:w-auto sm:text-sm">
+            <Button variant="ghost" size="md" onClick={onClose} className="order-3 w-full min-h-touch text-xs sm:order-1 sm:w-auto sm:text-sm">
               Закрыть
             </Button>
             <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
@@ -351,27 +379,29 @@ export function TaskModal({
                 variant="ghost" 
                 size="md" 
                 onClick={handleGetHint} 
+                isLoading={isLoadingHint}
                 disabled={isLoadingHint || isChecking}
-                className="flex-1 text-xs sm:flex-none sm:text-sm"
+                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
               >
-                {isLoadingHint ? '💭 Думаю...' : '💡 Подсказка'}
+                {isLoadingHint ? 'Думаю...' : '💡 Подсказка'}
               </Button>
               <Button 
                 variant="secondary" 
                 size="md" 
                 onClick={() => setCode('')} 
-                className="flex-1 text-xs sm:flex-none sm:text-sm"
+                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
               >
                 Очистить
               </Button>
               <Button 
                 variant="primary" 
                 size="md" 
-                onClick={handleCheck} 
+                onClick={handleCheck}
+                isLoading={isChecking}
                 disabled={isChecking || !code.trim()} 
-                className="flex-1 text-xs sm:flex-none sm:text-sm"
+                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
               >
-                {isChecking ? '🤖 Проверка...' : '✓ Проверить'}
+                {isChecking ? 'Проверка...' : '✓ Проверить'}
               </Button>
             </div>
           </div>

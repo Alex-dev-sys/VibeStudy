@@ -9,6 +9,14 @@ interface ProgressStore {
   languageId: string;
   dayStates: Record<number, DayStateSnapshot>;
   record: ProgressRecord;
+  
+  // Sync state
+  isSyncing: boolean;
+  lastSyncTime: number;
+  syncError: Error | null;
+  queuedOperations: any[];
+  
+  // Original methods
   setLanguage: (languageId: string) => void;
   setActiveDay: (day: number) => void;
   toggleTask: (day: number, taskId: string) => void;
@@ -19,6 +27,12 @@ interface ProgressStore {
   replaceTask: (day: number, previousTaskId: string, newTaskId: string) => void;
   markDayComplete: (day: number) => void;
   resetProgress: () => void;
+  
+  // Sync methods
+  syncToCloud: () => Promise<void>;
+  fetchFromCloud: () => Promise<void>;
+  addToQueue: (operation: any) => void;
+  processQueue: () => Promise<void>;
 }
 
 const defaultDayState: DayStateSnapshot = {
@@ -39,11 +53,17 @@ const defaultRecord: ProgressRecord = {
 
 export const useProgressStore = create<ProgressStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       activeDay: 1,
       languageId: 'python',
       dayStates: { 1: defaultDayState },
       record: defaultRecord,
+      
+      // Sync state
+      isSyncing: false,
+      lastSyncTime: 0,
+      syncError: null,
+      queuedOperations: [],
       setLanguage: (languageId) => set({ languageId }),
       setActiveDay: (day) =>
         set((state) => ({
@@ -86,7 +106,7 @@ export const useProgressStore = create<ProgressStore>()(
             });
           }
 
-          return {
+          const newState = {
             dayStates: {
               ...state.dayStates,
               [day]: {
@@ -96,40 +116,94 @@ export const useProgressStore = create<ProgressStore>()(
               }
             }
           };
+          
+          // Trigger immediate sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              await syncManager.syncTaskCompletion(String(day), taskId, !alreadyCompleted);
+            }
+          }, 0);
+          
+          return newState;
         }),
       updateCode: (day, code) =>
-        set((state) => ({
-          dayStates: {
-            ...state.dayStates,
-            [day]: {
-              ...(state.dayStates[day] ?? defaultDayState),
-              code,
-              lastUpdated: Date.now()
+        set((state) => {
+          const newState = {
+            dayStates: {
+              ...state.dayStates,
+              [day]: {
+                ...(state.dayStates[day] ?? defaultDayState),
+                code,
+                lastUpdated: Date.now()
+              }
             }
-          }
-        })),
+          };
+          
+          // Trigger debounced sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              syncManager.syncCode(String(day), 'code', code);
+            }
+          }, 0);
+          
+          return newState;
+        }),
       updateNotes: (day, notes) =>
-        set((state) => ({
-          dayStates: {
-            ...state.dayStates,
-            [day]: {
-              ...(state.dayStates[day] ?? defaultDayState),
-              notes,
-              lastUpdated: Date.now()
+        set((state) => {
+          const newState = {
+            dayStates: {
+              ...state.dayStates,
+              [day]: {
+                ...(state.dayStates[day] ?? defaultDayState),
+                notes,
+                lastUpdated: Date.now()
+              }
             }
-          }
-        })),
+          };
+          
+          // Trigger debounced sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              syncManager.syncNotes(String(day), notes);
+            }
+          }, 0);
+          
+          return newState;
+        }),
       updateRecapAnswer: (day, answer) =>
-        set((state) => ({
-          dayStates: {
-            ...state.dayStates,
-            [day]: {
-              ...(state.dayStates[day] ?? defaultDayState),
-              recapAnswer: answer,
-              lastUpdated: Date.now()
+        set((state) => {
+          const newState = {
+            dayStates: {
+              ...state.dayStates,
+              [day]: {
+                ...(state.dayStates[day] ?? defaultDayState),
+                recapAnswer: answer,
+                lastUpdated: Date.now()
+              }
             }
-          }
-        })),
+          };
+          
+          // Trigger debounced sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              syncManager.syncRecapAnswer(String(day), answer);
+            }
+          }, 0);
+          
+          return newState;
+        }),
       resetDayTasks: (day) =>
         set((state) => ({
           dayStates: {
@@ -200,7 +274,7 @@ export const useProgressStore = create<ProgressStore>()(
             showAchievementToast(achievement);
           });
 
-          return {
+          const newState = {
             record: {
               completedDays,
               lastActiveDay: day,
@@ -208,13 +282,109 @@ export const useProgressStore = create<ProgressStore>()(
               history: [...state.record.history, historyEntry]
             }
           };
+          
+          // Trigger immediate sync to cloud
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const user = await getCurrentUser();
+            if (user) {
+              await syncManager.syncDayCompletion(String(day), true);
+            }
+          }, 0);
+          
+          return newState;
         }),
       resetProgress: () =>
         set({
           activeDay: 1,
           dayStates: { 1: defaultDayState },
           record: defaultRecord
-        })
+        }),
+      
+      // Sync methods
+      syncToCloud: async () => {
+        const state = get();
+        const { getCurrentUser } = await import('@/lib/supabase/auth');
+        const { upsertProgress } = await import('@/lib/supabase/database');
+        
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('No user logged in, skipping sync');
+          return;
+        }
+        
+        set({ isSyncing: true, syncError: null });
+        
+        try {
+          const result = await upsertProgress({
+            userId: user.id,
+            dayStates: state.dayStates,
+            record: state.record,
+            languageId: state.languageId,
+            activeDay: state.activeDay
+          });
+          
+          if (result.error) {
+            throw result.error;
+          }
+          
+          set({ isSyncing: false, lastSyncTime: Date.now() });
+          console.log('✅ Progress synced to cloud');
+        } catch (error) {
+          set({ isSyncing: false, syncError: error as Error });
+          console.error('❌ Failed to sync progress:', error);
+        }
+      },
+      
+      fetchFromCloud: async () => {
+        const { getCurrentUser } = await import('@/lib/supabase/auth');
+        const { fetchProgress } = await import('@/lib/supabase/database');
+        
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('No user logged in, skipping fetch');
+          return;
+        }
+        
+        set({ isSyncing: true, syncError: null });
+        
+        try {
+          const result = await fetchProgress(user.id);
+          
+          if (result.error) {
+            throw result.error;
+          }
+          
+          if (result.data) {
+            set({
+              dayStates: result.data.dayStates,
+              record: result.data.record,
+              languageId: result.data.languageId,
+              activeDay: result.data.activeDay,
+              isSyncing: false,
+              lastSyncTime: Date.now()
+            });
+            console.log('✅ Progress fetched from cloud');
+          } else {
+            set({ isSyncing: false });
+          }
+        } catch (error) {
+          set({ isSyncing: false, syncError: error as Error });
+          console.error('❌ Failed to fetch progress:', error);
+        }
+      },
+      
+      addToQueue: (operation) => {
+        set((state) => ({
+          queuedOperations: [...state.queuedOperations, operation]
+        }));
+      },
+      
+      processQueue: async () => {
+        // TODO: Implement in next task
+        console.log('processQueue called - not yet implemented');
+      }
     }),
     {
       name: 'vibestudy-progress',

@@ -14,8 +14,28 @@ interface FormatTheoryOptions {
   languageId: string;
 }
 
-export const formatTheoryContent = (rawTheory: string | undefined, { topic, languageId }: FormatTheoryOptions) => {
-  let theory = (rawTheory ?? '').replace(/\r\n/g, '\n').replace(/\t/g, '  ').trim();
+export const formatTheoryContent = (rawTheory: string | undefined | any, { topic, languageId }: FormatTheoryOptions) => {
+  // Handle case when theory is an object (from new AI format)
+  if (typeof rawTheory === 'object' && rawTheory !== null) {
+    // Convert object to markdown string
+    const parts: string[] = [];
+    if (rawTheory.introduction) parts.push(rawTheory.introduction);
+    if (rawTheory.main_concepts) {
+      parts.push('\n## Основные концепции\n');
+      if (typeof rawTheory.main_concepts === 'object') {
+        Object.entries(rawTheory.main_concepts).forEach(([key, value]) => {
+          parts.push(`\n**${key}**: ${value}`);
+        });
+      } else {
+        parts.push(String(rawTheory.main_concepts));
+      }
+    }
+    if (rawTheory.examples) parts.push('\n## Примеры\n' + String(rawTheory.examples));
+    if (rawTheory.notes) parts.push('\n## Важные замечания\n' + String(rawTheory.notes));
+    rawTheory = parts.join('\n');
+  }
+  
+  let theory = (rawTheory ?? '').toString().replace(/\r\n/g, '\n').replace(/\t/g, '  ').trim();
 
   if (!theory) {
     return `## Тема дня: ${topic}\n\nНе удалось получить развёрнутую теорию. Попробуйте обновить генерацию позже.`;
