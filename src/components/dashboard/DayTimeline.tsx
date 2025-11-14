@@ -72,12 +72,11 @@ export function DayTimeline() {
                 const isActive = day === activeDay;
                 
                 // Логика блокировки:
-                // 1. Завершенные дни нельзя открыть снова
-                // 2. Можно открыть только день 1 или следующий после последнего завершенного
+                // 1. Завершенные дни можно открыть для просмотра
+                // 2. Можно открыть только день 1 или следующий после последнего завершенного, или любой завершенный
                 const lastCompletedDay = completedDays.length > 0 ? Math.max(...completedDays) : 0;
                 const isLockedFuture = day > 1 && day > lastCompletedDay + 1;
-                const isLockedCompleted = isCompleted && !isActive;
-                const isLocked = isLockedFuture || isLockedCompleted;
+                const isLocked = isLockedFuture;
                 
                 return (
                   <button
@@ -90,14 +89,14 @@ export function DayTimeline() {
                       isActive
                         ? 'border-transparent bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-white shadow-[0_0_18px_rgba(255,0,148,0.6)]'
                         : isCompleted
-                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7] cursor-not-allowed'
+                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7] hover:border-[#ff84ff]/50 hover:bg-[#ff84ff]/20'
                           : isLockedFuture
                             ? 'border-white/8 bg-[rgba(255,255,255,0.05)] text-white/30 cursor-not-allowed'
                             : 'border-white/12 bg-[rgba(255,255,255,0.15)] text-white/60 hover:border-white/25'
                     )}
                     title={
-                      isLockedCompleted 
-                        ? 'День уже завершен ✓' 
+                      isCompleted && !isActive
+                        ? 'Нажмите чтобы просмотреть завершенный день' 
                         : isLockedFuture 
                           ? 'Завершите предыдущий день чтобы разблокировать' 
                           : undefined
@@ -109,11 +108,11 @@ export function DayTimeline() {
                       </span>
                     )}
                     {isCompleted && !isActive && (
-                      <span className="absolute inset-0 flex items-center justify-center text-base">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#ff84ff] text-[10px]">
                         ✓
                       </span>
                     )}
-                    <span className={isLockedFuture || (isCompleted && !isActive) ? 'opacity-0' : ''}>{day}</span>
+                    <span className={isLockedFuture ? 'opacity-0' : ''}>{day}</span>
                   </button>
                 );
               })}

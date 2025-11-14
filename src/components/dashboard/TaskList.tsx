@@ -16,6 +16,7 @@ interface TaskListProps {
   isLoading?: boolean;
   onRegenerateTask?: (taskId: string) => void;
   regeneratingTaskId?: string | null;
+  isViewMode?: boolean;
 }
 
 export function TaskList({
@@ -26,7 +27,8 @@ export function TaskList({
   topic,
   isLoading = false,
   onRegenerateTask,
-  regeneratingTaskId = null
+  regeneratingTaskId = null,
+  isViewMode = false
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<{ task: GeneratedTask; index: number } | null>(null);
   const toggleTask = useProgressStore((state) => state.toggleTask);
@@ -65,7 +67,7 @@ export function TaskList({
                   {isCompleted && <span className="text-accent">✓</span>}
                 </div>
                 <div className="flex items-center gap-1.5 text-white/50 sm:gap-2">
-                  {onRegenerateTask && (
+                  {onRegenerateTask && !isViewMode && (
                     <button
                       type="button"
                       onClick={(event) => {
@@ -89,7 +91,7 @@ export function TaskList({
                       )}
                     </button>
                   )}
-                  <span className="hidden text-xs text-white/50 sm:inline">Нажми, чтобы открыть →</span>
+                  <span className="hidden text-xs text-white/50 sm:inline">{isViewMode ? 'Просмотр →' : 'Нажми, чтобы открыть →'}</span>
                   <span className="text-[10px] text-white/50 sm:hidden">→</span>
                 </div>
               </div>
@@ -112,6 +114,7 @@ export function TaskList({
           monacoLanguage={monacoLanguage}
           day={day}
           topic={topic}
+          isViewMode={isViewMode}
         />
       )}
     </>

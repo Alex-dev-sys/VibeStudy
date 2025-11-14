@@ -22,6 +22,7 @@ interface TaskModalProps {
   monacoLanguage: string;
   day: number;
   topic: string;
+  isViewMode?: boolean;
 }
 
 interface CheckResult {
@@ -48,7 +49,8 @@ export function TaskModal({
   languageId,
   monacoLanguage,
   day,
-  topic
+  topic,
+  isViewMode = false
 }: TaskModalProps) {
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
@@ -254,6 +256,7 @@ export function TaskModal({
                   {task.difficulty}
                 </Badge>
                 {isCompleted && <Badge tone="accent" className="text-xs sm:text-sm">✓ Выполнено</Badge>}
+                {isViewMode && <Badge tone="neutral" className="text-xs sm:text-sm">👁️ Просмотр</Badge>}
               </div>
               <h2 className="mt-2 text-base font-semibold text-white sm:text-lg md:text-xl">{task.prompt}</h2>
               {task.solutionHint && <p className="mt-2 text-xs text-white/60 sm:text-sm">💡 Подсказка: {task.solutionHint}</p>}
@@ -309,7 +312,7 @@ export function TaskModal({
                   scrollBeyondLastLine: false,
                   lineNumbers: 'on',
                   wordWrap: 'on',
-                  readOnly: false
+                  readOnly: isViewMode
                 }}
               />
             )}
@@ -374,36 +377,38 @@ export function TaskModal({
             <Button variant="ghost" size="md" onClick={onClose} className="order-3 w-full min-h-touch text-xs sm:order-1 sm:w-auto sm:text-sm">
               Закрыть
             </Button>
-            <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
-              <Button 
-                variant="ghost" 
-                size="md" 
-                onClick={handleGetHint} 
-                isLoading={isLoadingHint}
-                disabled={isLoadingHint || isChecking}
-                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-              >
-                {isLoadingHint ? 'Думаю...' : '💡 Подсказка'}
-              </Button>
-              <Button 
-                variant="secondary" 
-                size="md" 
-                onClick={() => setCode('')} 
-                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-              >
-                Очистить
-              </Button>
-              <Button 
-                variant="primary" 
-                size="md" 
-                onClick={handleCheck}
-                isLoading={isChecking}
-                disabled={isChecking || !code.trim()} 
-                className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-              >
-                {isChecking ? 'Проверка...' : '✓ Проверить'}
-              </Button>
-            </div>
+            {!isViewMode && (
+              <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="md" 
+                  onClick={handleGetHint} 
+                  isLoading={isLoadingHint}
+                  disabled={isLoadingHint || isChecking}
+                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
+                >
+                  {isLoadingHint ? 'Думаю...' : '💡 Подсказка'}
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="md" 
+                  onClick={() => setCode('')} 
+                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
+                >
+                  Очистить
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="md" 
+                  onClick={handleCheck}
+                  isLoading={isChecking}
+                  disabled={isChecking || !code.trim()} 
+                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
+                >
+                  {isChecking ? 'Проверка...' : '✓ Проверить'}
+                </Button>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
