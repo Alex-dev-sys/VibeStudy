@@ -10,6 +10,7 @@ import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 
 interface TaskModalProps {
   task: GeneratedTask;
@@ -141,6 +142,12 @@ export function TaskModal({
       
       setOutput(outputText);
       setShowSuggestions((result.suggestions?.length || 0) > 0);
+      
+      // Announce result to screen readers
+      const announcement = result.success
+        ? `Задача решена успешно! Оценка: ${result.score || 100} из 100`
+        : `Задача не решена. ${result.message}`;
+      announceLiveRegion(announcement, 'assertive');
 
       // Сохраняем попытку в профиль знаний
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
@@ -167,11 +174,15 @@ export function TaskModal({
         updateTopicMastery(topic, day, result.score || 100, newAttemptsCount);
         onComplete(task.id);
         setShowConfetti(true);
+        // Announce achievement
+        announceLiveRegion('Поздравляем! Задача выполнена успешно!', 'assertive');
       }
     } catch (error) {
       setCheckResult(null);
       setOutput('❌ Ошибка при проверке кода. Попробуйте позже.');
       console.error('Ошибка проверки:', error);
+      // Announce error to screen readers
+      announceLiveRegion('Ошибка при проверке кода. Попробуйте позже.', 'assertive');
     } finally {
       setIsChecking(false);
     }

@@ -26,11 +26,18 @@ export default function ProfilePage() {
               Управляй данными, подключай Telegram-бота, отслеживай достижения и аналитику.
             </p>
           </div>
-          <Link href="/learn">
-            <Button variant="secondary" size="md" className="border-white/15 text-white/90">
-              ← Вернуться к обучению
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/analytics">
+              <Button variant="primary" size="md">
+                📊 Аналитика
+              </Button>
+            </Link>
+            <Link href="/learn">
+              <Button variant="secondary" size="md" className="border-white/15 text-white/90">
+                ← К обучению
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <ProfileCard />
