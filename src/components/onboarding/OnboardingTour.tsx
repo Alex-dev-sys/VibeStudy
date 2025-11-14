@@ -89,45 +89,12 @@ export function OnboardingTour() {
   if (!isActive || !currentStepData) return null;
 
   const getTooltipPosition = () => {
-    if (!targetRect || currentStepData.position === 'center') {
-      return {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)'
-      };
-    }
-
-    const padding = 20;
-    const tooltipWidth = 400;
-    const tooltipHeight = 200;
-
-    let top = 0;
-    let left = 0;
-
-    switch (currentStepData.position) {
-      case 'top':
-        top = targetRect.top - tooltipHeight - padding;
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        break;
-      case 'bottom':
-        top = targetRect.bottom + padding;
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        break;
-      case 'left':
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        left = targetRect.left - tooltipWidth - padding;
-        break;
-      case 'right':
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        left = targetRect.right + padding;
-        break;
-    }
-
-    // Keep tooltip within viewport
-    top = Math.max(padding, Math.min(top, windowSize.height - tooltipHeight - padding));
-    left = Math.max(padding, Math.min(left, windowSize.width - tooltipWidth - padding));
-
-    return { top: `${top}px`, left: `${left}px` };
+    // Always center the tooltip
+    return {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)'
+    };
   };
 
   return (

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useProfileStore } from '@/store/profile-store';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
+import { getCurrentUser } from '@/lib/supabase/auth';
 
 export function ProfileCard() {
   const { profile, updateProfile } = useProfileStore();
@@ -16,6 +17,40 @@ export function ProfileCard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(profile.name);
   const [editedBio, setEditedBio] = useState(profile.bio || '');
+
+  // Load user data from Supabase on mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        const updates: any = {};
+        
+        // Set email if available
+        if (user.email && !profile.email) {
+          updates.email = user.email;
+        }
+        
+        // Set name from user metadata or email
+        if (!profile.name || profile.name === 'Гость') {
+          updates.name = user.user_metadata?.full_name || 
+                        user.user_metadata?.name || 
+                        user.email?.split('@')[0] || 
+                        'Пользователь';
+        }
+        
+        // Set avatar from user metadata (Google OAuth provides avatar_url)
+        if (user.user_metadata?.avatar_url && !profile.avatar) {
+          updates.avatar = user.user_metadata.avatar_url;
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          updateProfile(updates);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, []);
 
   const handleSave = () => {
     updateProfile({
