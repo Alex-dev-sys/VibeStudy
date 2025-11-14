@@ -2,7 +2,12 @@
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
 
-export async function handleSettingsCommand(): Promise<BotResponse> {
+export async function handleSettingsCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   const keyboard: InlineKeyboard = {
     inline_keyboard: [
       [

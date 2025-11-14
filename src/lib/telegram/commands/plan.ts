@@ -3,7 +3,12 @@
 import type { BotResponse } from '@/types/telegram';
 import { analyzeLearningPattern, predictCompletionDate } from '../analytics-engine';
 
-export async function handlePlanCommand(userId: string): Promise<BotResponse> {
+export async function handlePlanCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   if (!userId) {
     return {
       text: '⚠️ Сначала зарегистрируйся на сайте VibeStudy.',

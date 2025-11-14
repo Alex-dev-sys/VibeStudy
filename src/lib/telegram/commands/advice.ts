@@ -4,7 +4,10 @@ import type { BotResponse } from '@/types/telegram';
 import { generateRecommendation } from '../ai-service';
 
 export async function handleAdviceCommand(
-  userId: string
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
 ): Promise<BotResponse> {
   if (!userId) {
     return {

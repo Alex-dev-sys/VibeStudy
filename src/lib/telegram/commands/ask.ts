@@ -6,6 +6,8 @@ import { getAIQuestionTracking, incrementAIQuestionCount } from '../database';
 
 export async function handleAskCommand(
   userId: string,
+  telegramUserId: number,
+  chatId: number,
   args: string[]
 ): Promise<BotResponse> {
   if (!userId) {

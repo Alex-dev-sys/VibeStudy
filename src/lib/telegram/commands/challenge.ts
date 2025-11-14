@@ -2,7 +2,12 @@
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
 
-export async function handleChallengeCommand(): Promise<BotResponse> {
+export async function handleChallengeCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   const challenges = [
     {
       title: 'Быстрый код',

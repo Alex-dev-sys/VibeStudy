@@ -3,7 +3,12 @@
 import type { BotResponse } from '@/types/telegram';
 import { predictCompletionDate } from '../analytics-engine';
 
-export async function handlePredictCommand(userId: string): Promise<BotResponse> {
+export async function handlePredictCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   if (!userId) {
     return {
       text: '⚠️ Сначала зарегистрируйся на сайте VibeStudy.',

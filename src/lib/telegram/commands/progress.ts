@@ -3,7 +3,10 @@
 import type { BotResponse } from '@/types/telegram';
 
 export async function handleProgressCommand(
-  userId: string
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
 ): Promise<BotResponse> {
   if (!userId) {
     return {

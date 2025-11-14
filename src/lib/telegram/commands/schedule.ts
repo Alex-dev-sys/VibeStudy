@@ -4,6 +4,8 @@ import type { BotResponse } from '@/types/telegram';
 
 export async function handleScheduleCommand(
   userId: string,
+  telegramUserId: number,
+  chatId: number,
   args: string[]
 ): Promise<BotResponse> {
   if (!userId) {

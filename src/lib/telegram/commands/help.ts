@@ -2,7 +2,12 @@
 
 import type { BotResponse } from '@/types/telegram';
 
-export async function handleHelpCommand(): Promise<BotResponse> {
+export async function handleHelpCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   const text = `📖 *Помощь по командам VibeStudy Bot*
 
 *📊 Статистика и прогресс:*

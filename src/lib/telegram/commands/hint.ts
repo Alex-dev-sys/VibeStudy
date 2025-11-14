@@ -5,6 +5,8 @@ import { generateHint } from '../ai-service';
 
 export async function handleHintCommand(
   userId: string,
+  telegramUserId: number,
+  chatId: number,
   args: string[]
 ): Promise<BotResponse> {
   if (!userId) {

@@ -2,7 +2,12 @@
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
 
-export async function handleRemindCommand(userId: string): Promise<BotResponse> {
+export async function handleRemindCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   if (!userId) {
     return {
       text: '⚠️ Сначала зарегистрируйся на сайте VibeStudy.',

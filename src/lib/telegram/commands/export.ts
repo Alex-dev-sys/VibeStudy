@@ -2,7 +2,12 @@
 
 import type { BotResponse } from '@/types/telegram';
 
-export async function handleExportCommand(userId: string): Promise<BotResponse> {
+export async function handleExportCommand(
+  userId: string,
+  telegramUserId: number,
+  chatId: number,
+  args: string[]
+): Promise<BotResponse> {
   if (!userId) {
     return {
       text: '⚠️ Сначала зарегистрируйся на сайте VibeStudy.',
