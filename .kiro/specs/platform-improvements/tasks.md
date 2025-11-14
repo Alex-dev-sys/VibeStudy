@@ -240,12 +240,15 @@
   - Add screen reader announcements for task completion, achievement unlocks
   - _Requirements: 5.6_
 
+
+
 - [x] 5.4 Ensure color contrast compliance
 
   - Audit all text and background color combinations
   - Update CSS variables to ensure 4.5:1 contrast ratio for normal text
   - Update CSS variables to ensure 3:1 contrast ratio for large text
   - Test with color contrast checker tools
+
   - _Requirements: 5.3_
 
 

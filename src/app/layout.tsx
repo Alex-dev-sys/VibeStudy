@@ -86,7 +86,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className="dark">
       <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>
-        <OnboardingProvider>{children}</OnboardingProvider>
+        <OnboardingProvider>
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-white">
+            Перейти к основному содержимому
+          </a>
+          {children}
+        </OnboardingProvider>
       </body>
     </html>
   );
