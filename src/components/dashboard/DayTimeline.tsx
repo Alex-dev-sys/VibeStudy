@@ -46,11 +46,15 @@ export function DayTimeline() {
         </span>
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-full border border-[#ff84ff]/30 bg-[#ff84ff]/15" aria-hidden />
-          Завершён
+          ✓ Завершён
         </span>
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-full border border-white/12 bg-[rgba(255,255,255,0.15)]" aria-hidden />
-          Впереди
+          Доступен
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded-full border border-white/8 bg-[rgba(255,255,255,0.05)]" aria-hidden />
+          🔒 Заблокирован
         </span>
       </div>
       <div className="mt-4 space-y-4 sm:mt-5">
@@ -66,21 +70,50 @@ export function DayTimeline() {
               {segment.days.map((day) => {
                 const isCompleted = completedDays.includes(day);
                 const isActive = day === activeDay;
+                
+                // Логика блокировки:
+                // 1. Завершенные дни нельзя открыть снова
+                // 2. Можно открыть только день 1 или следующий после последнего завершенного
+                const lastCompletedDay = completedDays.length > 0 ? Math.max(...completedDays) : 0;
+                const isLockedFuture = day > 1 && day > lastCompletedDay + 1;
+                const isLockedCompleted = isCompleted && !isActive;
+                const isLocked = isLockedFuture || isLockedCompleted;
+                
                 return (
                   <button
                     key={day}
                     type="button"
-                    onClick={() => setActiveDay(day)}
+                    onClick={() => !isLocked && setActiveDay(day)}
+                    disabled={isLocked}
                     className={clsx(
-                      'flex h-10 items-center justify-center rounded-xl border text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-12 sm:rounded-2xl sm:text-sm',
+                      'relative flex h-10 items-center justify-center rounded-xl border text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-12 sm:rounded-2xl sm:text-sm',
                       isActive
                         ? 'border-transparent bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-white shadow-[0_0_18px_rgba(255,0,148,0.6)]'
                         : isCompleted
-                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7]'
-                          : 'border-white/12 bg-[rgba(255,255,255,0.15)] text-white/60 hover:border-white/25'
+                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7] cursor-not-allowed'
+                          : isLockedFuture
+                            ? 'border-white/8 bg-[rgba(255,255,255,0.05)] text-white/30 cursor-not-allowed'
+                            : 'border-white/12 bg-[rgba(255,255,255,0.15)] text-white/60 hover:border-white/25'
                     )}
+                    title={
+                      isLockedCompleted 
+                        ? 'День уже завершен ✓' 
+                        : isLockedFuture 
+                          ? 'Завершите предыдущий день чтобы разблокировать' 
+                          : undefined
+                    }
                   >
-                    {day}
+                    {isLockedFuture && (
+                      <span className="absolute inset-0 flex items-center justify-center text-base">
+                        🔒
+                      </span>
+                    )}
+                    {isCompleted && !isActive && (
+                      <span className="absolute inset-0 flex items-center justify-center text-base">
+                        ✓
+                      </span>
+                    )}
+                    <span className={isLockedFuture || (isCompleted && !isActive) ? 'opacity-0' : ''}>{day}</span>
                   </button>
                 );
               })}

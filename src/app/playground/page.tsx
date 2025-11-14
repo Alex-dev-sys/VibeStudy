@@ -102,15 +102,34 @@ export default function PlaygroundPage() {
     setIsRunning(true);
     setOutput('⏳ Выполнение кода...\n\n');
 
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/execute-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language: selectedLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOutput(data.output);
+      } else {
+        setOutput(`❌ Ошибка выполнения:\n${data.error}\n\n${data.details || ''}`);
+      }
+    } catch (error) {
       setOutput(
-        `✅ Код выполнен успешно!\n\n` +
-          `📝 Примечание: Это демонстрационный режим.\n` +
-          `В полной версии здесь будет реальное выполнение кода через безопасную песочницу.\n\n` +
-          `Твой код:\n${code.split('\n').slice(0, 5).join('\n')}${code.split('\n').length > 5 ? '\n...' : ''}`
+        `❌ Не удалось выполнить код\n\n` +
+          `Проверь подключение к интернету и попробуй снова.\n` +
+          `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
       );
+    } finally {
       setIsRunning(false);
-    }, 1500);
+    }
   };
 
   const handleClear = () => {

@@ -1,89 +1,136 @@
-import { NextResponse } from 'next/server';
-import { handleBotCommand } from '@/telegram/bot';
+// Telegram Webhook Endpoint
+// Receives updates from Telegram Bot API
 
-interface TelegramUpdate {
-  update_id: number;
-  message?: {
-    message_id: number;
-    from: {
-      id: number;
-      is_bot: boolean;
-      first_name: string;
-      last_name?: string;
-      username?: string;
-    };
-    chat: {
-      id: number;
-      type: string;
-    };
-    date: number;
-    text?: string;
-  };
+import { NextRequest, NextResponse } from 'next/server';
+import { botController } from '@/lib/telegram/bot-controller';
+import type { TelegramUpdate } from '@/types/telegram';
+
+// Rate limiting map (simple in-memory implementation)
+const rateLimitMap = new Map<number, { count: number; resetAt: number }>();
+
+const RATE_LIMIT = 30; // requests per minute
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in ms
+
+/**
+ * Check rate limit for user
+ */
+function checkRateLimit(userId: number): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  
+  if (!entry || entry.resetAt < now) {
+    rateLimitMap.set(userId, {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW
+    });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
 }
 
 /**
- * Webhook для обработки сообщений от Telegram бота
+ * Verify webhook request is from Telegram
  */
-export async function POST(request: Request) {
+function verifyWebhook(request: NextRequest): boolean {
+  const secretToken = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+  const expectedToken = process.env.TELEGRAM_WEBHOOK_SECRET;
+  
+  if (!expectedToken) {
+    console.warn('TELEGRAM_WEBHOOK_SECRET not set, skipping verification');
+    return true; // Allow in development
+  }
+  
+  return secretToken === expectedToken;
+}
+
+/**
+ * Sanitize input text
+ */
+function sanitizeInput(text: string): string {
+  return text
+    .replace(/<script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .trim()
+    .slice(0, 4096); // Telegram message limit
+}
+
+/**
+ * POST /api/telegram/webhook
+ * Receives updates from Telegram
+ */
+export async function POST(request: NextRequest) {
   try {
+    // Verify webhook
+    if (!verifyWebhook(request)) {
+      console.error('Webhook verification failed');
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
+    // Parse update
     const update: TelegramUpdate = await request.json();
     
-    if (!update.message || !update.message.text) {
-      return NextResponse.json({ ok: true });
+    // Extract user ID for rate limiting
+    const userId = update.message?.from.id || update.callback_query?.from.id;
+    
+    if (!userId) {
+      console.error('No user ID in update');
+      return NextResponse.json({ ok: true }); // Acknowledge but ignore
     }
-
-    const { message } = update;
-    const chatId = message.chat.id;
-    const text = message.text;
-    const username = message.from.username;
-
-    // Обработка команд
-    if (text && text.startsWith('/')) {
-      const command = text.split(' ')[0];
+    
+    // Check rate limit
+    if (!checkRateLimit(userId)) {
+      console.warn(`Rate limit exceeded for user ${userId}`);
       
-      // Получаем прогресс пользователя из БД (если username указан)
-      let progress = undefined;
-      if (username) {
-        // TODO: Загрузить прогресс из БД по username
-        // progress = await getUserProgressByTelegramUsername(username);
+      // Send rate limit message
+      const chatId = update.message?.chat.id || update.callback_query?.message?.chat.id;
+      if (chatId) {
+        await botController.sendResponse(chatId, {
+          text: '⏳ Слишком много запросов. Подожди немного.',
+          parseMode: 'Markdown'
+        });
       }
       
-      const response = handleBotCommand(command, progress);
-      
-      // Отправляем ответ
-      await sendBotMessage(chatId, response);
+      return NextResponse.json({ ok: true });
     }
-
+    
+    // Sanitize text input if present
+    if (update.message?.text) {
+      update.message.text = sanitizeInput(update.message.text);
+    }
+    
+    // Process update asynchronously (don't wait for completion)
+    botController.handleMessage(update).catch(error => {
+      console.error('Error processing update:', error);
+    });
+    
+    // Respond immediately to Telegram
     return NextResponse.json({ ok: true });
+    
   } catch (error) {
-    console.error('Ошибка обработки Telegram webhook:', error);
-    return NextResponse.json({ ok: false, error: 'Internal error' }, { status: 500 });
+    console.error('Webhook error:', error);
+    
+    // Still return 200 to prevent Telegram from retrying
+    return NextResponse.json({ ok: true });
   }
 }
 
 /**
- * Отправка сообщения через Bot API
+ * GET /api/telegram/webhook
+ * Health check endpoint
  */
-async function sendBotMessage(chatId: number, text: string): Promise<void> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  
-  if (!botToken) {
-    console.error('TELEGRAM_BOT_TOKEN не установлен');
-    return;
-  }
-
-  try {
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown'
-      })
-    });
-  } catch (error) {
-    console.error('Ошибка отправки сообщения:', error);
-  }
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
 }
 

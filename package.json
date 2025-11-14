@@ -10,6 +10,8 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "bot": "node scripts/telegram-bot-local.js",
+    "bot:test": "node scripts/test-bot-local.js",
+    "bot:webhook": "node scripts/setup-telegram-webhook.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
