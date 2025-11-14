@@ -1,4 +1,13 @@
 import { HeroShowcase } from '@/components/landing/HeroShowcase';
+import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  ...generatePageMetadata('home'),
+  other: {
+    'structured-data': JSON.stringify(generateStructuredData('Course'))
+  }
+};
 
 export default function HomePage() {
   return (

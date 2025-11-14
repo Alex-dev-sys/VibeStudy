@@ -1,7 +1,16 @@
 import dynamic from 'next/dynamic';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
+import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
+import type { Metadata } from 'next';
 
 const LearningDashboard = dynamic(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
+
+export const metadata: Metadata = {
+  ...generatePageMetadata('learn'),
+  other: {
+    'structured-data': JSON.stringify(generateStructuredData('WebPage'))
+  }
+};
 
 export default function LearnPage() {
   return (

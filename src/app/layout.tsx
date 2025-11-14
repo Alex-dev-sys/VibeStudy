@@ -13,12 +13,59 @@ const ICON_SVG = encodeURIComponent(
 );
 
 export const metadata: Metadata = {
-  title: 'VibeStudy | 90-дневный курс программирования',
-  description: 'Образовательная платформа для обучения программированию с нуля до уровня junior за 90 дней.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.com'),
+  title: {
+    default: 'VibeStudy | 90-дневный курс программирования',
+    template: '%s | VibeStudy'
+  },
+  description: 'Образовательная платформа для изучения программирования с нуля до уровня junior за 90 дней. 7 языков, AI-генерация контента, интерактивный редактор кода.',
+  keywords: ['программирование', 'обучение', 'курсы', 'junior', 'python', 'javascript', 'typescript', 'java', 'c++', 'c#', 'go', 'ai', 'онлайн обучение'],
+  authors: [{ name: 'VibeStudy Team' }],
+  creator: 'VibeStudy',
+  publisher: 'VibeStudy',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false
+  },
   icons: {
     icon: `data:image/svg+xml,${ICON_SVG}`,
     shortcut: `data:image/svg+xml,${ICON_SVG}`,
     apple: `data:image/svg+xml,${ICON_SVG}`
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ru_RU',
+    url: '/',
+    siteName: 'VibeStudy',
+    title: 'VibeStudy | 90-дневный курс программирования',
+    description: 'Образовательная платформа для изучения программирования с нуля до уровня junior за 90 дней',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VibeStudy - Обучение программированию'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VibeStudy | 90-дневный курс программирования',
+    description: 'Образовательная платформа для изучения программирования с нуля до уровня junior за 90 дней',
+    images: ['/og-image.png'],
+    creator: '@vibestudy'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1
+    }
   }
 };
 
@@ -29,6 +76,8 @@ export const viewport: Viewport = {
   themeColor: '#ff3b5c'
 };
 
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
+
 export default function RootLayout({
   children
 }: {
@@ -36,7 +85,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className="dark">
-      <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>{children}</body>
+      <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>
+        <OnboardingProvider>{children}</OnboardingProvider>
+      </body>
     </html>
   );
 }
