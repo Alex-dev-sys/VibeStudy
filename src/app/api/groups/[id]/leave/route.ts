@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/supabase/auth';
+import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { leaveGroup } from '@/lib/supabase/groups';
 
 /**

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/supabase/auth';
+import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { fetchGroupById, updateGroup, deleteGroup } from '@/lib/supabase/groups';
 import type { UpdateGroupData } from '@/types/groups';
 

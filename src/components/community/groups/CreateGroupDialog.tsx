@@ -64,12 +64,32 @@ export function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialogProps) {
       setFormData({ name: '', description: '', languageId: 'python' });
       setErrors({});
     } catch (error) {
+      console.error('Error creating group:', error);
+      
       if (error instanceof Error) {
-        if (error.message.includes('MAX_GROUPS_CREATED')) {
-          toast.error('Вы можете создать максимум 3 группы');
+        const errorMessage = error.message;
+        
+        // Extract the actual error message after the colon
+        const colonIndex = errorMessage.indexOf(':');
+        const displayMessage = colonIndex !== -1 
+          ? errorMessage.substring(colonIndex + 1).trim()
+          : errorMessage;
+        
+        if (errorMessage.includes('MAX_GROUPS_CREATED')) {
+          toast.error(displayMessage);
+        } else if (errorMessage.includes('UNAUTHORIZED')) {
+          toast.error(displayMessage);
+        } else if (errorMessage.includes('VALIDATION_ERROR')) {
+          toast.error(displayMessage);
+        } else if (errorMessage.includes('SERVICE_UNAVAILABLE')) {
+          toast.error(displayMessage);
+        } else if (errorMessage.includes('DATABASE_ERROR')) {
+          toast.error('Ошибка базы данных. Попробуйте позже.');
         } else {
-          toast.error('Не удалось создать группу');
+          toast.error(displayMessage || 'Не удалось создать группу. Попробуйте позже.');
         }
+      } else {
+        toast.error('Не удалось создать группу. Попробуйте позже.');
       }
     }
   };
