@@ -11,7 +11,10 @@ import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
 import { Console } from '@/components/playground/Console';
+import { SaveSnippetModal } from '@/components/playground/SaveSnippetModal';
+import { SnippetsList } from '@/components/playground/SnippetsList';
 import { getConsoleInterceptor } from '@/lib/playground/console-interceptor';
+import type { CodeSnippet } from '@/store/playground-store';
 
 const CODE_TEMPLATES: Record<string, string> = {
   python: `# Python Playground
@@ -91,10 +94,18 @@ export default function PlaygroundPage() {
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [editorError, setEditorError] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [showSnippets, setShowSnippets] = useState(false);
   const editorRef = useRef<any>(null);
   
   const { consoleOutput, clearConsole, addConsoleMessage } = usePlaygroundStore();
   const currentLanguage = LANGUAGES.find((lang) => lang.id === selectedLanguage);
+  
+  const handleLoadSnippet = (snippet: CodeSnippet) => {
+    setCode(snippet.code);
+    setSelectedLanguage(snippet.language);
+    setShowSnippets(false);
+  };
   
   useEffect(() => {
     // Cleanup on unmount
@@ -244,6 +255,12 @@ export default function PlaygroundPage() {
                 Редактор кода ({currentLanguage?.label})
               </h2>
               <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setIsSaveModalOpen(true)}>
+                  💾 Сохранить
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowSnippets(!showSnippets)}>
+                  📂 Сниппеты
+                </Button>
                 <Button variant="ghost" size="sm" onClick={handleFormat}>
                   ✨ Форматировать
                 </Button>
@@ -324,17 +341,38 @@ export default function PlaygroundPage() {
           </MagicCard>
         </div>
 
+        {showSnippets && (
+          <MagicCard innerClassName="rounded-[28px] p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">📂 Сохранённые сниппеты</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowSnippets(false)}>
+                ✕ Закрыть
+              </Button>
+            </div>
+            <div className="mt-4">
+              <SnippetsList onLoadSnippet={handleLoadSnippet} />
+            </div>
+          </MagicCard>
+        )}
+
         <MagicCard innerClassName="rounded-[28px] p-6">
           <h2 className="text-lg font-semibold text-white">💡 Советы по использованию Playground</h2>
           <div className="mt-4 space-y-2 text-sm text-white/70">
             <p>• <strong>Экспериментируй:</strong> Пробуй разные подходы к решению задач</p>
             <p>• <strong>Тестируй идеи:</strong> Проверяй гипотезы перед применением в задачах</p>
             <p>• <strong>Учись на ошибках:</strong> Не бойся ошибок — они помогают учиться</p>
-            <p>• <strong>Сохраняй код:</strong> Копируй интересные решения для дальнейшего использования</p>
+            <p>• <strong>Сохраняй сниппеты:</strong> Используй кнопку «💾 Сохранить» для быстрого доступа к коду</p>
             <p>• <strong>Форматирование:</strong> Используй кнопку «✨ Форматировать» для улучшения читаемости кода</p>
           </div>
         </MagicCard>
       </div>
+      
+      <SaveSnippetModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        code={code}
+        language={selectedLanguage}
+      />
     </main>
   );
 }
