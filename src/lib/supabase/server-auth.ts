@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { User } from './types';
 
 /**
@@ -26,26 +26,26 @@ export async function getCurrentUser(): Promise<User | null> {
     console.log('[server-auth] Cookies count:', allCookies.length);
     console.log('[server-auth] Cookie names:', allCookies.map(c => c.name));
     
-    const supabase = createServerClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch (error) {
-              console.warn('[server-auth] Could not set cookies:', error);
-            }
-          },
-        },
-      }
+    // Find the access token from cookies
+    const accessTokenCookie = allCookies.find(
+      cookie => cookie.name.includes('access-token') || cookie.name.includes('access_token')
     );
+    
+    if (!accessTokenCookie) {
+      console.log('[server-auth] No access token found in cookies');
+      return null;
+    }
+    
+    console.log('[server-auth] Found access token cookie:', accessTokenCookie.name);
+    
+    // Create Supabase client with the access token
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessTokenCookie.value}`
+        }
+      }
+    });
 
     const { data, error } = await supabase.auth.getUser();
 
