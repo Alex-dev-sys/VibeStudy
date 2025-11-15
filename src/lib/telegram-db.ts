@@ -110,7 +110,7 @@ export function isTelegramConnected(username: string): boolean {
   return chatId !== null;
 }
 
-export default {
+const telegramDb = {
   saveTelegramUser,
   getTelegramUsers,
   getChatIdByUsername,
@@ -118,4 +118,6 @@ export default {
   getUsersForReminder,
   isTelegramConnected
 };
+
+export default telegramDb;
 

@@ -3,7 +3,7 @@
  * Manages synchronization on app load and auth state changes
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { syncManager } from '@/lib/sync';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
@@ -20,51 +20,10 @@ export function useSync() {
   const achievementsStore = useAchievementsStore();
   const profileStore = useProfileStore();
 
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const initializeSync = async () => {
-      try {
-        const user = await getCurrentUser();
-        
-        if (!user) {
-          console.log('[useSync] No user logged in, skipping sync initialization');
-          return;
-        }
-
-        console.log('[useSync] Initializing sync for user:', user.id);
-        
-        // Initialize sync manager with user ID
-        syncManager.initialize(user.id);
-
-        // Fetch and merge progress data
-        await syncProgress();
-        
-        // Fetch and merge achievements data
-        await syncAchievements();
-        
-        // Fetch and merge profile data
-        await syncProfile();
-
-        console.log('[useSync] Sync initialization complete');
-      } catch (error) {
-        console.error('[useSync] Failed to initialize sync:', error);
-      }
-    };
-
-    initializeSync();
-
-    // Cleanup on unmount
-    return () => {
-      syncManager.flushAll();
-    };
-  }, []);
-
   /**
    * Sync progress data from cloud
    */
-  const syncProgress = async () => {
+  const syncProgress = useCallback(async () => {
     try {
       const remoteData = await syncManager.fetchFromCloud('progress');
       
@@ -126,12 +85,12 @@ export function useSync() {
     } catch (error) {
       console.error('[useSync] Failed to sync progress:', error);
     }
-  };
+  }, [progressStore]);
 
   /**
    * Sync achievements data from cloud
    */
-  const syncAchievements = async () => {
+  const syncAchievements = useCallback(async () => {
     try {
       const remoteData = await syncManager.fetchFromCloud('achievement');
       
@@ -150,12 +109,12 @@ export function useSync() {
     } catch (error) {
       console.error('[useSync] Failed to sync achievements:', error);
     }
-  };
+  }, [achievementsStore]);
 
   /**
    * Sync profile data from cloud
    */
-  const syncProfile = async () => {
+  const syncProfile = useCallback(async () => {
     try {
       const remoteData = await syncManager.fetchFromCloud('profile');
       
@@ -181,7 +140,48 @@ export function useSync() {
     } catch (error) {
       console.error('[useSync] Failed to sync profile:', error);
     }
-  };
+  }, [profileStore]);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const initializeSync = async () => {
+      try {
+        const user = await getCurrentUser();
+        
+        if (!user) {
+          console.log('[useSync] No user logged in, skipping sync initialization');
+          return;
+        }
+
+        console.log('[useSync] Initializing sync for user:', user.id);
+        
+        // Initialize sync manager with user ID
+        syncManager.initialize(user.id);
+
+        // Fetch and merge progress data
+        await syncProgress();
+        
+        // Fetch and merge achievements data
+        await syncAchievements();
+        
+        // Fetch and merge profile data
+        await syncProfile();
+
+        console.log('[useSync] Sync initialization complete');
+      } catch (error) {
+        console.error('[useSync] Failed to initialize sync:', error);
+      }
+    };
+
+    initializeSync();
+
+    // Cleanup on unmount
+    return () => {
+      syncManager.flushAll();
+    };
+  }, [syncProgress, syncAchievements, syncProfile]);
 
   return {
     syncProgress,

@@ -1,33 +1,11 @@
 {
   "mcpServers": {
-    "supabase": {
-      "command": "uvx",
-      "args": ["mcp-server-supabase"],
-      "env": {
-        "SUPABASE_URL": "https://qtswuibugwuvgzppkbtq.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c3d1aWJ1Z3d1dmd6cHBrYnRxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjYxNzQ2NywiZXhwIjoyMDc4MTkzNDY3fQ.q3JGkniUcjC4MK6Hm7-qdkSWhcJvj9c1zGSbzvSI81Y"
-      },
+    "fetch": {
+      "command": "C:\\Users\\user\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\\uvx.exe",
+      "args": ["mcp-server-fetch"],
+      "env": {},
       "disabled": false,
-      "autoApprove": [
-        "list_tables",
-        "describe_table",
-        "run_query"
-      ]
-    },
-    "playwright": {
-      "command": "uvx",
-      "args": ["mcp-server-playwright"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "playwright_navigate",
-        "playwright_screenshot",
-        "playwright_click",
-        "playwright_fill",
-        "playwright_evaluate"
-      ]
+      "autoApprove": ["fetch"]
     }
   }
 }

@@ -240,7 +240,7 @@ export function shouldSendReminder(
   return currentHour === reminderHour;
 }
 
-export default {
+const botFunctions = {
   sendTelegramMessage,
   generateMotivationalMessage,
   generatePersonalizedAdvice,
@@ -248,4 +248,6 @@ export default {
   handleBotCommand,
   shouldSendReminder
 };
+
+export default botFunctions;
 

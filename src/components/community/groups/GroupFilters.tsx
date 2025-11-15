@@ -24,11 +24,11 @@ export function GroupFilters() {
         <select
           value={languageFilter || ''}
           onChange={(e) => setLanguageFilter(e.target.value || null)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white outline-none transition-colors focus:border-white/30 focus:bg-white/10"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white outline-none transition-colors focus:border-white/30 focus:bg-white/10 [&>option]:bg-[#1a0f1f] [&>option]:text-white"
         >
-          <option value="">Все языки</option>
+          <option value="" className="bg-[#1a0f1f] text-white">Все языки</option>
           {LANGUAGES.map((lang) => (
-            <option key={lang.id} value={lang.id}>
+            <option key={lang.id} value={lang.id} className="bg-[#1a0f1f] text-white">
               {lang.label}
             </option>
           ))}

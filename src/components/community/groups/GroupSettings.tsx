@@ -186,10 +186,10 @@ export function GroupSettings({ group, isOpen, onClose }: GroupSettingsProps) {
                         onChange={(e) =>
                           setFormData({ ...formData, languageId: e.target.value })
                         }
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white outline-none transition-colors focus:border-white/30 focus:bg-white/10"
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white outline-none transition-colors focus:border-white/30 focus:bg-white/10 [&>option]:bg-[#1a0f1f] [&>option]:text-white"
                       >
                         {LANGUAGES.map((lang) => (
-                          <option key={lang.id} value={lang.id}>
+                          <option key={lang.id} value={lang.id} className="bg-[#1a0f1f] text-white">
                             {lang.label}
                           </option>
                         ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +17,11 @@ export function ProfileCard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(profile.name);
   const [editedBio, setEditedBio] = useState(profile.bio || '');
+
+  // Stable reference to updateProfile
+  const updateProfileCallback = useCallback((updates: any) => {
+    updateProfile(updates);
+  }, [updateProfile]);
 
   // Load user data from Supabase on mount
   useEffect(() => {
@@ -44,13 +49,13 @@ export function ProfileCard() {
         }
         
         if (Object.keys(updates).length > 0) {
-          updateProfile(updates);
+          updateProfileCallback(updates);
         }
       }
     };
     
     loadUserData();
-  }, []);
+  }, [profile.email, profile.name, profile.avatar, updateProfileCallback]);
 
   const handleSave = () => {
     updateProfile({
@@ -93,6 +98,7 @@ export function ProfileCard() {
               className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-accent/30"
             >
               {profile.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.avatar}
                   alt={profile.name}
