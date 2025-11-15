@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { getCurrentUser } from '@/lib/supabase/auth';
 
@@ -9,13 +9,14 @@ import { getCurrentUser } from '@/lib/supabase/auth';
  */
 export function useRealtimeAchievements() {
   useEffect(() => {
-    let channel: ReturnType<ReturnType<typeof createClient>['channel']> | null = null;
+    let channel: any = null;
     
     const setupSubscription = async () => {
       const user = await getCurrentUser();
       if (!user) return;
       
-      const supabase = createClient();
+      const supabase = getSupabaseClient();
+      if (!supabase) return;
       
       // Subscribe to achievement changes for current user
       channel = supabase

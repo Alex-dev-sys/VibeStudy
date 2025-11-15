@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     // Calculate topic mastery
     const topicMastery: Record<string, TopicMastery> = {};
     
-    attempts.forEach((attempt) => {
+    attempts.forEach((attempt: any) => {
       // Extract topic from taskId (e.g., "python-basics-task1" -> "python-basics")
       const topic = attempt.task_id.split('-').slice(0, -1).join('-') || 'general';
       
@@ -98,11 +98,11 @@ export async function GET(request: NextRequest) {
       
       // Calculate average time for successful attempts
       const successfulAttempts = attempts.filter(
-        (a) => a.task_id.startsWith(topic) && a.success
+        (a: any) => a.task_id.startsWith(topic) && a.success
       );
       
       if (successfulAttempts.length > 0) {
-        const totalTime = successfulAttempts.reduce((sum, a) => {
+        const totalTime = successfulAttempts.reduce((sum: number, a: any) => {
           const start = new Date(a.start_time).getTime();
           const end = new Date(a.end_time).getTime();
           return sum + (end - start);
@@ -113,11 +113,11 @@ export async function GET(request: NextRequest) {
     
     // Calculate weak areas
     const weakAreas = Object.values(topicMastery)
-      .filter((m) => m.successRate < 70)
-      .map((m) => m.topic);
+      .filter((m: TopicMastery) => m.successRate < 70)
+      .map((m: TopicMastery) => m.topic);
     
     // Calculate learning velocity
-    const completedDays = new Set(attempts.map((a) => a.day)).size;
+    const completedDays = new Set(attempts.map((a: any) => a.day)).size;
     const oldestAttempt = attempts[0];
     const daysSinceStart = Math.ceil(
       (Date.now() - new Date(oldestAttempt.start_time).getTime()) / (24 * 60 * 60 * 1000)
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
     const tasksPerDay = attempts.length / Math.max(daysSinceStart, 1);
     
     // Calculate average session duration
-    const totalTime = attempts.reduce((sum, a) => {
+    const totalTime = attempts.reduce((sum: number, a: any) => {
       const start = new Date(a.start_time).getTime();
       const end = new Date(a.end_time).getTime();
       return sum + (end - start);
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     
     // Calculate most productive hour
     const hourCounts: Record<number, number> = {};
-    attempts.forEach((a) => {
+    attempts.forEach((a: any) => {
       const hour = new Date(a.start_time).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
       const dayStart = date.getTime();
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
       
-      const dayAttempts = attempts.filter((a) => {
+      const dayAttempts = attempts.filter((a: any) => {
         const attemptTime = new Date(a.start_time).getTime();
         return attemptTime >= dayStart && attemptTime < dayEnd;
       });
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
       `Твоё самое продуктивное время: ${mostProductiveHour}:00. Планируй сложные задачи на это время.`
     );
     
-    const highAttemptTasks = attempts.filter((a) => a.attempts > 3);
+    const highAttemptTasks = attempts.filter((a: any) => a.attempts > 3);
     if (highAttemptTasks.length > 0) {
       recommendations.push(
         'Некоторые задачи требуют много попыток. Попроси помощи у AI или пересмотри теорию.'
