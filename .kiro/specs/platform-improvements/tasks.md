@@ -507,6 +507,7 @@
 
 - [x] 8.3 Prepare for deployment
 
+
   - Run production build and verify no errors
   - Test on staging environment
   - Create deployment checklist

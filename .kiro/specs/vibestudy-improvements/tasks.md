@@ -179,7 +179,9 @@
   - Merge with local data
   - _Requirements: 5.3, 5.4_
 
-- [ ] 5.4 Implement real-time achievement updates
+- [x] 5.4 Implement real-time achievement updates
+
+
   - Subscribe to achievement changes via Supabase Realtime
   - Update UI when achievements unlock on other devices
   - _Requirements: 5.5_
