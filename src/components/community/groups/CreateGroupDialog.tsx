@@ -57,6 +57,8 @@ export function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialogProps) {
       return;
     }
 
+    console.log('[CreateGroupDialog] Submitting form...');
+
     try {
       await createGroup(formData);
       toast.success('Группа успешно создана!');
@@ -64,7 +66,7 @@ export function CreateGroupDialog({ isOpen, onClose }: CreateGroupDialogProps) {
       setFormData({ name: '', description: '', languageId: 'python' });
       setErrors({});
     } catch (error) {
-      console.error('Error creating group:', error);
+      console.error('[CreateGroupDialog] Error creating group:', error);
       
       if (error instanceof Error) {
         const errorMessage = error.message;

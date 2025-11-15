@@ -129,18 +129,25 @@ export const useGroupsStore = create<GroupsStore>()(
         set({ isLoading: true, error: null });
 
         try {
+          console.log('[groups-store] Creating group:', data);
+          
           const response = await fetch('/api/groups', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            credentials: 'include' // Ensure cookies are sent
           });
+
+          console.log('[groups-store] Response status:', response.status);
 
           if (!response.ok) {
             const errorData = await response.json();
+            console.error('[groups-store] Error response:', errorData);
             throw new Error(errorData.error || 'Failed to create group');
           }
 
           const result = await response.json();
+          console.log('[groups-store] Group created successfully:', result.group);
           
           // Refresh groups list
           await get().fetchGroups();
@@ -148,6 +155,7 @@ export const useGroupsStore = create<GroupsStore>()(
           set({ isLoading: false });
           return result.group;
         } catch (error) {
+          console.error('[groups-store] Exception:', error);
           set({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false

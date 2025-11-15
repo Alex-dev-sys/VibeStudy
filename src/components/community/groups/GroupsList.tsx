@@ -25,6 +25,10 @@ export function GroupsList() {
   useEffect(() => {
     const checkAuth = async () => {
       const user = await getCurrentUser();
+      console.log('[GroupsList] User authentication status:', !!user);
+      if (user) {
+        console.log('[GroupsList] User ID:', user.id);
+      }
       setIsAuthenticated(!!user);
       setIsLoading(false);
     };
