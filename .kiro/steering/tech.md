@@ -19,7 +19,7 @@
 ## State Management
 
 - **Zustand 4.5.2**: Primary state management with persist middleware
-- **Stores**: progress-store, achievements-store, profile-store, locale-store, analytics-store, playground-store, knowledge-profile-store, groups-store, onboarding-store
+- **Stores**: progress-store, achievements-store, profile-store, locale-store, analytics-store, playground-store, knowledge-profile-store, onboarding-store
 
 ## Code Editor
 

@@ -15,7 +15,6 @@ import { handlePlanCommand } from './plan';
 import { handleRemindCommand } from './remind';
 import { handleLanguageCommand } from './language';
 import { handlePrivacyCommand } from './privacy';
-import { handleCommunityCommand } from './community';
 import { handleChallengeCommand } from './challenge';
 import { handleScheduleCommand } from './schedule';
 import { handleExportCommand } from './export';
@@ -42,7 +41,6 @@ export const commandHandlers: Record<string, CommandHandler> = {
   '/remind': handleRemindCommand,
   '/language': handleLanguageCommand,
   '/privacy': handlePrivacyCommand,
-  '/community': handleCommunityCommand,
   '/challenge': handleChallengeCommand,
   '/schedule': handleScheduleCommand,
   '/export': handleExportCommand,

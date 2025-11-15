@@ -189,7 +189,6 @@ async function handleCommand(command, chatId, firstName) {
 
 *🎯 Дополнительно:*
 /challenge - Ежедневный челлендж
-/community - Сообщество
 /privacy - Приватность
 /export - Экспорт данных
 
@@ -202,8 +201,7 @@ async function handleCommand(command, chatId, firstName) {
             { text: '💡 AI Помощник', callback_data: 'cmd_advice' }
           ],
           [
-            { text: '🎯 Челлендж', callback_data: 'cmd_challenge' },
-            { text: '👥 Сообщество', callback_data: 'cmd_community' }
+            { text: '🎯 Челлендж', callback_data: 'cmd_challenge' }
           ],
           [
             { text: '⚙️ Настройки', callback_data: 'cmd_settings' }
@@ -488,31 +486,6 @@ async function handleCommand(command, chatId, firstName) {
 /schedule 19:30
 
 Я напомню за 10 минут! ⏰`;
-      break;
-
-    case '/community':
-      responseText = `👥 *Сообщество VibeStudy*
-
-Выбери раздел:`;
-
-      const communityKeyboard = {
-        inline_keyboard: [
-          [
-            { text: '🏆 Лидерборд', callback_data: 'community_leaderboard' },
-            { text: '👥 Группы', callback_data: 'community_groups' }
-          ],
-          [
-            { text: '💬 Обсуждения', callback_data: 'community_discussions' },
-            { text: '🤝 Найти напарника', callback_data: 'community_buddy' }
-          ],
-          [
-            { text: '◀️ Назад', callback_data: 'cmd_start' }
-          ]
-        ]
-      };
-
-      await sendMessage(chatId, responseText, communityKeyboard);
-      return;
       break;
 
     case '/language':

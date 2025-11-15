@@ -30,7 +30,6 @@ Next.js 14 App Router structure:
   - `profile/` - User profile
   - `playground/` - Code sandbox
   - `analytics/` - Statistics dashboard
-  - `community/` - Community features
   - `auth/` - Authentication pages
   - `login/` - Login page
   - `api/` - API routes (see below)
@@ -49,7 +48,6 @@ RESTful API endpoints:
 - `regenerate-task/` - Task regeneration
 - `adaptive-recommendations/` - Personalized recommendations
 - `analytics/` - Analytics tracking
-- `groups/` - Community groups
 - `telegram/` - Telegram bot webhooks
 
 ### Components (`src/components/`)
@@ -65,7 +63,6 @@ Organized by feature:
 - `landing/` - Landing page sections
 - `layout/` - Layout components (header, nav)
 - `analytics/` - Analytics components
-- `community/` - Community features
 - `onboarding/` - User onboarding
 - `migration/` - Data migration
 - `sync/` - Cloud sync UI
@@ -109,7 +106,6 @@ Zustand stores with persist middleware:
 - `analytics-store.ts` - Analytics data
 - `playground-store.ts` - Playground state
 - `knowledge-profile-store.ts` - Adaptive learning
-- `groups-store.ts` - Community groups
 - `onboarding-store.ts` - Onboarding state
 
 ### Types (`src/types/`)
@@ -119,7 +115,6 @@ TypeScript type definitions:
 - `index.ts` - Core types (DayStateSnapshot, ProgressRecord, Task, etc.)
 - `achievements.ts` - Achievement types
 - `telegram.ts` - Telegram types
-- `groups.ts` - Community types
 
 ### Hooks (`src/hooks/`)
 
