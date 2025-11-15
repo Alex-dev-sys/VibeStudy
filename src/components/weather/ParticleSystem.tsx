@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface ParticleSystemProps {
-  type: 'snow' | 'rain' | null;
+  type: 'snow' | 'rain' | 'clear' | null;
   count?: number;
 }
 
@@ -132,7 +132,8 @@ export function ParticleSystem({ type, count = 1000 }: ParticleSystemProps) {
     meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
-  if (!config || !type) return null;
+  // Не показываем частицы для солнечной погоды или если тип не задан
+  if (!config || !type || type === 'clear') return null;
 
   return (
     <instancedMesh

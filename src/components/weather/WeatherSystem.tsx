@@ -89,12 +89,14 @@ export function WeatherSystem({
   }, []);
 
   return (
-    <div className={className}>
-      {/* Weather toggle button */}
-      <WeatherToggle />
+    <>
+      {/* Weather toggle button - высокий z-index для кликабельности */}
+      <div className={`relative z-50 ${className}`}>
+        <WeatherToggle />
+      </div>
       
-      {/* 3D weather scene (only rendered when enabled) */}
-      {isEnabled && <WeatherScene />}
-    </div>
+      {/* 3D weather scene - низкий z-index, за всем контентом */}
+      {isEnabled && <WeatherScene className="z-0" />}
+    </>
   );
 }

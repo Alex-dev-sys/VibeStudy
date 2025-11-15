@@ -22,7 +22,7 @@ export function WeatherScene({ className = '' }: WeatherSceneProps) {
   const ambientIntensity = isDaytime ? 0.5 : 0.2;
 
   return (
-    <div className={`fixed inset-0 pointer-events-none ${className}`}>
+    <div className={`fixed inset-0 pointer-events-none z-0 ${className}`}>
       <Canvas
         camera={{ position: [0, 5, 10], fov: 75 }}
         gl={{ alpha: true, antialias: true }}
