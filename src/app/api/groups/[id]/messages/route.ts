@@ -3,6 +3,8 @@ import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { fetchGroupMessages, sendGroupMessage } from '@/lib/supabase/groups';
 import type { SendMessageData } from '@/types/groups';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/groups/[id]/messages
  * Fetch messages for a group

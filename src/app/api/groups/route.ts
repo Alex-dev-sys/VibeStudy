@@ -7,6 +7,8 @@ import {
 } from '@/lib/supabase/groups';
 import type { CreateGroupData } from '@/types/groups';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/groups
  * Fetch all groups with membership info for authenticated user

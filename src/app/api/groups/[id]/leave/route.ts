@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { leaveGroup } from '@/lib/supabase/groups';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/groups/[id]/leave
  * Leave a group

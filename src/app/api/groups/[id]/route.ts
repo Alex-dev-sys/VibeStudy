@@ -3,6 +3,8 @@ import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { fetchGroupById, updateGroup, deleteGroup } from '@/lib/supabase/groups';
 import type { UpdateGroupData } from '@/types/groups';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/groups/[id]
  * Fetch a single group by ID
