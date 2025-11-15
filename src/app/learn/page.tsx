@@ -1,6 +1,8 @@
 import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
+import { RegistrationSuccessNotification } from '@/components/auth/RegistrationSuccessNotification';
 import type { Metadata } from 'next';
 
 const LearningDashboard = dynamic(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
@@ -15,6 +17,9 @@ export const metadata: Metadata = {
 export default function LearnPage() {
   return (
     <main className="relative min-h-screen overflow-hidden text-white">
+      <Suspense fallback={null}>
+        <RegistrationSuccessNotification />
+      </Suspense>
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />

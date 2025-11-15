@@ -9,9 +9,26 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (!error && data.session) {
+      // Check if this is a new user registration
+      // New users have created_at equal to last_sign_in_at (within a small time window)
+      const user = data.user;
+      const createdAt = new Date(user.created_at).getTime();
+      const lastSignIn = new Date(user.last_sign_in_at || user.created_at).getTime();
+      const isNewUser = Math.abs(createdAt - lastSignIn) < 5000; // Within 5 seconds
+      
+      // Redirect to /learn with registration flag if new user
+      const redirectUrl = new URL('/learn', origin);
+      if (isNewUser) {
+        redirectUrl.searchParams.set('registered', 'true');
+      }
+      
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
-  // URL to redirect to after sign in process completes
-  return NextResponse.redirect(`${origin}/`);
+  // Fallback to /learn on error or missing code
+  return NextResponse.redirect(`${origin}/learn`);
 }
