@@ -254,12 +254,42 @@ export default function PlaygroundPage() {
               <h2 className="text-lg font-semibold text-white">
                 Редактор кода ({currentLanguage?.label})
               </h2>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setIsSaveModalOpen(true)}>
                   💾 Сохранить
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setShowSnippets(!showSnippets)}>
                   📂 Сниппеты
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    // Export current code
+                    const extensions: Record<string, string> = {
+                      python: 'py',
+                      javascript: 'js',
+                      typescript: 'ts',
+                      java: 'java',
+                      cpp: 'cpp',
+                      csharp: 'cs',
+                      go: 'go'
+                    };
+                    
+                    const extension = extensions[selectedLanguage] || 'txt';
+                    const filename = `playground_${Date.now()}.${extension}`;
+                    
+                    const blob = new Blob([code], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  disabled={!code.trim()}
+                >
+                  📥 Экспорт
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleFormat}>
                   ✨ Форматировать

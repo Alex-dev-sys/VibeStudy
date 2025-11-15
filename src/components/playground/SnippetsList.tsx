@@ -97,6 +97,34 @@ export function SnippetsList({ onLoadSnippet }: SnippetsListProps) {
                   📂
                 </button>
                 <button
+                  onClick={() => {
+                    const extensions: Record<string, string> = {
+                      python: 'py',
+                      javascript: 'js',
+                      typescript: 'ts',
+                      java: 'java',
+                      cpp: 'cpp',
+                      csharp: 'cs',
+                      go: 'go'
+                    };
+                    
+                    const extension = extensions[snippet.language] || 'txt';
+                    const filename = `${snippet.name.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+                    
+                    const blob = new Blob([snippet.code], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="rounded p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  title="Экспортировать"
+                >
+                  📥
+                </button>
+                <button
                   onClick={() => handleDelete(snippet.id)}
                   className={`rounded p-1.5 transition-colors ${
                     deleteConfirm === snippet.id

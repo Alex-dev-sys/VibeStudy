@@ -377,7 +377,9 @@
 
   - _Requirements: 6.6_
 
-- [ ] 6.9 Implement snippet export
+- [x] 6.9 Implement snippet export
+
+
   - Add "Export" button to playground UI
   - Generate file with proper extension based on language
   - Trigger browser download with snippet code
