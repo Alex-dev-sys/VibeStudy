@@ -23,6 +23,7 @@ export interface ConsoleMessage {
   type: 'log' | 'error' | 'warn' | 'info';
   message: string;
   timestamp: number;
+  stack?: string;
 }
 
 interface PlaygroundStore {

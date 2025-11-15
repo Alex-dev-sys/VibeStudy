@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Editor from '@monaco-editor/react';
 import { Button } from '@/components/ui/Button';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
+import { usePlaygroundStore } from '@/store/playground-store';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
+import { Console } from '@/components/playground/Console';
+import { getConsoleInterceptor } from '@/lib/playground/console-interceptor';
 
 const CODE_TEMPLATES: Record<string, string> = {
   python: `# Python Playground
@@ -89,8 +92,17 @@ export default function PlaygroundPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [editorError, setEditorError] = useState(false);
   const editorRef = useRef<any>(null);
-
+  
+  const { consoleOutput, clearConsole, addConsoleMessage } = usePlaygroundStore();
   const currentLanguage = LANGUAGES.find((lang) => lang.id === selectedLanguage);
+  
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      const interceptor = getConsoleInterceptor();
+      interceptor.stop();
+    };
+  }, []);
 
   const handleLanguageChange = (langId: string) => {
     setSelectedLanguage(langId);
@@ -101,6 +113,12 @@ export default function PlaygroundPage() {
   const handleRun = async () => {
     setIsRunning(true);
     setOutput('⏳ Выполнение кода...\n\n');
+    
+    // Clear console and start intercepting
+    clearConsole();
+    const interceptor = getConsoleInterceptor();
+    interceptor.clear();
+    interceptor.start();
 
     try {
       const response = await fetch('/api/execute-code', {
@@ -118,16 +136,43 @@ export default function PlaygroundPage() {
 
       if (data.success) {
         setOutput(data.output);
+        
+        // Add output to console
+        if (data.output) {
+          addConsoleMessage({
+            type: 'log',
+            message: data.output
+          });
+        }
       } else {
         setOutput(`❌ Ошибка выполнения:\n${data.error}\n\n${data.details || ''}`);
+        
+        // Add error to console
+        addConsoleMessage({
+          type: 'error',
+          message: data.error,
+          stack: data.details
+        });
       }
+      
+      // Capture any console messages from interceptor
+      const messages = interceptor.getMessages();
+      messages.forEach((msg) => {
+        addConsoleMessage(msg);
+      });
     } catch (error) {
-      setOutput(
-        `❌ Не удалось выполнить код\n\n` +
+      const errorMessage = `❌ Не удалось выполнить код\n\n` +
           `Проверь подключение к интернету и попробуй снова.\n` +
-          `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
-      );
+          `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`;
+      
+      setOutput(errorMessage);
+      
+      addConsoleMessage({
+        type: 'error',
+        message: errorMessage
+      });
     } finally {
+      interceptor.stop();
       setIsRunning(false);
     }
   };
@@ -268,20 +313,13 @@ export default function PlaygroundPage() {
 
           <MagicCard innerClassName="rounded-[28px] p-6 space-y-4">
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-white">Вывод программы</h2>
+              <h2 className="text-lg font-semibold text-white">Консоль</h2>
               <p className="text-sm text-white/60">
-                Результат выполнения твоего кода появится здесь
+                Результат выполнения и логи твоего кода
               </p>
             </div>
-            <div className="min-h-[500px] flex-1 overflow-auto rounded-2xl border border-white/10 bg-black/60 p-4 font-mono text-sm text-white">
-              {output || (
-                <div className="flex h-full items-center justify-center text-white/40">
-                  <div className="text-center">
-                    <div className="mb-3 text-4xl">💻</div>
-                    <p>Нажми «Запустить код», чтобы увидеть результат</p>
-                  </div>
-                </div>
-              )}
+            <div className="h-[500px]">
+              <Console messages={consoleOutput} onClear={clearConsole} />
             </div>
           </MagicCard>
         </div>
