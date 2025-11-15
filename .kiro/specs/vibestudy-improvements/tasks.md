@@ -193,6 +193,7 @@
 
 - [x] 6. Enhance profile store with cloud sync
 
+
 - [x] 6.1 Add privacy settings to profile store
 
 
@@ -227,16 +228,19 @@
   - Implement fetchRecent() to get recent attempts
   - _Requirements: 7.1, 7.2_
 
-- [ ] 7.2 Integrate task attempts with code checking
+- [x] 7.2 Integrate task attempts with code checking
+
   - Save attempt when user submits code for checking
   - Include code, result, correctness, hints used, time spent
   - _Requirements: 7.1, 7.2_
+
 
 - [ ] 7.3 Create task attempt history UI
   - Build component to display previous attempts
   - Show code, result, and timestamp for each attempt
   - Add filtering and sorting options
   - _Requirements: 7.3, 7.4_
+
 
 - [ ] 8. Implement topic mastery system
 - [ ] 8.1 Create topic mastery database operations
@@ -245,10 +249,12 @@
   - Implement fetchTopic() for specific topic
   - _Requirements: 8.1_
 
+
 - [ ] 8.2 Integrate mastery tracking with task completion
   - Update mastery level when task is completed
   - Calculate mastery using formula: successful_attempts / total_attempts
   - Save mastery data to topic_mastery table
+
   - _Requirements: 8.1, 8.2, 7.5_
 
 - [ ] 8.3 Build adaptive recommendations component
@@ -410,7 +416,8 @@
 
 ## Phase 9: Offline Support and Data Export
 
-- [ ] 14. Implement offline support
+- [x] 14. Implement offline support
+
 - [x] 14.1 Create offline detection system
 
 
@@ -444,6 +451,7 @@
   - Handle conflicts during sync
   - Show sync progress
   - _Requirements: 14.4, 14.5_
+
 
 - [ ] 15. Implement data export and backup
 - [x] 15.1 Create data export service
@@ -577,6 +585,7 @@
 
 
 ## Phase 12: Testing and Documentation
+
 
 - [ ] 19. Write comprehensive tests
 - [ ]* 19.1 Write unit tests for Supabase client
