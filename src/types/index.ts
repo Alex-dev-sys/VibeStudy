@@ -61,7 +61,3 @@ export interface ProgressRecord {
     notes?: string;
   }>;
 }
-
-// Re-export groups types
-export * from './groups';
-
