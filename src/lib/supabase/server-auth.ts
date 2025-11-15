@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import type { User } from './types';
 
 /**
@@ -20,31 +20,28 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   try {
-    const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll();
-    
-    console.log('[server-auth] Cookies count:', allCookies.length);
-    console.log('[server-auth] Cookie names:', allCookies.map(c => c.name));
-    
-    // Find the access token from cookies
-    const accessTokenCookie = allCookies.find(
-      cookie => cookie.name.includes('access-token') || cookie.name.includes('access_token')
-    );
-    
-    if (!accessTokenCookie) {
-      console.log('[server-auth] No access token found in cookies');
-      return null;
-    }
-    
-    console.log('[server-auth] Found access token cookie:', accessTokenCookie.name);
-    
-    // Create Supabase client with the access token
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${accessTokenCookie.value}`
-        }
-      }
+    const cookieStore = cookies();
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Cookie setting may fail in API routes - this is expected
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // Cookie removal may fail in API routes - this is expected
+          }
+        },
+      },
     });
 
     const { data, error } = await supabase.auth.getUser();
