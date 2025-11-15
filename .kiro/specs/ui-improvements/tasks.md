@@ -233,3 +233,4 @@
     - Ensure main content containers use max-w-6xl (1280px) or smaller
     - Check that text-heavy content uses narrower max-width for optimal reading
     - _Requirements: 7.4_
+
