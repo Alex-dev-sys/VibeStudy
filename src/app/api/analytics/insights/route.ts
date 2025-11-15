@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       
       // Calculate average time for successful attempts
       const successfulAttempts = attempts.filter(
-        (a: any) => a.task_id.startsWith(topic) && a.success
+        (a: any): boolean => a.task_id.startsWith(topic) && a.success
       );
       
       if (successfulAttempts.length > 0) {

@@ -78,6 +78,8 @@ export const viewport: Viewport = {
 
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
+import { WeatherSystem } from '@/components/weather';
+import { Toaster } from 'sonner';
 
 export default function RootLayout({
   children
@@ -93,6 +95,10 @@ export default function RootLayout({
               Перейти к основному содержимому
             </a>
             {children}
+            <div className="fixed top-4 right-4 z-50">
+              <WeatherSystem />
+            </div>
+            <Toaster position="bottom-right" />
           </OnboardingProvider>
         </RealtimeProvider>
       </body>

@@ -62,3 +62,6 @@ export interface ProgressRecord {
   }>;
 }
 
+// Re-export groups types
+export * from './groups';
+

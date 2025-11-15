@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ProfileCard } from '@/components/profile/ProfileCard';
 import { TelegramSettings } from '@/components/profile/TelegramSettings';
+import { GroupsPanel } from '@/components/profile/GroupsPanel';
 import { AchievementsPanel } from '@/components/achievements/AchievementsPanel';
 import { StatisticsPanel } from '@/components/statistics/StatisticsPanel';
 import { AnalyticsPanel } from '@/components/statistics/AnalyticsPanel';
@@ -45,6 +46,9 @@ export default function ProfilePage() {
         </section>
         <section aria-label="Настройки Telegram">
           <TelegramSettings />
+        </section>
+        <section aria-label="Мои группы">
+          <GroupsPanel />
         </section>
         <section aria-label="Достижения">
           <AchievementsPanel />
