@@ -1,85 +1,59 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sync Functionality', () => {
-  test.skip('should show offline indicator when offline', async ({ page, context }) => {
-    await page.goto('/');
+  test('should work in guest mode without sync', async ({ page }) => {
+    // Navigate to learn page
+    await page.goto('/learn');
     await page.waitForLoadState('networkidle');
     
-    // Go offline
-    await context.setOffline(true);
+    // Verify page loads without sync errors
+    await expect(page.locator('h1:has-text("90-дневный план")')).toBeVisible({ timeout: 10000 });
     
-    // Make a change that would trigger sync
-    const taskCheckbox = page.locator('input[type="checkbox"]').first();
-    await taskCheckbox.click();
-    
-    // Check for offline indicator
-    const offlineIndicator = page.locator('text=/нет подключения/i');
-    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
-    
-    // Go back online
-    await context.setOffline(false);
-    
-    // Wait for sync
-    await page.waitForTimeout(2000);
-    
-    // Offline indicator should disappear
-    await expect(offlineIndicator).not.toBeVisible();
+    // Check that we can interact with the page
+    const dayButton = page.locator('button:has-text("1")').first();
+    await expect(dayButton).toBeVisible();
+    await expect(dayButton).toBeEnabled();
   });
 
-  test.skip('should queue operations when offline', async ({ page, context }) => {
-    await page.goto('/');
+  test('should persist data in localStorage', async ({ page }) => {
+    await page.goto('/learn');
     await page.waitForLoadState('networkidle');
     
-    // Go offline
-    await context.setOffline(true);
+    // Select a language
+    const pythonButton = page.locator('button:has-text("Python")').first();
+    await pythonButton.click();
     
-    // Make multiple changes
-    const checkboxes = page.locator('input[type="checkbox"]');
-    await checkboxes.nth(0).click();
-    await checkboxes.nth(1).click();
+    // Wait for state to save
+    await page.waitForTimeout(500);
     
-    // Check queue size in offline indicator
-    const queueInfo = page.locator('text=/операци/i');
-    await expect(queueInfo).toBeVisible();
+    // Reload page
+    await page.reload();
+    await page.waitForLoadState('networkidle');
     
-    // Go back online
-    await context.setOffline(false);
-    
-    // Wait for queue to process
-    await page.waitForTimeout(3000);
-    
-    // Queue should be empty
-    await expect(queueInfo).not.toBeVisible();
+    // Check that Python is still selected (has "Активно" badge)
+    const activeLanguage = page.locator('button:has-text("Python"):has-text("Активно")');
+    await expect(activeLanguage).toBeVisible({ timeout: 5000 });
   });
 
-  test.skip('should sync progress across tabs', async ({ browser }) => {
-    // Open two tabs
-    const context = await browser.newContext();
-    const page1 = await context.newPage();
-    const page2 = await context.newPage();
+  test('should maintain state across page navigation', async ({ page }) => {
+    await page.goto('/learn');
+    await page.waitForLoadState('networkidle');
     
-    // Navigate both to app
-    await page1.goto('/');
-    await page2.goto('/');
+    // Select Python
+    const pythonButton = page.locator('button:has-text("Python")').first();
+    await pythonButton.click();
+    await page.waitForTimeout(500);
     
-    await page1.waitForLoadState('networkidle');
-    await page2.waitForLoadState('networkidle');
+    // Navigate to playground
+    await page.goto('/playground');
+    await page.waitForLoadState('networkidle');
     
-    // Complete task in first tab
-    const checkbox1 = page1.locator('input[type="checkbox"]').first();
-    await checkbox1.click();
+    // Navigate back to learn
+    await page.goto('/learn');
+    await page.waitForLoadState('networkidle');
     
-    // Wait for sync
-    await page1.waitForTimeout(2000);
-    
-    // Reload second tab
-    await page2.reload();
-    await page2.waitForLoadState('networkidle');
-    
-    // Check if task is completed in second tab
-    const checkbox2 = page2.locator('input[type="checkbox"]').first();
-    await expect(checkbox2).toBeChecked();
-    
-    await context.close();
+    // Verify Python is still selected
+    const activeLanguage = page.locator('button:has-text("Python"):has-text("Активно")');
+    await expect(activeLanguage).toBeVisible({ timeout: 5000 });
   });
 });

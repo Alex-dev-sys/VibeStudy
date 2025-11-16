@@ -2,10 +2,52 @@
   "mcpServers": {
     "fetch": {
       "command": "C:\\Users\\user\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\\uvx.exe",
-      "args": ["mcp-server-fetch"],
+      "args": [
+        "mcp-server-fetch"
+      ],
       "env": {},
       "disabled": false,
-      "autoApprove": ["fetch"]
+      "autoApprove": [
+        "fetch"
+      ]
+    },
+    "supabase": {
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "url": "https://mcp.supabase.com/mcp",
+      "disabled": false,
+      "autoApprove": [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "list_projects",
+        "get_project",
+        "get_project_url",
+        "execute_sql"
+      ]
+    },
+    "playwright": {
+      "command": "C:\\Program Files\\Volta\\npx.cmd",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    },
+    "context7": {
+      "command": "C:\\Program Files\\Volta\\npx.cmd",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-b8cf3447-a8c5-42ea-a2ba-680bef29a9be"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "resolve-library-id"
+      ]
     }
   }
 }

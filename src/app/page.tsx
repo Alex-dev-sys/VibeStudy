@@ -1,15 +1,29 @@
-import { HeroShowcase } from '@/components/landing/HeroShowcase';
-import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  ...generatePageMetadata('home'),
-  other: {
-    'structured-data': JSON.stringify(generateStructuredData('Course'))
-  }
-};
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { HeroShowcase } from '@/components/landing/HeroShowcase';
+import { getCurrentUser } from '@/lib/supabase/auth';
 
 export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          // Если пользователь авторизован, перенаправляем на /learn
+          router.push('/learn');
+        }
+      } catch (error) {
+        console.error('Ошибка проверки авторизации:', error);
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [router]);
+
   return (
     <main className="relative min-h-screen overflow-hidden text-white">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />

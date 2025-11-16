@@ -1,50 +1,76 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Data Migration', () => {
-  test.skip('should detect local data and show migration prompt', async ({ page }) => {
-    // Set up local storage with some data
-    await page.goto('/');
+test.describe('Data Persistence', () => {
+  test('should save progress to localStorage', async ({ page, context }) => {
+    // Set up initial state
+    await context.addInitScript(() => {
+      localStorage.clear();
+    });
+    
+    await page.goto('/learn');
     await page.waitForLoadState('networkidle');
     
-    // Complete some tasks to create local data
-    const checkboxes = page.locator('input[type="checkbox"]');
-    await checkboxes.nth(0).click();
-    await checkboxes.nth(1).click();
+    // Select Python
+    const pythonButton = page.locator('button:has-text("Python")').first();
+    await pythonButton.click();
+    await page.waitForTimeout(500);
     
-    // Wait for data to save
-    await page.waitForTimeout(1000);
+    // Check localStorage has progress data
+    const hasProgressData = await page.evaluate(() => {
+      const progressData = localStorage.getItem('vibestudy-progress');
+      return progressData !== null && progressData.length > 0;
+    });
     
-    // Simulate authentication (this would need actual auth flow)
-    // For now, just check if migration prompt would appear
-    
-    // Navigate to a page that would trigger migration check
-    await page.goto('/profile');
-    
-    // Look for migration prompt
-    const migrationPrompt = page.locator('text=/миграция/i');
-    // This test is skipped because it requires actual authentication
+    expect(hasProgressData).toBe(true);
   });
 
-  test.skip('should migrate progress data', async ({ page }) => {
-    // This test requires:
-    // 1. Setting up local storage with progress data
-    // 2. Authenticating user
-    // 3. Triggering migration
-    // 4. Verifying data in Supabase
+  test('should load progress from localStorage', async ({ page, context }) => {
+    // Pre-populate localStorage with progress data
+    await context.addInitScript(() => {
+      localStorage.setItem('vibestudy-progress', JSON.stringify({
+        state: {
+          selectedLanguage: 'python',
+          currentDay: 1
+        },
+        version: 0
+      }));
+    });
     
-    await page.goto('/');
-    // Test implementation would go here
+    await page.goto('/learn');
+    await page.waitForLoadState('networkidle');
+    
+    // Verify Python is selected
+    const activeLanguage = page.locator('button:has-text("Python"):has-text("Активно")');
+    await expect(activeLanguage).toBeVisible({ timeout: 5000 });
   });
 
-  test.skip('should migrate achievements data', async ({ page }) => {
-    // Similar to progress migration test
-    await page.goto('/');
-    // Test implementation would go here
+  test('should handle empty localStorage gracefully', async ({ page, context }) => {
+    // Clear all localStorage
+    await context.addInitScript(() => {
+      localStorage.clear();
+    });
+    
+    await page.goto('/learn');
+    await page.waitForLoadState('networkidle');
+    
+    // Page should load without errors
+    await expect(page.locator('h1:has-text("90-дневный план")')).toBeVisible({ timeout: 10000 });
+    
+    // Should show language selection
+    const pythonButton = page.locator('button:has-text("Python")').first();
+    await expect(pythonButton).toBeVisible();
   });
 
-  test.skip('should handle migration errors gracefully', async ({ page }) => {
-    // Test error handling during migration
-    await page.goto('/');
-    // Test implementation would go here
+  test('should handle corrupted localStorage data', async ({ page, context }) => {
+    // Set corrupted data
+    await context.addInitScript(() => {
+      localStorage.setItem('vibestudy-progress', 'invalid json data');
+    });
+    
+    await page.goto('/learn');
+    await page.waitForLoadState('networkidle');
+    
+    // Page should still load (fallback to defaults)
+    await expect(page.locator('h1:has-text("90-дневный план")')).toBeVisible({ timeout: 10000 });
   });
 });

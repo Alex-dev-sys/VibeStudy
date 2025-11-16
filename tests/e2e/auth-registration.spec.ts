@@ -8,7 +8,7 @@ test.describe('Registration Flow', () => {
     
     // Wait for toast notification to appear
     // Sonner toasts have data-sonner-toast attribute
-    const toast = page.locator('[data-sonner-toast]');
+    const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible({ timeout: 5000 });
     
     // Check if success message is displayed (Russian by default)
@@ -23,7 +23,7 @@ test.describe('Registration Flow', () => {
     await page.waitForLoadState('networkidle');
     
     // Wait for toast to appear
-    const toast = page.locator('[data-sonner-toast]');
+    const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible({ timeout: 5000 });
     
     // Wait a bit for URL cleanup
@@ -82,7 +82,7 @@ test.describe('Multilingual Support', () => {
     await page.goto('/learn?registered=true');
     await page.waitForLoadState('networkidle');
     
-    const toast = page.locator('[data-sonner-toast]');
+    const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible({ timeout: 5000 });
     
     // Check for Russian text
@@ -90,12 +90,13 @@ test.describe('Multilingual Support', () => {
     await expect(toast).toContainText(/Добро пожаловать/i);
   });
 
-  test('should show English message when locale is set to English', async ({ page }) => {
-    // Set locale to English in localStorage before navigation
-    await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.setItem('locale-storage', JSON.stringify({
-        state: { locale: 'en' },
+  test('should show English message when locale is set to English', async ({ page, context }) => {
+    // Set locale in localStorage BEFORE any navigation
+    await context.addInitScript(() => {
+      localStorage.setItem('vibestudy-locale', JSON.stringify({
+        state: { 
+          locale: 'en'
+        },
         version: 0
       }));
     });
@@ -104,7 +105,7 @@ test.describe('Multilingual Support', () => {
     await page.goto('/learn?registered=true');
     await page.waitForLoadState('networkidle');
     
-    const toast = page.locator('[data-sonner-toast]');
+    const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible({ timeout: 5000 });
     
     // Check for English text
