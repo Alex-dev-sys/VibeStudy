@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { usePlaygroundStore } from '@/store/playground-store';
+import { useTranslations, useLocaleStore } from '@/store/locale-store';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
@@ -16,80 +17,88 @@ import { SnippetsList } from '@/components/playground/SnippetsList';
 import { getConsoleInterceptor } from '@/lib/playground/console-interceptor';
 import type { CodeSnippet } from '@/store/playground-store';
 
-const CODE_TEMPLATES: Record<string, string> = {
-  python: `# Python Playground
-# Пиши свой код здесь!
+const getCodeTemplates = (locale: 'ru' | 'en'): Record<string, string> => {
+  const greeting = locale === 'ru' ? 'Привет из Playground!' : 'Hello from Playground!';
+  const comment = locale === 'ru' ? 'Пиши свой код здесь!' : 'Write your code here!';
+  
+  return {
+    python: `# Python Playground
+# ${comment}
 
 def hello():
-    print("Привет из Playground!")
+    print("${greeting}")
 
 hello()
 `,
-  javascript: `// JavaScript Playground
-// Пиши свой код здесь!
+    javascript: `// JavaScript Playground
+// ${comment}
 
 function hello() {
-    console.log("Привет из Playground!");
+    console.log("${greeting}");
 }
 
 hello();
 `,
-  typescript: `// TypeScript Playground
-// Пиши свой код здесь!
+    typescript: `// TypeScript Playground
+// ${comment}
 
 function hello(): void {
-    console.log("Привет из Playground!");
+    console.log("${greeting}");
 }
 
 hello();
 `,
-  java: `// Java Playground
-// Пиши свой код здесь!
+    java: `// Java Playground
+// ${comment}
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Привет из Playground!");
+        System.out.println("${greeting}");
     }
 }
 `,
-  cpp: `// C++ Playground
-// Пиши свой код здесь!
+    cpp: `// C++ Playground
+// ${comment}
 
 #include <iostream>
 using namespace std;
 
 int main() {
-    cout << "Привет из Playground!" << endl;
+    cout << "${greeting}" << endl;
     return 0;
 }
 `,
-  csharp: `// C# Playground
-// Пиши свой код здесь!
+    csharp: `// C# Playground
+// ${comment}
 
 using System;
 
 class Program {
     static void Main() {
-        Console.WriteLine("Привет из Playground!");
+        Console.WriteLine("${greeting}");
     }
 }
 `,
-  go: `// Go Playground
-// Пиши свой код здесь!
+    go: `// Go Playground
+// ${comment}
 
 package main
 
 import "fmt"
 
 func main() {
-    fmt.Println("Привет из Playground!")
+    fmt.Println("${greeting}")
 }
 `
+  };
 };
 
 export default function PlaygroundPage() {
+  const t = useTranslations();
+  const { locale } = useLocaleStore();
   const defaultLanguage = useProgressStore((state) => state.languageId);
   const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage);
+  const CODE_TEMPLATES = getCodeTemplates(locale);
   const [code, setCode] = useState(CODE_TEMPLATES[defaultLanguage] || CODE_TEMPLATES.python);
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -117,13 +126,14 @@ export default function PlaygroundPage() {
 
   const handleLanguageChange = (langId: string) => {
     setSelectedLanguage(langId);
-    setCode(CODE_TEMPLATES[langId] || '// Начни писать код...');
+    const templates = getCodeTemplates(locale);
+    setCode(templates[langId] || `// ${t.editor.placeholder}`);
     setOutput('');
   };
 
   const handleRun = async () => {
     setIsRunning(true);
-    setOutput('⏳ Выполнение кода...\n\n');
+    setOutput(`⏳ ${t.editor.running}\n\n`);
     
     // Clear console and start intercepting
     clearConsole();
@@ -156,7 +166,7 @@ export default function PlaygroundPage() {
           });
         }
       } else {
-        setOutput(`❌ Ошибка выполнения:\n${data.error}\n\n${data.details || ''}`);
+        setOutput(`❌ ${t.feedback.error}:\n${data.error}\n\n${data.details || ''}`);
         
         // Add error to console
         addConsoleMessage({
@@ -172,9 +182,9 @@ export default function PlaygroundPage() {
         addConsoleMessage(msg);
       });
     } catch (error) {
-      const errorMessage = `❌ Не удалось выполнить код\n\n` +
-          `Проверь подключение к интернету и попробуй снова.\n` +
-          `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`;
+      const errorMessage = `❌ ${t.errors.codeCheckFailed}\n\n` +
+          `${t.errors.networkError}\n` +
+          `${t.feedback.error}: ${error instanceof Error ? error.message : t.errors.generic}`;
       
       setOutput(errorMessage);
       
@@ -189,7 +199,8 @@ export default function PlaygroundPage() {
   };
 
   const handleClear = () => {
-    setCode(CODE_TEMPLATES[selectedLanguage] || '');
+    const templates = getCodeTemplates(locale);
+    setCode(templates[selectedLanguage] || '');
     setOutput('');
   };
 
@@ -213,26 +224,25 @@ export default function PlaygroundPage() {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
               <span>🎨</span>
-              <span>Экспериментируй и прокачивай навык кодинга</span>
+              <span>{t.playground.subtitle}</span>
             </div>
             <h1 className="text-3xl font-semibold sm:text-4xl">
-              <AnimatedGradientText className="px-1">Playground</AnimatedGradientText>
+              <AnimatedGradientText className="px-1">{t.playground.title}</AnimatedGradientText>
             </h1>
             <p className="max-w-2xl text-sm text-white/70 sm:text-base">
-              Экспериментируй с идеями, проверяй гипотезы и тренируйся перед задачами. Мы сохраним твой темп и подскажем,
-              что улучшить.
+              {t.playground.subtitle}
             </p>
           </div>
           <Link href="/learn">
             <Button variant="secondary" size="md" className="border-white/30 text-white">
-              ← Вернуться к обучению
+              ← {t.profile.backToLearning}
             </Button>
           </Link>
         </div>
 
         <MagicCard innerClassName="rounded-[26px] p-6">
           <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold text-white">Выбери язык программирования</h2>
+            <h2 className="text-lg font-semibold text-white">{t.playground.selectLanguage}</h2>
             <div className="flex flex-wrap gap-2">
               {LANGUAGES.map((lang) => (
                 <Button
@@ -252,14 +262,14 @@ export default function PlaygroundPage() {
           <MagicCard innerClassName="rounded-[28px] p-6 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-lg font-semibold text-white">
-                Редактор кода ({currentLanguage?.label})
+                {t.playground.codeEditor} ({currentLanguage?.label})
               </h2>
               <div className="flex flex-wrap gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setIsSaveModalOpen(true)}>
-                  💾 Сохранить
+                  💾 {t.editor.saveCode}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setShowSnippets(!showSnippets)}>
-                  📂 Сниппеты
+                  📂 {t.playground.snippets}
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -289,13 +299,13 @@ export default function PlaygroundPage() {
                   }}
                   disabled={!code.trim()}
                 >
-                  📥 Экспорт
+                  📥 {t.playground.export}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleFormat}>
-                  ✨ Форматировать
+                  ✨ {t.editor.formatCode}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleClear}>
-                  🗑️ Очистить
+                  🗑️ {t.editor.clearCode}
                 </Button>
               </div>
             </div>
@@ -304,14 +314,14 @@ export default function PlaygroundPage() {
                 <div className="flex h-[500px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
                   <span className="text-4xl">⚠️</span>
                   <p className="text-center text-sm text-white/70">
-                    Не удалось загрузить редактор кода.
+                    {t.editor.editorLoadError}
                     <br />
-                    Используйте текстовое поле ниже:
+                    {t.editor.useTextarea}
                   </p>
                   <textarea
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder={`Напишите код на ${currentLanguage?.label}...`}
+                    placeholder={`${t.editor.placeholder} ${currentLanguage?.label}...`}
                     className="h-80 w-full resize-none rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none"
                   />
                 </div>
@@ -327,7 +337,7 @@ export default function PlaygroundPage() {
                     <div className="flex h-[500px] items-center justify-center bg-black/60">
                       <div className="text-center">
                         <div className="mb-3 text-2xl">⏳</div>
-                        <p className="text-sm text-white/60">Загрузка редактора...</p>
+                        <p className="text-sm text-white/60">{t.editor.loading}</p>
                       </div>
                     </div>
                   }
@@ -353,16 +363,16 @@ export default function PlaygroundPage() {
                 disabled={isRunning || !code.trim()}
                 className="flex-1"
               >
-                {isRunning ? '⏳ Выполнение...' : '▶️ Запустить код'}
+                {isRunning ? `⏳ ${t.editor.running}` : `▶️ ${t.editor.runCode}`}
               </Button>
             </div>
           </MagicCard>
 
           <MagicCard innerClassName="rounded-[28px] p-6 space-y-4">
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-white">Консоль</h2>
+              <h2 className="text-lg font-semibold text-white">{t.playground.output}</h2>
               <p className="text-sm text-white/60">
-                Результат выполнения и логи твоего кода
+                {t.playground.outputPlaceholder}
               </p>
             </div>
             <div className="h-[500px]">
@@ -374,9 +384,9 @@ export default function PlaygroundPage() {
         {showSnippets && (
           <MagicCard innerClassName="rounded-[28px] p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">📂 Сохранённые сниппеты</h2>
+              <h2 className="text-lg font-semibold text-white">📂 {t.playground.savedSnippets}</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowSnippets(false)}>
-                ✕ Закрыть
+                ✕ {t.common.close}
               </Button>
             </div>
             <div className="mt-4">
@@ -386,13 +396,13 @@ export default function PlaygroundPage() {
         )}
 
         <MagicCard innerClassName="rounded-[28px] p-6">
-          <h2 className="text-lg font-semibold text-white">💡 Советы по использованию Playground</h2>
+          <h2 className="text-lg font-semibold text-white">{t.playground.tips.title}</h2>
           <div className="mt-4 space-y-2 text-sm text-white/70">
-            <p>• <strong>Экспериментируй:</strong> Пробуй разные подходы к решению задач</p>
-            <p>• <strong>Тестируй идеи:</strong> Проверяй гипотезы перед применением в задачах</p>
-            <p>• <strong>Учись на ошибках:</strong> Не бойся ошибок — они помогают учиться</p>
-            <p>• <strong>Сохраняй сниппеты:</strong> Используй кнопку «💾 Сохранить» для быстрого доступа к коду</p>
-            <p>• <strong>Форматирование:</strong> Используй кнопку «✨ Форматировать» для улучшения читаемости кода</p>
+            <p>• {t.playground.tips.experiment}</p>
+            <p>• {t.playground.tips.test}</p>
+            <p>• {t.playground.tips.learn}</p>
+            <p>• {t.playground.tips.save}</p>
+            <p>• {t.playground.tips.formatting}</p>
           </div>
         </MagicCard>
       </div>

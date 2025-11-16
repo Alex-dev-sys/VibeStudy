@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { useTranslations } from '@/store/locale-store';
 import type { ConsoleMessage } from '@/store/playground-store';
 
 interface ConsoleProps {
@@ -14,6 +15,7 @@ interface ConsoleProps {
 type MessageFilter = 'all' | 'log' | 'error' | 'warn' | 'info';
 
 export function Console({ messages, onClear }: ConsoleProps) {
+  const t = useTranslations();
   const [filter, setFilter] = useState<MessageFilter>('all');
   
   const filteredMessages = useMemo(() => {
@@ -75,7 +77,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 p-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white/90">Консоль</span>
+          <span className="text-sm font-semibold text-white/90">{t.playground.output}</span>
           <Badge tone="neutral" className="text-xs">
             {filteredMessages.length}
           </Badge>
@@ -92,7 +94,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                   : 'text-white/60 hover:bg-white/10 hover:text-white/80'
               }`}
             >
-              Все
+              {t.achievements.categories.all}
             </button>
             <button
               onClick={() => setFilter('log')}
@@ -102,7 +104,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                   : 'text-white/60 hover:bg-white/10 hover:text-white/80'
               }`}
             >
-              Log ({messageCounts.log})
+              {t.console.log} ({messageCounts.log})
             </button>
             <button
               onClick={() => setFilter('error')}
@@ -112,7 +114,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                   : 'text-white/60 hover:bg-white/10 hover:text-white/80'
               }`}
             >
-              Error ({messageCounts.error})
+              {t.console.error} ({messageCounts.error})
             </button>
             <button
               onClick={() => setFilter('warn')}
@@ -122,7 +124,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                   : 'text-white/60 hover:bg-white/10 hover:text-white/80'
               }`}
             >
-              Warn ({messageCounts.warn})
+              {t.console.warn} ({messageCounts.warn})
             </button>
             <button
               onClick={() => setFilter('info')}
@@ -132,7 +134,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                   : 'text-white/60 hover:bg-white/10 hover:text-white/80'
               }`}
             >
-              Info ({messageCounts.info})
+              {t.console.info} ({messageCounts.info})
             </button>
           </div>
           
@@ -143,7 +145,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
             className="text-xs"
             disabled={messages.length === 0}
           >
-            Очистить
+            {t.editor.clearCode}
           </Button>
         </div>
       </div>
@@ -152,7 +154,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
       <div className="flex-1 overflow-y-auto p-2">
         {filteredMessages.length === 0 ? (
           <div className="flex h-full items-center justify-center text-white/40">
-            <p className="text-sm">Консоль пуста</p>
+            <p className="text-sm">{t.playground.outputPlaceholder}</p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
@@ -172,7 +174,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                       {message.stack && (
                         <details className="mt-1">
                           <summary className="cursor-pointer text-white/60 hover:text-white/80">
-                            Stack trace
+                            {t.console.stackTrace}
                           </summary>
                           <pre className="mt-1 whitespace-pre-wrap break-words text-white/60">
                             {message.stack}
@@ -189,7 +191,7 @@ export function Console({ messages, onClear }: ConsoleProps) {
                     <button
                       onClick={() => copyToClipboard(message.message)}
                       className="opacity-0 transition-opacity group-hover:opacity-100"
-                      title="Копировать"
+                      title={t.console.copy}
                     >
                       📋
                     </button>

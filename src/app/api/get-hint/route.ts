@@ -11,6 +11,7 @@ interface GetHintRequest {
   languageId: string;
   errorMessage?: string;
   attemptNumber: number;
+  locale?: 'ru' | 'en';
 }
 
 interface GetHintResponse {
@@ -19,7 +20,14 @@ interface GetHintResponse {
   nextSteps?: string[];
 }
 
-const buildHintPrompt = ({ code, task, languageId, errorMessage, attemptNumber }: GetHintRequest) => `Ты — опытный наставник по программированию. Ученик застрял на задаче и просит помощи.
+const buildHintPrompt = ({ code, task, languageId, errorMessage, attemptNumber, locale = 'ru' }: GetHintRequest) => {
+  if (locale === 'en') {
+    return buildEnglishHintPrompt({ code, task, languageId, errorMessage, attemptNumber });
+  }
+  return buildRussianHintPrompt({ code, task, languageId, errorMessage, attemptNumber });
+};
+
+const buildRussianHintPrompt = ({ code, task, languageId, errorMessage, attemptNumber }: Omit<GetHintRequest, 'locale'>) => `Ты — опытный наставник по программированию. Ученик застрял на задаче и просит помощи.
 
 ЗАДАЧА:
 ${task.title}
@@ -57,6 +65,46 @@ ${errorMessage ? `ОШИБКА:\n${errorMessage}\n` : ''}
   "hint": "основная подсказка",
   "example": "небольшой пример кода (если нужен)",
   "nextSteps": ["шаг 1", "шаг 2", "шаг 3"]
+}`;
+
+const buildEnglishHintPrompt = ({ code, task, languageId, errorMessage, attemptNumber }: Omit<GetHintRequest, 'locale'>) => `You are an experienced programming mentor. A student is stuck on a task and asks for help.
+
+TASK:
+${task.title}
+${task.description}
+
+LANGUAGE: ${languageId}
+ATTEMPT: ${attemptNumber}
+
+STUDENT'S CODE:
+\`\`\`${languageId}
+${code || '(no code written yet)'}
+\`\`\`
+
+${errorMessage ? `ERROR:\n${errorMessage}\n` : ''}
+
+YOUR TASK:
+Give the student a hint that will help them progress, but DO NOT solve the task completely.
+
+REQUIREMENTS:
+1. Hint should be clear and specific
+2. If it's first attempt (1-2) — give general direction
+3. If many attempts (3+) — give more detailed hint with example
+4. If there's an error — explain its cause in simple terms
+5. Suggest 2-3 next steps (nextSteps)
+6. If appropriate, give a small code example (example), but NOT the complete solution
+
+IMPORTANT:
+- Don't give the complete solution
+- Explain concepts, not just code
+- Be supportive and motivating
+- Consider the task difficulty level
+
+Respond STRICTLY in JSON format:
+{
+  "hint": "main hint",
+  "example": "small code example (if needed)",
+  "nextSteps": ["step 1", "step 2", "step 3"]
 }`;
 
 const fallbackResponse: GetHintResponse = {
@@ -101,11 +149,15 @@ export async function POST(request: Request) {
   try {
     const prompt = buildHintPrompt(body);
 
+    const systemMessage = body.locale === 'en'
+      ? 'You are a patient programming mentor. Help students with hints, but don\'t solve tasks for them. Respond strictly in JSON. All content must be in English.'
+      : 'Ты — терпеливый наставник по программированию. Помогай студентам подсказками, но не решай задачи за них. Отвечай строго в JSON.';
+
     const { data, raw } = await callChatCompletion({
         messages: [
           {
             role: 'system',
-            content: 'Ты — терпеливый наставник по программированию. Помогай студентам подсказками, но не решай задачи за них. Отвечай строго в JSON.'
+            content: systemMessage
           },
           {
             role: 'user',

@@ -9,6 +9,7 @@ interface ExplainTheoryRequest {
     theory?: string;
   };
   languageId: string;
+  locale?: 'ru' | 'en';
 }
 
 interface ExplainTheoryResponse {
@@ -17,7 +18,14 @@ interface ExplainTheoryResponse {
   relatedTopics?: string[];
 }
 
-const buildExplainPrompt = ({ question, context, languageId }: ExplainTheoryRequest) => `Ты — опытный преподаватель программирования. Ученик изучает ${languageId} и задал вопрос по теории.
+const buildExplainPrompt = ({ question, context, languageId, locale = 'ru' }: ExplainTheoryRequest) => {
+  if (locale === 'en') {
+    return buildEnglishExplainPrompt({ question, context, languageId });
+  }
+  return buildRussianExplainPrompt({ question, context, languageId });
+};
+
+const buildRussianExplainPrompt = ({ question, context, languageId }: Omit<ExplainTheoryRequest, 'locale'>) => `Ты — опытный преподаватель программирования. Ученик изучает ${languageId} и задал вопрос по теории.
 
 КОНТЕКСТ ОБУЧЕНИЯ:
 День: ${context.day} из 90
@@ -50,6 +58,39 @@ ${question}
   "relatedTopics": ["связанная тема 1", "связанная тема 2"]
 }`;
 
+const buildEnglishExplainPrompt = ({ question, context, languageId }: Omit<ExplainTheoryRequest, 'locale'>) => `You are an experienced programming teacher. A student is learning ${languageId} and asked a question about theory.
+
+LEARNING CONTEXT:
+Day: ${context.day} of 90
+Today's Topic: ${context.topic}
+${context.theory ? `Theory:\n${context.theory.slice(0, 500)}...` : ''}
+
+STUDENT'S QUESTION:
+${question}
+
+YOUR TASK:
+Provide a clear and detailed explanation to the student's question.
+
+REQUIREMENTS:
+1. Explain the concept in simple language, appropriate for the student's level (day ${context.day})
+2. Provide 1-3 practical examples in ${languageId}
+3. Mention related topics that will help understand the question better
+4. Be precise, but don't overload with terminology
+5. If the question is beyond the current level — explain the basic part and indicate what to study later
+
+IMPORTANT:
+- Respond in English
+- Code examples should be short and clear
+- Connect the explanation to today's topic
+- Motivate to continue learning
+
+Respond STRICTLY in JSON format:
+{
+  "explanation": "detailed explanation",
+  "examples": ["example 1 with comments", "example 2"],
+  "relatedTopics": ["related topic 1", "related topic 2"]
+}`;
+
 const parseAiResponse = (content: string): ExplainTheoryResponse | null => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
@@ -70,11 +111,13 @@ const parseAiResponse = (content: string): ExplainTheoryResponse | null => {
   }
 };
 
-const baseFallbackResponse = {
-  explanation: 'Извините, не удалось получить объяснение. Попробуйте переформулировать вопрос или обратитесь к теории дня.',
+const getBaseFallbackResponse = (locale: 'ru' | 'en' = 'ru'): ExplainTheoryResponse => ({
+  explanation: locale === 'en'
+    ? 'Sorry, unable to get an explanation. Try rephrasing your question or refer to today\'s theory.'
+    : 'Извините, не удалось получить объяснение. Попробуйте переформулировать вопрос или обратитесь к теории дня.',
   examples: [] as string[],
   relatedTopics: [] as string[]
-};
+});
 
 function formatNumber(value: number) {
   return Number.isInteger(value) ? value.toString() : value.toFixed(2);
@@ -167,18 +210,27 @@ function tryComputeArithmetic(question: string) {
 }
 
 function createFallbackResponse(request: ExplainTheoryRequest, reason?: string): ExplainTheoryResponse {
-  const { question, languageId, context } = request;
+  const { question, languageId, context, locale = 'ru' } = request;
   const arithmetic = tryComputeArithmetic(question);
 
   if (arithmetic) {
     if (arithmetic.result === null) {
       return {
-        explanation: `Вопрос "${question}" сводится к делению на ноль. В классической арифметике такое действие не определено.`,
-        examples: [
-          'Правило: деление на ноль запрещено.',
-          'Постарайтесь изменить выражение, чтобы знаменатель не равнялся нулю.'
-        ],
-        relatedTopics: ['Базовая арифметика', 'Работа с числами']
+        explanation: locale === 'en'
+          ? `The question "${question}" involves division by zero. In classical arithmetic, this operation is undefined.`
+          : `Вопрос "${question}" сводится к делению на ноль. В классической арифметике такое действие не определено.`,
+        examples: locale === 'en'
+          ? [
+              'Rule: division by zero is forbidden.',
+              'Try to modify the expression so the denominator is not zero.'
+            ]
+          : [
+              'Правило: деление на ноль запрещено.',
+              'Постарайтесь изменить выражение, чтобы знаменатель не равнялся нулю.'
+            ],
+        relatedTopics: locale === 'en'
+          ? ['Basic Arithmetic', 'Working with Numbers']
+          : ['Базовая арифметика', 'Работа с числами']
       };
     }
 
@@ -187,19 +239,29 @@ function createFallbackResponse(request: ExplainTheoryRequest, reason?: string):
     const codeExample = buildCodeExample(languageId, expression.replace(/×/g, '*'), arithmetic.result);
 
     return {
-      explanation: `Это базовый пример арифметики. ${expression} = ${formattedResult}.`,
+      explanation: locale === 'en'
+        ? `This is a basic arithmetic example. ${expression} = ${formattedResult}.`
+        : `Это базовый пример арифметики. ${expression} = ${formattedResult}.`,
       examples: [
         codeExample,
-        `Проверка в уме: ${expression.split('×').join(' * ')} = ${formattedResult}`
+        locale === 'en'
+          ? `Mental check: ${expression.split('×').join(' * ')} = ${formattedResult}`
+          : `Проверка в уме: ${expression.split('×').join(' * ')} = ${formattedResult}`
       ],
-      relatedTopics: ['Математические операции', `День ${context.day}: ${context.topic}`]
+      relatedTopics: locale === 'en'
+        ? ['Mathematical Operations', `Day ${context.day}: ${context.topic}`]
+        : ['Математические операции', `День ${context.day}: ${context.topic}`]
     };
   }
 
   return {
-    explanation: `Пока не удалось получить ответ от AI. Вопрос был: "${question}". Попробуйте уточнить формулировку или посмотреть теорию по теме "${context.topic}".`,
+    explanation: locale === 'en'
+      ? `Unable to get an answer from AI yet. The question was: "${question}". Try to clarify the wording or review the theory on "${context.topic}".`
+      : `Пока не удалось получить ответ от AI. Вопрос был: "${question}". Попробуйте уточнить формулировку или посмотреть теорию по теме "${context.topic}".`,
     examples: [],
-    relatedTopics: [`День ${context.day}: ${context.topic}`, 'Повторение теории']
+    relatedTopics: locale === 'en'
+      ? [`Day ${context.day}: ${context.topic}`, 'Theory Review']
+      : [`День ${context.day}: ${context.topic}`, 'Повторение теории']
   };
 }
 
@@ -208,8 +270,11 @@ export async function POST(request: Request) {
 
   // Валидация
   if (!body.question || body.question.trim().length < 3) {
+    const locale = body.locale || 'ru';
     return NextResponse.json({
-      explanation: 'Пожалуйста, задайте более конкретный вопрос.',
+      explanation: locale === 'en'
+        ? 'Please ask a more specific question.'
+        : 'Пожалуйста, задайте более конкретный вопрос.',
       examples: [],
       relatedTopics: []
     });
@@ -225,11 +290,15 @@ export async function POST(request: Request) {
   try {
     const prompt = buildExplainPrompt(body);
 
+    const systemMessage = body.locale === 'en'
+      ? 'You are a programming teacher. Explain concepts clearly with examples. Respond strictly in JSON. All content must be in English.'
+      : 'Ты — преподаватель программирования. Объясняй концепции понятно и с примерами. Отвечай строго в JSON на русском языке.';
+
     const { data, raw } = await callChatCompletion({
         messages: [
           {
             role: 'system',
-            content: 'Ты — преподаватель программирования. Объясняй концепции понятно и с примерами. Отвечай строго в JSON на русском языке.'
+            content: systemMessage
           },
           {
             role: 'user',

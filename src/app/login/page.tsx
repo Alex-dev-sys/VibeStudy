@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { signInWithEmail, signInWithGoogle, getCurrentUser } from '@/lib/supabase/auth';
+import { useTranslations } from '@/store/locale-store';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
 
 export default function LoginPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +27,10 @@ export default function LoginPage() {
     };
 
     checkUser().catch((error) => {
-      console.error('Не удалось проверить авторизацию пользователя', error);
+      console.error('Auth check failed:', error);
     });
     checkUrlErrors();
-  }, [router]);
+  }, [router, t]);
 
   function checkUrlErrors() {
     const params = new URLSearchParams(window.location.hash.slice(1));
@@ -38,13 +40,12 @@ export default function LoginPage() {
 
     if (errorParam) {
       if (errorCode === 'otp_expired') {
-        setError('Ссылка для входа истекла. Запросите новую ссылку.');
+        setError(t.login.errors.otpExpired);
       } else if (errorDescription) {
         setError(decodeURIComponent(errorDescription.replace(/\+/g, ' ')));
       } else {
-        setError('Ошибка входа. Попробуйте снова.');
+        setError(t.login.errors.loginFailed);
       }
-      // Очищаем URL от ошибок
       window.history.replaceState({}, '', '/login');
     }
   }
@@ -53,7 +54,7 @@ export default function LoginPage() {
     e.preventDefault();
     
     if (!email || !email.includes('@')) {
-      setError('Введите корректный email');
+      setError(t.validation.invalidEmail);
       return;
     }
 
@@ -63,7 +64,7 @@ export default function LoginPage() {
     const { error } = await signInWithEmail(email);
     
     if (error) {
-      setError('Ошибка отправки письма. Попробуйте снова.');
+      setError(t.login.errors.emailSendFailed);
       setLoading(false);
     } else {
       setEmailSent(true);
@@ -78,16 +79,14 @@ export default function LoginPage() {
     const { error } = await signInWithGoogle();
     
     if (error) {
-      setError('Google вход не настроен. Используйте Email.');
+      setError(t.login.errors.googleNotConfigured);
       setLoading(false);
       setShowEmailForm(true);
     }
   }
 
   function handleGuestMode() {
-    // Устанавливаем флаг гостевого режима в localStorage
     localStorage.setItem('guestMode', 'true');
-    // Перенаправляем на страницу обучения
     router.push('/learn');
   }
 
@@ -107,7 +106,7 @@ export default function LoginPage() {
             className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-[rgba(255,255,255,0.2)] px-5 py-2 text-sm text-white/80 backdrop-blur-xl shadow-[0_18px_40px_rgba(12,6,28,0.35)]"
           >
             <span className="text-xl">🚀</span>
-            <span>Войди и продолжи обучение вместе с ИИ-наставником</span>
+            <span>{t.login.welcomeBadge}</span>
           </motion.div>
 
           <motion.h1
@@ -116,7 +115,7 @@ export default function LoginPage() {
             transition={{ delay: 0.1, duration: 0.6 }}
             className="text-4xl font-semibold leading-tight sm:text-5xl"
           >
-            <AnimatedGradientText className="px-1">VibeStudy</AnimatedGradientText> встречает тебя!
+            <AnimatedGradientText className="px-1">VibeStudy</AnimatedGradientText> {t.login.welcomeTitle}
           </motion.h1>
 
           <motion.p
@@ -125,8 +124,7 @@ export default function LoginPage() {
             transition={{ delay: 0.18, duration: 0.6 }}
             className="text-base text-white/80 sm:text-lg"
           >
-            Возвращайся к прогрессу, получай подсказки от ИИ, фиксируй успехи и строй свою карьеру разработчика.
-            Доступен полный режим с Google, email или гостевым входом.
+            {t.login.welcomeDescription}
           </motion.p>
 
           <motion.div
@@ -136,12 +134,12 @@ export default function LoginPage() {
             className="grid gap-4 text-sm text-white/75 sm:grid-cols-2"
           >
             <MagicCard innerClassName="rounded-[26px] p-5 text-left">
-              <p className="mb-2 text-sm font-semibold text-gradient">🧠 AI-помощник</p>
-              <p className="text-white/75">Круглосуточные подсказки, проверка кода и объяснение теории.</p>
+              <p className="mb-2 text-sm font-semibold text-gradient">🧠 {t.login.aiAssistant}</p>
+              <p className="text-white/75">{t.login.aiAssistantDesc}</p>
             </MagicCard>
             <MagicCard innerClassName="rounded-[26px] p-5 text-left">
-              <p className="mb-2 text-sm font-semibold text-gradient">📊 Адаптивный прогресс</p>
-              <p className="text-white/75">Аналитика, рекомендации и Telegram-напоминания, чтобы не сбиться с курса.</p>
+              <p className="mb-2 text-sm font-semibold text-gradient">📊 {t.login.adaptiveProgress}</p>
+              <p className="text-white/75">{t.login.adaptiveProgressDesc}</p>
             </MagicCard>
           </motion.div>
         </div>
@@ -149,7 +147,7 @@ export default function LoginPage() {
         {/* Карточка входа */}
         <MagicCard className="w-full max-w-xl" innerClassName="relative w-full rounded-[28px] px-6 py-8 sm:px-8">
           <h2 className="mb-6 text-center text-2xl font-semibold text-white">
-            Войти или зарегистрироваться
+            {t.login.title}
           </h2>
 
           {/* Успех отправки email */}
@@ -160,12 +158,12 @@ export default function LoginPage() {
               className="mb-4 rounded-xl border border-emerald-400/40 bg-emerald-400/15 p-4 text-center text-white/90"
             >
               <div className="mb-2 text-2xl">✉️</div>
-              <p className="text-sm font-semibold text-white">Письмо отправлено!</p>
+              <p className="text-sm font-semibold text-white">{t.login.emailSentTitle}</p>
               <p className="mt-1 text-xs text-white/80">
-                Проверьте почту <span className="font-semibold text-gradient">{email}</span> и перейдите по ссылке для входа
+                {t.login.emailSentDescription} <span className="font-semibold text-gradient">{email}</span> {t.login.emailSentDescriptionEnd}
               </p>
               <p className="mt-2 text-xs text-white/65">
-                ⏱️ Ссылка действительна 1 час
+                ⏱️ {t.login.linkValidFor}
               </p>
             </motion.div>
           )}
@@ -190,13 +188,13 @@ export default function LoginPage() {
             >
               <div>
                 <label className="mb-2 block text-sm font-semibold text-white">
-                  Email
+                  {t.login.emailLabel}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t.login.emailPlaceholder}
                   disabled={emailSent}
                   className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-white placeholder-white/40 focus:border-accent/50 focus:outline-none disabled:opacity-50"
                 />
@@ -207,7 +205,7 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-soft px-6 py-3 font-semibold text-white transition-all hover:shadow-lg hover:shadow-accent/50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Отправить ссылку для входа
+                  {t.login.sendLoginLink}
                 </button>
               )}
             </motion.form>
@@ -220,7 +218,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-black/40 px-4 text-white/50">или</span>
+                <span className="bg-black/40 px-4 text-white/50">{t.login.or}</span>
               </div>
             </div>
           )}
@@ -239,7 +237,7 @@ export default function LoginPage() {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              <span>Продолжить с Google</span>
+              <span>{t.login.continueWithGoogle}</span>
             </button>
 
             {!showEmailForm && (
@@ -250,7 +248,7 @@ export default function LoginPage() {
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span>Продолжить с Email</span>
+                <span>{t.login.continueWithEmail}</span>
               </button>
             )}
           </div>
@@ -261,7 +259,7 @@ export default function LoginPage() {
             <div className="mt-4 text-center">
               <div className="inline-flex items-center gap-2 text-sm text-white/60">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
-                <span>Перенаправление...</span>
+                <span>{t.login.redirecting}</span>
               </div>
             </div>
           )}
@@ -272,14 +270,14 @@ export default function LoginPage() {
               onClick={handleGuestMode}
               className="w-full rounded-xl border border-white/12 bg-[rgba(255,255,255,0.15)] px-6 py-3 font-semibold text-white transition-all hover:border-white/20 hover:bg-[rgba(255,255,255,0.25)] hover:-translate-y-0.5 shadow-[0_14px_32px_rgba(12,6,28,0.35)]"
             >
-              🚀 Продолжить без регистрации
+              🚀 {t.login.continueAsGuest}
             </button>
           </div>
 
           {/* Информация */}
           <div className="mt-6 rounded-lg border border-white/12 bg-[rgba(255,255,255,0.15)] p-4">
             <p className="text-center text-xs text-white/65">
-              Нажимая кнопку входа, вы соглашаетесь с условиями использования и политикой конфиденциальности
+              {t.login.termsAndPrivacy}
             </p>
           </div>
         </MagicCard>

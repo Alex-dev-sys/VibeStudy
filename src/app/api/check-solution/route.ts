@@ -10,6 +10,7 @@ interface CheckSolutionRequest {
     hints?: string[];
   };
   languageId: string;
+  locale?: 'ru' | 'en';
 }
 
 interface CheckSolutionResponse {
@@ -20,7 +21,14 @@ interface CheckSolutionResponse {
   score?: number;
 }
 
-const buildCheckPrompt = ({ code, task, languageId }: CheckSolutionRequest) => `Ты — опытный преподаватель программирования и code reviewer.
+const buildCheckPrompt = ({ code, task, languageId, locale = 'ru' }: CheckSolutionRequest) => {
+  if (locale === 'en') {
+    return buildEnglishCheckPrompt({ code, task, languageId });
+  }
+  return buildRussianCheckPrompt({ code, task, languageId });
+};
+
+const buildRussianCheckPrompt = ({ code, task, languageId }: Omit<CheckSolutionRequest, 'locale'>) => `Ты — опытный преподаватель программирования и code reviewer.
 
 ЗАДАЧА УЧЕНИКА:
 Название: ${task.title}
@@ -59,6 +67,47 @@ ${code}
   "feedback": "детальный разбор",
   "suggestions": ["совет 1", "совет 2", "совет 3"],
   "score": число от 0 до 100
+}`;
+
+const buildEnglishCheckPrompt = ({ code, task, languageId }: Omit<CheckSolutionRequest, 'locale'>) => `You are an experienced programming instructor and code reviewer.
+
+STUDENT'S TASK:
+Title: ${task.title}
+Description: ${task.description}
+Difficulty: ${task.difficulty}
+Language: ${languageId}
+
+STUDENT'S CODE:
+\`\`\`${languageId}
+${code}
+\`\`\`
+
+YOUR TASK:
+Analyze the student's code and provide detailed feedback.
+
+RESPONSE REQUIREMENTS:
+1. Determine if the code solves the task (success: true/false)
+2. Give a brief message — praise or point out the problem
+3. Provide detailed feedback:
+   - What was done correctly
+   - What errors exist (logical, syntactic, stylistic)
+   - Does the solution match the difficulty level
+4. Give 2-3 specific improvement suggestions
+5. Rate the solution from 0 to 100 (score)
+
+IMPORTANT:
+- Be constructive and supportive
+- Explain errors in simple terms
+- Give examples of corrections
+- Consider the task level (don't require advanced patterns from beginners)
+
+Respond STRICTLY in JSON format:
+{
+  "success": boolean,
+  "message": "brief message",
+  "feedback": "detailed analysis",
+  "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"],
+  "score": number from 0 to 100
 }`;
 
 const fallbackResponse: CheckSolutionResponse = {
@@ -122,11 +171,15 @@ export async function POST(request: Request) {
   try {
     const prompt = buildCheckPrompt(body);
 
+    const systemMessage = body.locale === 'en'
+      ? 'You are an experienced code reviewer and instructor. Analyze student code constructively and in detail. Respond strictly in JSON. All content must be in English.'
+      : 'Ты — опытный code reviewer и преподаватель. Анализируй код студентов конструктивно и подробно. Отвечай строго в JSON.';
+
     const { data, raw } = await callChatCompletion({
         messages: [
           {
             role: 'system',
-            content: 'Ты — опытный code reviewer и преподаватель. Анализируй код студентов конструктивно и подробно. Отвечай строго в JSON.'
+            content: systemMessage
           },
           {
             role: 'user',

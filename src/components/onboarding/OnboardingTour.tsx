@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboardingStore } from '@/store/onboarding-store';
+import { useTranslations } from '@/store/locale-store';
 import { Button } from '@/components/ui/Button';
 
 export function OnboardingTour() {
+  const t = useTranslations();
   const {
     isActive,
     currentStep,
-    steps,
+    steps: customSteps,
     nextStep,
     previousStep,
     skipOnboarding,
@@ -18,6 +20,15 @@ export function OnboardingTour() {
 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  // Use custom steps if provided, otherwise use translation steps
+  const steps = customSteps.length > 0 ? customSteps : t.onboarding.steps.map((step, index) => ({
+    id: `step-${index}`,
+    title: step.title,
+    description: step.description,
+    targetElement: '', // Will be set by the component that starts onboarding
+    position: 'center' as const
+  }));
 
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
@@ -139,14 +150,14 @@ export function OnboardingTour() {
             {/* Progress indicator */}
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-medium text-white/60">
-                Шаг {currentStep + 1} из {steps.length}
+                {currentStep + 1} / {steps.length}
               </span>
               <button
                 onClick={skipOnboarding}
                 className="text-sm text-white/60 hover:text-white"
-                aria-label="Пропустить обучение"
+                aria-label={t.onboarding.skip}
               >
-                Пропустить
+                {t.onboarding.skip}
               </button>
             </div>
 
@@ -177,7 +188,7 @@ export function OnboardingTour() {
                 disabled={isFirstStep}
                 className="text-white/70 hover:text-white disabled:opacity-30"
               >
-                ← Назад
+                ← {t.onboarding.previous}
               </Button>
               
               <div className="flex gap-2">
@@ -200,14 +211,14 @@ export function OnboardingTour() {
                 size="sm"
                 onClick={isLastStep ? completeOnboarding : nextStep}
               >
-                {isLastStep ? 'Завершить' : 'Далее →'}
+                {isLastStep ? t.onboarding.complete : `${t.onboarding.next} →`}
               </Button>
             </div>
 
             {/* Keyboard hints */}
             <div className="mt-4 flex items-center justify-center gap-4 text-xs text-white/40">
-              <span>← → Навигация</span>
-              <span>Esc Пропустить</span>
+              <span>← → {t.onboarding.keyboardHints.navigate}</span>
+              <span>Esc {t.onboarding.keyboardHints.skipTour}</span>
             </div>
           </motion.div>
         </>

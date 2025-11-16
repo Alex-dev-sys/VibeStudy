@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDayContent } from '@/data/curriculum-content';
 import { getDayTopic } from '@/lib/curriculum';
 import { useProgressStore } from '@/store/progress-store';
+import { useLocaleStore } from '@/store/locale-store';
 import type { CurriculumDay, GeneratedTask, TaskGenerationResponse } from '@/types';
 import { formatTheoryContent, trimPrompt } from '@/lib/content-formatting';
 
@@ -58,6 +59,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
       setRegeneratingTaskId(null);
       setContentSource('pending');
 
+      const { locale } = useLocaleStore.getState();
       const dayTopic = getDayTopic(currentDay.day);
       const previousDayTopic = previousDay ? getDayTopic(previousDay.day) : undefined;
       const MAX_ATTEMPTS = 3;
@@ -72,7 +74,8 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
             dayTopic: dayTopic.topic,
             dayDescription: dayTopic.description,
             theorySummary: currentDay.theory,
-            previousDaySummary: previousDayTopic?.topic
+            previousDaySummary: previousDayTopic?.topic,
+            locale
           })
         });
 

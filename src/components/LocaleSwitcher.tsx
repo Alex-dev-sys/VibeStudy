@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useLocaleStore } from '@/store/locale-store';
 import type { Locale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 
 const OPTIONS: Array<{ value: Locale; label: string }> = [
   { value: 'ru', label: 'RU' },
@@ -11,6 +13,19 @@ const OPTIONS: Array<{ value: Locale; label: string }> = [
 
 export function LocaleSwitcher() {
   const { locale, setLocale } = useLocaleStore();
+
+  // Update document language attribute when locale changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale;
+      
+      // Announce locale change to screen readers
+      const announcement = locale === 'en' 
+        ? 'Language changed to English' 
+        : 'Язык изменён на русский';
+      announceLiveRegion(announcement);
+    }
+  }, [locale]);
 
   return (
     <div className="flex items-center rounded-full border border-white/12 bg-[rgba(255,255,255,0.18)] p-0.5 shadow-[0_12px_28px_rgba(12,6,28,0.35)] backdrop-blur-lg">

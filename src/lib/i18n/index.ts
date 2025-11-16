@@ -24,10 +24,23 @@ export function t(translations: Translations, path: string): string {
     if (result && typeof result === 'object' && key in result) {
       result = result[key];
     } else {
+      // Log warning in development mode for missing keys
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[i18n] Translation key not found: ${path}`);
+      }
       return path; // Return path if translation not found
     }
   }
   
-  return typeof result === 'string' ? result : path;
+  // Ensure we return a string
+  if (typeof result === 'string') {
+    return result;
+  }
+  
+  // If result is not a string, log warning and return path
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`[i18n] Translation key "${path}" is not a string:`, result);
+  }
+  return path;
 }
 

@@ -10,6 +10,7 @@ import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useTranslations, useLocaleStore } from '@/store/locale-store';
 import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 
 interface TaskModalProps {
@@ -67,6 +68,8 @@ export function TaskModal({
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   
+  const t = useTranslations();
+  const { locale } = useLocaleStore();
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
   const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
 
@@ -102,7 +105,7 @@ export function TaskModal({
   const handleCheck = async () => {
     setIsChecking(true);
     setCheckResult(null);
-    setOutput('🤖 ИИ проверяет ваше решение...');
+    setOutput(`🤖 ${t.taskModal.aiChecking}`);
     setShowSuggestions(false);
     
     const newAttemptsCount = attemptsCount + 1;
@@ -120,24 +123,26 @@ export function TaskModal({
             difficulty: task.difficulty,
             hints: task.solutionHint ? [task.solutionHint] : []
           },
-          languageId
+          languageId,
+          locale
         })
       });
 
       if (!response.ok) {
-        throw new Error('Не удалось проверить код');
+        throw new Error(t.errors.codeCheckFailed);
       }
 
       const result: CheckResult = await response.json();
       setCheckResult(result);
       
-      // Формируем вывод
+      // Формируем вывод с локализованными сообщениями
+      const statusMessage = result.success ? t.taskModal.solutionCorrect : t.taskModal.solutionIncorrect;
       let outputText = result.success 
-        ? `✅ ${result.message}\n\n${result.feedback || ''}`
-        : `❌ ${result.message}\n\n${result.feedback || ''}`;
+        ? `✅ ${statusMessage}\n\n${result.feedback || ''}`
+        : `❌ ${statusMessage}\n\n${result.feedback || ''}`;
       
       if (result.score !== undefined) {
-        outputText += `\n\n📊 Оценка: ${result.score}/100`;
+        outputText += `\n\n📊 ${t.feedback.score}: ${result.score}/100`;
       }
       
       setOutput(outputText);
@@ -145,8 +150,8 @@ export function TaskModal({
       
       // Announce result to screen readers
       const announcement = result.success
-        ? `Задача решена успешно! Оценка: ${result.score || 100} из 100`
-        : `Задача не решена. ${result.message}`;
+        ? `${t.notifications.taskCompleted} ${t.feedback.score}: ${result.score || 100}/100`
+        : `${result.message}`;
       announceLiveRegion(announcement, 'assertive');
 
       // Сохраняем попытку в профиль знаний
@@ -175,14 +180,14 @@ export function TaskModal({
         onComplete(task.id);
         setShowConfetti(true);
         // Announce achievement
-        announceLiveRegion('Поздравляем! Задача выполнена успешно!', 'assertive');
+        announceLiveRegion(`${t.notifications.congratulations} ${t.notifications.taskCompleted}`, 'assertive');
       }
     } catch (error) {
       setCheckResult(null);
-      setOutput('❌ Ошибка при проверке кода. Попробуйте позже.');
-      console.error('Ошибка проверки:', error);
+      setOutput(`❌ ${t.taskModal.checkError}`);
+      console.error('Check error:', error);
       // Announce error to screen readers
-      announceLiveRegion('Ошибка при проверке кода. Попробуйте позже.', 'assertive');
+      announceLiveRegion(t.taskModal.checkError, 'assertive');
     } finally {
       setIsChecking(false);
     }
@@ -204,25 +209,26 @@ export function TaskModal({
           },
           languageId,
           errorMessage: checkResult && !checkResult.success ? checkResult.feedback : undefined,
-          attemptNumber: attemptsCount + 1
+          attemptNumber: attemptsCount + 1,
+          locale
         })
       });
 
       if (!response.ok) {
-        throw new Error('Не удалось получить подсказку');
+        throw new Error(t.errors.hintFailed);
       }
 
       const result: HintResult = await response.json();
       setHints([...hints, result.hint]);
       
-      let hintOutput = `💡 Подсказка:\n\n${result.hint}`;
+      let hintOutput = `💡 ${t.taskModal.hintOutput}:\n\n${result.hint}`;
       
       if (result.example) {
-        hintOutput += `\n\n📝 Пример:\n${result.example}`;
+        hintOutput += `\n\n📝 ${t.taskModal.example}:\n${result.example}`;
       }
       
       if (result.nextSteps && result.nextSteps.length > 0) {
-        hintOutput += '\n\n✨ Следующие шаги:\n';
+        hintOutput += `\n\n✨ ${t.taskModal.nextSteps}:\n`;
         result.nextSteps.forEach((step, i) => {
           hintOutput += `${i + 1}. ${step}\n`;
         });
@@ -230,8 +236,8 @@ export function TaskModal({
       
       setOutput(hintOutput);
     } catch (error) {
-      setOutput('❌ Не удалось получить подсказку. Попробуйте позже.');
-      console.error('Ошибка получения подсказки:', error);
+      setOutput(`❌ ${t.errors.hintFailed}`);
+      console.error('Hint error:', error);
     } finally {
       setIsLoadingHint(false);
     }
@@ -262,15 +268,15 @@ export function TaskModal({
           <div className="flex items-start justify-between gap-2 sm:gap-4">
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <span className="text-xs text-white/50 sm:text-sm">Задача #{taskNumber}</span>
+                <span className="text-xs text-white/50 sm:text-sm">{t.taskModal.taskNumber} #{taskNumber}</span>
                 <Badge tone="accent" className={`text-xs sm:text-sm ${difficultyColorMap[task.difficulty]}`}>
                   {task.difficulty}
                 </Badge>
-                {isCompleted && <Badge tone="accent" className="text-xs sm:text-sm">✓ Выполнено</Badge>}
-                {isViewMode && <Badge tone="neutral" className="text-xs sm:text-sm">👁️ Просмотр</Badge>}
+                {isCompleted && <Badge tone="accent" className="text-xs sm:text-sm">✓ {t.tasks.completed}</Badge>}
+                {isViewMode && <Badge tone="neutral" className="text-xs sm:text-sm">👁️ {t.taskModal.viewMode}</Badge>}
               </div>
               <h2 className="mt-2 text-base font-semibold text-white sm:text-lg md:text-xl">{task.prompt}</h2>
-              {task.solutionHint && <p className="mt-2 text-xs text-white/60 sm:text-sm">💡 Подсказка: {task.solutionHint}</p>}
+              {task.solutionHint && <p className="mt-2 text-xs text-white/60 sm:text-sm">💡 {t.taskModal.solutionHint}: {task.solutionHint}</p>}
             </div>
             <button
               onClick={onClose}
@@ -286,14 +292,14 @@ export function TaskModal({
               <div className="flex h-[300px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
                 <span className="text-4xl">⚠️</span>
                 <p className="text-center text-sm text-white/70">
-                  Не удалось загрузить редактор кода.
+                  {t.editor.editorLoadError}
                   <br />
-                  Используйте текстовое поле ниже:
+                  {t.editor.useTextarea}
                 </p>
                 <textarea
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder={`Напишите код на ${languageId}...`}
+                  placeholder={`${t.editor.placeholder} ${languageId}...`}
                   className="h-40 w-full resize-none rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none"
                 />
               </div>
@@ -311,7 +317,7 @@ export function TaskModal({
                   <div className="flex h-[250px] items-center justify-center bg-black/60">
                     <div className="text-center">
                       <div className="mb-3 text-2xl">⏳</div>
-                      <p className="text-sm text-white/60">Загрузка редактора...</p>
+                      <p className="text-sm text-white/60">{t.editor.loading}</p>
                     </div>
                   </div>
                 }
@@ -351,7 +357,7 @@ export function TaskModal({
               animate={{ opacity: 1, y: 0 }}
               className="rounded-xl border border-blue-500/40 bg-blue-500/10 p-3 sm:rounded-2xl sm:p-4"
             >
-              <h4 className="mb-2 text-sm font-semibold text-blue-200">💡 Рекомендации по улучшению:</h4>
+              <h4 className="mb-2 text-sm font-semibold text-blue-200">💡 {t.taskModal.recommendations}:</h4>
               <ul className="space-y-1 text-xs text-blue-200/80 sm:text-sm">
                 {checkResult.suggestions.map((suggestion, i) => (
                   <li key={i} className="flex gap-2">
@@ -371,12 +377,12 @@ export function TaskModal({
               className="rounded-xl border border-purple-500/40 bg-purple-500/10 p-3 sm:rounded-2xl sm:p-4"
             >
               <h4 className="mb-2 text-sm font-semibold text-purple-200">
-                💡 Использовано подсказок: {hints.length}
+                💡 {t.taskModal.hintsUsed}: {hints.length}
               </h4>
               <div className="space-y-2 text-xs text-purple-200/80 sm:text-sm">
                 {hints.map((hint, i) => (
                   <div key={i} className="border-l-2 border-purple-500/40 pl-3">
-                    <span className="font-semibold">Подсказка {i + 1}:</span> {hint}
+                    <span className="font-semibold">{t.taskModal.hintNumber} {i + 1}:</span> {hint}
                   </div>
                 ))}
               </div>
@@ -386,7 +392,7 @@ export function TaskModal({
           {/* Кнопки */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <Button variant="ghost" size="md" onClick={onClose} className="order-3 w-full min-h-touch text-xs sm:order-1 sm:w-auto sm:text-sm">
-              Закрыть
+              {t.taskModal.close}
             </Button>
             {!isViewMode && (
               <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
@@ -398,7 +404,7 @@ export function TaskModal({
                   disabled={isLoadingHint || isChecking}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
-                  {isLoadingHint ? 'Думаю...' : '💡 Подсказка'}
+                  {isLoadingHint ? t.taskModal.thinking : `💡 ${t.taskModal.getHint}`}
                 </Button>
                 <Button 
                   variant="secondary" 
@@ -406,7 +412,7 @@ export function TaskModal({
                   onClick={() => setCode('')} 
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
-                  Очистить
+                  {t.taskModal.clear}
                 </Button>
                 <Button 
                   variant="primary" 
@@ -416,7 +422,7 @@ export function TaskModal({
                   disabled={isChecking || !code.trim()} 
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
-                  {isChecking ? 'Проверка...' : '✓ Проверить'}
+                  {isChecking ? t.taskModal.checking : `✓ ${t.taskModal.checkSolution}`}
                 </Button>
               </div>
             )}
