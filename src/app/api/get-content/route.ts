@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const languageId = searchParams.get('languageId') ?? 'python';
 
   try {
-    const content = getGeneratedContent(day, languageId);
+    const content = await getGeneratedContent(day, languageId);
 
     if (!content) {
       return NextResponse.json({ exists: false }, { status: 404 });
