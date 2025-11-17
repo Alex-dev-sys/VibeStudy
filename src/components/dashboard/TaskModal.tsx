@@ -247,7 +247,7 @@ export function TaskModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overscroll-contain">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-hidden">
         {showConfetti && (
           <Confetti
             width={windowSize.width}
@@ -262,7 +262,7 @@ export function TaskModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel-foreground relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 overflow-y-auto rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
+          className="glass-panel-foreground modal-scroll-container relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 overflow-y-auto rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
         >
           {/* Заголовок */}
           <div className="flex items-start justify-between gap-2 sm:gap-4">

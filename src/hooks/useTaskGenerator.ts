@@ -155,6 +155,35 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         setLoading(true);
         setError(null);
 
+        // First, try to load from client-side localStorage (immediate)
+        if (typeof window !== 'undefined') {
+          const key = `${languageId}_day${currentDay.day}`;
+          const stored = localStorage.getItem(`vibestudy_content_${key}`);
+          
+          if (stored && !cancelled) {
+            try {
+              const record = JSON.parse(stored);
+              if (record.content) {
+                setTaskSet(
+                  formattedContent({
+                    theory: record.content.theory,
+                    recap: record.content.recap,
+                    recapTask: record.content.recapTask,
+                    tasks: record.content.tasks
+                  })
+                );
+                setContentSource('database');
+                fetchedFromDatabase = true;
+                setLoading(false);
+                return;
+              }
+            } catch (e) {
+              console.warn('Failed to parse localStorage content:', e);
+            }
+          }
+        }
+
+        // If not in localStorage, try server-side storage
         const response = await fetch(`/api/get-content?day=${currentDay.day}&languageId=${languageId}`);
 
         if (cancelled) {

@@ -9,6 +9,15 @@ let useMemoryStore = false;
 let memoryStore: Record<string, any> = {};
 let storageInitialized = false;
 
+// Enhanced content storage types
+export interface GeneratedContentRecord {
+  key: string;
+  content: any;
+  timestamp: number;
+  version: string;
+  syncStatus?: 'local' | 'synced' | 'pending';
+}
+
 function ensureStorageInitialized() {
   if (storageInitialized || useMemoryStore) {
     return;
@@ -90,14 +99,110 @@ export interface ContentToSave {
   tasks: any[];
 }
 
-// Сохранить сгенерированный контент
-export function saveGeneratedContent(content: ContentToSave): void {
-  const data = readData();
+// Enhanced ContentStorage class for multi-layer persistence
+class ContentStorage {
+  private memoryCache: Map<string, GeneratedContentRecord> = new Map();
+  private readonly STORAGE_VERSION = '1.0';
+
+  async save(key: string, content: any): Promise<void> {
+    const record: GeneratedContentRecord = {
+      key,
+      content,
+      timestamp: Date.now(),
+      version: this.STORAGE_VERSION,
+      syncStatus: 'local'
+    };
+
+    // 1. Save to memory cache
+    this.memoryCache.set(key, record);
+
+    // 2. Save to localStorage (client-side only)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`vibestudy_content_${key}`, JSON.stringify(record));
+      } catch (e) {
+        console.warn('localStorage save failed:', e);
+      }
+    }
+
+    // 3. Save to file system (server-side)
+    await this.saveToFile(key, record);
+  }
+
+  async load(key: string): Promise<any | null> {
+    // Try memory first
+    const cached = this.memoryCache.get(key);
+    if (cached) return cached.content;
+
+    // Try localStorage (client-side)
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`vibestudy_content_${key}`);
+        if (stored) {
+          const record: GeneratedContentRecord = JSON.parse(stored);
+          this.memoryCache.set(key, record);
+          return record.content;
+        }
+      } catch (e) {
+        console.warn('localStorage load failed:', e);
+      }
+    }
+
+    // Try file system (server-side)
+    return await this.loadFromFile(key);
+  }
+
+  private async saveToFile(key: string, record: GeneratedContentRecord): Promise<void> {
+    if (typeof window !== 'undefined') return; // Skip on client-side
+
+    try {
+      const data = readData();
+      data[key] = record;
+      writeData(data);
+    } catch (error) {
+      console.warn('File system save failed:', error);
+    }
+  }
+
+  private async loadFromFile(key: string): Promise<any | null> {
+    if (typeof window !== 'undefined') return null; // Skip on client-side
+
+    try {
+      const data = readData();
+      const record = data[key] as GeneratedContentRecord | undefined;
+      if (record) {
+        this.memoryCache.set(key, record);
+        return record.content;
+      }
+    } catch (error) {
+      console.warn('File system load failed:', error);
+    }
+
+    return null;
+  }
+
+  clear(key: string): void {
+    this.memoryCache.delete(key);
+    
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`vibestudy_content_${key}`);
+      } catch (e) {
+        console.warn('localStorage clear failed:', e);
+      }
+    }
+  }
+}
+
+// Export singleton instance
+export const contentStorage = new ContentStorage();
+
+// Сохранить сгенерированный контент (legacy function, now uses ContentStorage)
+export async function saveGeneratedContent(content: ContentToSave): Promise<void> {
   const key = getKey(content.day, content.languageId);
   const now = Date.now();
-  const existing = data[key];
 
-  data[key] = {
+  const contentData = {
     day: content.day,
     languageId: content.languageId,
     topic: content.topic,
@@ -105,18 +210,18 @@ export function saveGeneratedContent(content: ContentToSave): void {
     recap: content.recap,
     recapTask: content.recapTask ?? null,
     tasks: content.tasks,
-    createdAt: existing?.createdAt ?? now,
+    createdAt: now,
     updatedAt: now
   };
 
-  writeData(data);
+  await contentStorage.save(key, contentData);
 }
 
-// Получить сохранённый контент
-export function getGeneratedContent(day: number, languageId: string): SavedContent | null {
-  const data = readData();
+// Получить сохранённый контент (now uses ContentStorage)
+export async function getGeneratedContent(day: number, languageId: string): Promise<SavedContent | null> {
   const key = getKey(day, languageId);
-  return data[key] ?? null;
+  const content = await contentStorage.load(key);
+  return content ?? null;
 }
 
 // Получить все сгенерированные дни для языка
@@ -145,8 +250,11 @@ export function hasGeneratedContent(day: number, languageId: string): boolean {
 
 // Удалить контент для дня (если нужно перегенерировать)
 export function deleteGeneratedContent(day: number, languageId: string): void {
-  const data = readData();
   const key = getKey(day, languageId);
+  contentStorage.clear(key);
+  
+  // Also clear from file system
+  const data = readData();
   delete data[key];
   writeData(data);
 }

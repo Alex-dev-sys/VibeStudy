@@ -30,9 +30,11 @@ const featureCards = [
   }
 ];
 
+import { BenefitCards } from './BenefitCards';
+
 export function HeroShowcase() {
   return (
-    <section className="relative isolate flex min-h-[100svh] items-center overflow-hidden text-white">
+    <section className="relative isolate flex min-h-[100svh] flex-col items-center overflow-hidden text-white">
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-20 sm:px-8 lg:flex-row lg:items-center lg:gap-20 lg:py-28">
         <div className="flex-1 space-y-8">
@@ -157,6 +159,9 @@ export function HeroShowcase() {
           </motion.div>
         </div>
       </div>
+      
+      {/* Benefit Cards Section */}
+      <BenefitCards />
     </section>
   );
 }

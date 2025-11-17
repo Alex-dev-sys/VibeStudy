@@ -30,6 +30,18 @@ export const ru = {
     },
     footer: 'Бесплатно • Без регистрации • 7 языков программирования'
   },
+  navigation: {
+    learn: 'Обучение',
+    profile: 'Профиль',
+    analytics: 'Аналитика',
+    playground: 'Playground',
+    logout: 'Выйти',
+    day: 'День',
+    days: 'Дни',
+    completed: 'Завершено',
+    inProgress: 'В процессе',
+    locked: 'Заблокировано'
+  },
   dashboard: {
     title: '90-дневный план перехода в junior',
     subtitle: 'Следи за прогрессом, переключайся между днями и отмечай выполненные задания',
@@ -47,6 +59,7 @@ export const ru = {
   },
   profile: {
     title: 'Профиль',
+    subtitle: 'Управление профилем обучения',
     backToLearning: 'Вернуться к обучению',
     edit: 'Редактировать',
     save: 'Сохранить',
@@ -55,6 +68,15 @@ export const ru = {
     bioPlaceholder: 'Расскажите о себе...',
     joinedToday: 'Присоединился сегодня',
     joinedDaysAgo: 'с нами',
+    language: 'Язык программирования',
+    changeLanguage: 'Изменить язык',
+    progress: 'Прогресс',
+    achievements: 'Достижения',
+    statistics: 'Статистика',
+    settings: 'Настройки',
+    deleteData: 'Удалить все данные',
+    confirmDelete: 'Вы уверены? Это действие нельзя отменить.',
+    dataDeleted: 'Все данные удалены',
     stats: {
       daysCompleted: 'Дней завершено',
       achievements: 'Достижений',
@@ -73,6 +95,14 @@ export const ru = {
       special: 'Особые'
     },
     obtained: 'Получено'
+  },
+  analytics: {
+    title: 'Аналитика обучения',
+    subtitle: 'Отслеживайте свой прогресс и получайте персональные рекомендации',
+    backToLearning: 'Вернуться к обучению',
+    overview: 'Обзор',
+    detailedStats: 'Детальная статистика',
+    recommendations: 'Рекомендации'
   },
   statistics: {
     title: 'Статистика обучения',

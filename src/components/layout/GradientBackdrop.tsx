@@ -17,7 +17,28 @@ const ORBS = [
 export function GradientBackdrop({ className, blur = true }: GradientBackdropProps) {
   return (
     <div className={cn('pointer-events-none absolute inset-0 -z-20 overflow-hidden', className)}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_65%)]" />
+      {/* SVG gradient background for better quality */}
+      <svg 
+        className="absolute inset-0 h-full w-full" 
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <radialGradient id="bg-gradient-top" cx="50%" cy="0%" r="65%">
+            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.08)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <linearGradient id="bg-gradient-main" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="oklch(55% 0.45 350)" />
+            <stop offset="50%" stopColor="oklch(75% 0.50 20)" />
+            <stop offset="100%" stopColor="oklch(95% 0.55 85)" />
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bg-gradient-main)" opacity="0.15" />
+        <rect width="100%" height="100%" fill="url(#bg-gradient-top)" />
+      </svg>
+      
+      {/* Animated orbs */}
       {ORBS.map((orb) => (
         <motion.div
           key={orb.className}

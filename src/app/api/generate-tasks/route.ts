@@ -430,6 +430,32 @@ const fallbackResponse: GeneratedContent = {
   ]
 };
 
+const validateContent = (content: GeneratedContent): { valid: boolean; reason?: string } => {
+  // Check if theory exists and has minimum length
+  if (!content.theory || content.theory.length < 100) {
+    return { valid: false, reason: 'Theory too short or missing' };
+  }
+  
+  // Check if tasks exist and have correct count
+  if (!content.tasks || content.tasks.length !== 5) {
+    return { valid: false, reason: 'Invalid tasks count' };
+  }
+  
+  // Check if each task has required fields
+  for (const task of content.tasks) {
+    if (!task.id || !task.difficulty || !task.prompt) {
+      return { valid: false, reason: 'Task missing required fields' };
+    }
+  }
+  
+  // Check if recap exists
+  if (!content.recap) {
+    return { valid: false, reason: 'Recap missing' };
+  }
+  
+  return { valid: true };
+};
+
 const parseAiResponse = (content: string): GeneratedContent => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
@@ -441,9 +467,14 @@ const parseAiResponse = (content: string): GeneratedContent => {
       return fallbackResponse;
     }
     const parsed = JSON.parse(sanitized) as GeneratedContent;
-    if (!parsed.tasks || parsed.tasks.length === 0) {
+    
+    // Validate content completeness
+    const validation = validateContent(parsed);
+    if (!validation.valid) {
+      console.warn('Content validation failed:', validation.reason);
       return fallbackResponse;
     }
+    
     return parsed;
   } catch (error) {
     console.warn('Ошибка парсинга ответа AI', error, content);
@@ -470,38 +501,63 @@ export async function POST(request: Request) {
     );
 
     const systemMessage = body.locale === 'en'
-      ? 'You are an educational platform methodologist. Generate structured assignments, respond strictly in JSON. All content must be in English.'
-      : 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.';
+      ? 'You are an educational platform methodologist. Generate structured assignments, respond strictly in JSON. All content must be in English. IMPORTANT: Include detailed theory with code examples and task descriptions.'
+      : 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON. ВАЖНО: Включай подробную теорию с примерами кода и описаниями заданий.';
 
-    const { data, raw } = await Promise.race([
-      callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.8,
-      maxTokens: 1500  // Reduced for faster generation
-      // responseFormat removed - gptlama.ru may not support it
-    }),
-      timeoutPromise
-    ]) as any;
+    let parsedResponse: GeneratedContent = fallbackResponse;
+    let isFallback = true;
+    const MAX_RETRIES = 2;
 
-    const content = raw || extractMessageContent(data);
-    
-    // Логируем ответ API для отладки
-    console.log('🤖 AI Response (first 500 chars):', String(content).slice(0, 500));
+    // Retry logic for incomplete content
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const { data, raw } = await Promise.race([
+          callChatCompletion({
+            messages: [
+              {
+                role: 'system',
+                content: systemMessage
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            temperature: 0.8,
+            maxTokens: 1500
+          }),
+          timeoutPromise
+        ]) as any;
 
-    const parsedResponse = parseAiResponse(String(content));
-    const isFallback =
-      parsedResponse.tasks?.[0]?.id?.startsWith('fallback-') ?? false;
-    
-    console.log('📊 Parsed response:', isFallback ? 'FALLBACK' : 'SUCCESS', 'Tasks:', parsedResponse.tasks?.length);
+        const content = raw || extractMessageContent(data);
+        
+        console.log(`🤖 AI Response attempt ${attempt} (first 500 chars):`, String(content).slice(0, 500));
+
+        parsedResponse = parseAiResponse(String(content));
+        isFallback = parsedResponse.tasks?.[0]?.id?.startsWith('fallback-') ?? false;
+        
+        console.log(`📊 Attempt ${attempt}:`, isFallback ? 'FALLBACK' : 'SUCCESS', 'Tasks:', parsedResponse.tasks?.length);
+
+        // If we got valid content, break the retry loop
+        if (!isFallback) {
+          break;
+        }
+
+        // If this was the last attempt, log failure
+        if (attempt === MAX_RETRIES) {
+          console.warn('⚠️ All retry attempts failed, using fallback content');
+        } else {
+          console.log(`🔄 Retrying generation (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (attemptError) {
+        console.error(`❌ Attempt ${attempt} failed:`, attemptError);
+        if (attempt === MAX_RETRIES) {
+          throw attemptError;
+        }
+      }
+    }
 
     // Сохраняем в базу данных
     if (!isFallback) {

@@ -32,6 +32,18 @@ export const en: Translations = {
     },
     footer: 'Free • No Registration • 7 Programming Languages'
   },
+  navigation: {
+    learn: 'Learn',
+    profile: 'Profile',
+    analytics: 'Analytics',
+    playground: 'Playground',
+    logout: 'Logout',
+    day: 'Day',
+    days: 'Days',
+    completed: 'Completed',
+    inProgress: 'In Progress',
+    locked: 'Locked'
+  },
   dashboard: {
     title: '90-Day Plan to Junior',
     subtitle: 'Track progress, switch between days and mark completed tasks',
@@ -49,6 +61,7 @@ export const en: Translations = {
   },
   profile: {
     title: 'Profile',
+    subtitle: 'Manage your learning profile',
     backToLearning: 'Back to Learning',
     edit: 'Edit',
     save: 'Save',
@@ -57,6 +70,15 @@ export const en: Translations = {
     bioPlaceholder: 'Tell us about yourself...',
     joinedToday: 'Joined today',
     joinedDaysAgo: 'with us',
+    language: 'Programming Language',
+    changeLanguage: 'Change Language',
+    progress: 'Progress',
+    achievements: 'Achievements',
+    statistics: 'Statistics',
+    settings: 'Settings',
+    deleteData: 'Delete All Data',
+    confirmDelete: 'Are you sure? This action cannot be undone.',
+    dataDeleted: 'All data has been deleted',
     stats: {
       daysCompleted: 'Days Completed',
       achievements: 'Achievements',
@@ -75,6 +97,14 @@ export const en: Translations = {
       special: 'Special'
     },
     obtained: 'Obtained'
+  },
+  analytics: {
+    title: 'Learning Analytics',
+    subtitle: 'Track your progress and get personalized recommendations',
+    backToLearning: 'Back to Learning',
+    overview: 'Overview',
+    detailedStats: 'Detailed Statistics',
+    recommendations: 'Recommendations'
   },
   statistics: {
     title: 'Learning Statistics',
