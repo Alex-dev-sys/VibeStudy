@@ -1,7 +1,6 @@
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
-
 'use client';
 
+import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from '@/store/locale-store';
