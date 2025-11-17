@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const regeneratedTask = parseTask(String(content));
 
     try {
-      const stored = getGeneratedContent(body.day, body.languageId);
+      const stored = await getGeneratedContent(body.day, body.languageId);
 
       if (stored) {
         const parseTasks = (): GeneratedTask[] => {
