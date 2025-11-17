@@ -11,7 +11,29 @@ export const locales: Record<Locale, Translations> = {
 
 export const defaultLocale: Locale = 'ru';
 
+/**
+ * Validates if a string is a valid locale
+ * @param locale - The locale string to validate
+ * @returns True if the locale is valid ('ru' or 'en')
+ */
+export function isValidLocale(locale: string): locale is Locale {
+  return locale === 'ru' || locale === 'en';
+}
+
+/**
+ * Gets translations for a given locale with validation
+ * @param locale - The locale to get translations for
+ * @returns Translations object for the locale, or default locale if invalid
+ */
 export function getTranslations(locale: Locale): Translations {
+  // Validate locale and log errors for invalid values
+  if (!isValidLocale(locale)) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[i18n] Invalid locale: "${locale}", falling back to default locale "${defaultLocale}"`);
+    }
+    return locales[defaultLocale];
+  }
+  
   return locales[locale] || locales[defaultLocale];
 }
 
