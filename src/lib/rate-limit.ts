@@ -100,8 +100,21 @@ class RateLimiter {
 // Singleton instance
 export const rateLimiter = new RateLimiter();
 
+export interface RateLimitBucket {
+  limit: number;
+  windowMs: number;
+}
+
+export interface RateLimitState {
+  allowed: boolean;
+  identifier: string;
+  limit: number;
+  remaining: number;
+  retryAfterSeconds: number;
+}
+
 // Predefined rate limit configurations
-export const RATE_LIMITS = {
+export const RATE_LIMITS: Record<string, RateLimitBucket> = {
   // AI endpoints (more restrictive)
   AI_GENERATION: { limit: 10, windowMs: 60 * 1000 }, // 10 per minute
   AI_CHECK: { limit: 30, windowMs: 60 * 1000 }, // 30 per minute
@@ -113,7 +126,7 @@ export const RATE_LIMITS = {
   
   // Analytics
   ANALYTICS: { limit: 50, windowMs: 60 * 1000 }, // 50 per minute
-} as const;
+};
 
 /**
  * Get rate limit identifier from request
@@ -129,5 +142,36 @@ export function getRateLimitIdentifier(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0] : 'unknown';
   return `ip:${ip}`;
+}
+
+/**
+ * Evaluate rate limiting for request and bucket.
+ */
+export function evaluateRateLimit(
+  request: Request,
+  bucket: RateLimitBucket,
+  options?: { bucketId?: string }
+): RateLimitState {
+  const identifier = `${options?.bucketId ?? 'global'}:${getRateLimitIdentifier(request)}`;
+  const allowed = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+  const remaining = rateLimiter.getRemaining(identifier, bucket.limit);
+  const resetAt = rateLimiter.getResetTime(identifier);
+  const retryAfterSeconds = resetAt ? Math.ceil((resetAt - Date.now()) / 1000) : bucket.windowMs / 1000;
+
+  return {
+    allowed,
+    identifier,
+    limit: bucket.limit,
+    remaining,
+    retryAfterSeconds
+  };
+}
+
+export function buildRateLimitHeaders(state: RateLimitState): Record<string, string> {
+  return {
+    'X-RateLimit-Limit': state.limit.toString(),
+    'X-RateLimit-Remaining': Math.max(state.remaining, 0).toString(),
+    'Retry-After': Math.max(state.retryAfterSeconds, 0).toString()
+  };
 }
 

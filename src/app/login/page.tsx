@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { signInWithEmail, signInWithGoogle, getCurrentUser } from '@/lib/supabase/auth';
@@ -18,21 +18,7 @@ export default function LoginPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const user = await getCurrentUser();
-      if (user) {
-        router.push('/learn');
-      }
-    };
-
-    checkUser().catch((error) => {
-      console.error('Auth check failed:', error);
-    });
-    checkUrlErrors();
-  }, [router, t]);
-
-  function checkUrlErrors() {
+  const checkUrlErrors = useCallback(() => {
     const params = new URLSearchParams(window.location.hash.slice(1));
     const errorParam = params.get('error');
     const errorDescription = params.get('error_description');
@@ -48,7 +34,21 @@ export default function LoginPage() {
       }
       window.history.replaceState({}, '', '/login');
     }
-  }
+  }, [t]);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        router.push('/learn');
+      }
+    };
+
+    checkUser().catch((error) => {
+      console.error('Auth check failed:', error);
+    });
+    checkUrlErrors();
+  }, [router, checkUrlErrors]);
 
   async function handleEmailSignIn(e: React.FormEvent) {
     e.preventDefault();

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Locale } from '@/lib/i18n';
 import { getTranslations, defaultLocale, isValidLocale } from '@/lib/i18n';
 import type { Translations } from '@/lib/i18n/locales/ru';
@@ -36,6 +36,7 @@ export const useLocaleStore = create<LocaleStore>()(
     }),
     {
       name: 'vibestudy-locale',
+      storage: typeof window === 'undefined' ? undefined : createJSONStorage(() => localStorage),
       // Only persist locale field, translations are derived
       partialize: (state) => ({
         locale: state.locale

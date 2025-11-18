@@ -21,7 +21,13 @@ export function RegistrationSuccessNotification() {
       });
       
       // Clean up URL by removing the query parameter
-      router.replace('/learn', { scroll: false });
+      if (typeof window !== 'undefined') {
+        const { pathname } = window.location;
+        window.history.replaceState({}, '', pathname);
+        router.replace(pathname, { scroll: false });
+      } else {
+        router.replace('/learn', { scroll: false });
+      }
     }
   }, [searchParams, router, locale]);
   

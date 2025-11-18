@@ -10,7 +10,7 @@ export enum LogLevel {
   ERROR = 3
 }
 
-interface LogContext {
+export interface LogContext {
   component?: string;
   action?: string;
   userId?: string;

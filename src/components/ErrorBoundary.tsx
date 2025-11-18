@@ -3,6 +3,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { errorHandler } from '@/lib/error-handler';
 
 interface Props {
   children: ReactNode;
@@ -81,18 +82,15 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
+    errorHandler.report(error, {
+      component: 'ErrorBoundary',
+      action: 'componentDidCatch',
+      metadata: errorInfo
+    });
 
-    // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
-    // TODO: Send to error tracking service (Sentry, etc.)
-    // errorTracker.captureException(error, { extra: errorInfo });
   }
 
   resetError = () => {

@@ -15,7 +15,12 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest watch",
+    "test:accessibility": "playwright test tests/e2e/accessibility.spec.ts",
+    "test:lighthouse": "lighthouse http://localhost:3000 --quiet --chrome-flags=\"--headless\"",
+    "health": "node scripts/health-check.js"
   },
   "dependencies": {
     "@monaco-editor/react": "4.6.0",
@@ -40,17 +45,21 @@
     "zustand": "4.5.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@playwright/test": "^1.56.1",
     "@types/node": "20.12.12",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
+    "@vitest/coverage-v8": "^4.0.10",
     "autoprefixer": "10.4.17",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.8",
+    "lighthouse": "^13.0.1",
     "postcss": "8.4.38",
     "prettier": "3.3.2",
     "shadcn": "^3.5.0",
     "tailwindcss": "3.4.4",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "vitest": "^4.0.10"
   }
 }

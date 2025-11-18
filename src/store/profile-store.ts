@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { UserRole } from '@/lib/auth/roles';
 
 export interface PrivacySettings {
   showOnLeaderboard: boolean;
@@ -25,6 +26,7 @@ export interface UserProfile {
   reminderTime: string; // Время напоминаний ("09:00", "14:00", "19:00", "22:00")
   isAuthenticated: boolean;
   privacySettings: PrivacySettings;
+  role: UserRole;
 }
 
 interface ProfileStore {
@@ -32,6 +34,7 @@ interface ProfileStore {
   updateProfile: (updates: Partial<UserProfile>) => void;
   updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
   setAuthenticated: (isAuth: boolean, userData?: Partial<UserProfile>) => void;
+  setRole: (role: UserRole) => void;
   logout: () => void;
   
   // Sync methods
@@ -56,6 +59,7 @@ const defaultProfile: UserProfile = {
   reminderTime: '19:00',
   isAuthenticated: false,
   privacySettings: defaultPrivacySettings,
+  role: 'student'
 };
 
 export const useProfileStore = create<ProfileStore>()(
@@ -110,9 +114,21 @@ export const useProfileStore = create<ProfileStore>()(
           profile: {
             ...state.profile,
             ...userData,
-            isAuthenticated: isAuth
+            isAuthenticated: isAuth,
+            role: (userData.role as UserRole) ?? state.profile.role
           }
         })),
+
+      setRole: (role) =>
+        set((state) => {
+          setTimeout(async () => {
+            const { syncManager } = await import('@/lib/sync');
+            syncManager.syncProfile({ ...state.profile, role });
+          }, 0);
+          return {
+            profile: { ...state.profile, role }
+          };
+        }),
 
       logout: () =>
         set({
@@ -162,6 +178,7 @@ export const useProfileStore = create<ProfileStore>()(
                 githubUsername: remoteData.github_username,
                 telegramUsername: remoteData.telegram_username,
                 privacySettings: remoteData.privacy_settings || defaultPrivacySettings,
+                role: (remoteData.role as UserRole) || useProfileStore.getState().profile.role
               }
             });
             console.log('✅ Profile fetched from cloud');

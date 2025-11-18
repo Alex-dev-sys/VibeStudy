@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { codeReviewSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { errorHandler } from '@/lib/error-handler';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { logWarn, logError } from '@/lib/logger';
 
 interface CheckCodeRequest {
   code: string;
@@ -82,7 +87,34 @@ const fallbackResponse: CheckCodeResponse = {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as CheckCodeRequest;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_CHECK, {
+    bucketId: 'check-code'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Too many code reviews. Please wait a moment.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: CheckCodeRequest;
+  try {
+    const raw = await request.json();
+    body = codeReviewSchema.parse(raw) as CheckCodeRequest;
+  } catch (error) {
+    errorHandler.report(error as Error, {
+      component: 'api/check-code',
+      action: 'validate'
+    });
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
@@ -110,21 +142,28 @@ export async function POST(request: Request) {
   try {
     const prompt = buildCheckPrompt(body);
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: 'Ты — опытный преподаватель программирования. Анализируй код студентов конструктивно и помогай им учиться. Отвечай строго в JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      maxTokens: 1500,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: 'Ты — опытный преподаватель программирования. Анализируй код студентов конструктивно и помогай им учиться. Отвечай строго в JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          maxTokens: 1500,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'normal',
+        metadata: { endpoint: 'check-code', languageId: body.languageId, day: body.day }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -134,17 +173,26 @@ export async function POST(request: Request) {
 
       // Валидация ответа
       if (typeof parsed.isCorrect !== 'boolean' || typeof parsed.score !== 'number') {
-        console.warn('Некорректный формат ответа AI:', parsed);
+        logWarn('Некорректный формат ответа AI', {
+          component: 'api/check-code',
+          metadata: { parsed }
+        });
         return NextResponse.json(fallbackResponse, { status: 200 });
       }
 
       return NextResponse.json(parsed);
     } catch (parseError) {
-      console.error('Ошибка парсинга ответа AI:', parseError, content);
+      logError('Ошибка парсинга ответа AI', parseError as Error, {
+        component: 'api/check-code'
+      });
       return NextResponse.json(fallbackResponse, { status: 200 });
     }
   } catch (error) {
-    console.error('Ошибка при проверке кода:', error);
+    errorHandler.report(error as Error, {
+      component: 'api/check-code',
+      action: 'POST',
+      metadata: { languageId: body.languageId, day: body.day }
+    });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 }

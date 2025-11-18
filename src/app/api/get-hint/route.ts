@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { hintRequestSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { logWarn, logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/error-handler';
 
 interface GetHintRequest {
   code: string;
@@ -137,11 +142,36 @@ const parseAiResponse = (content: string): GetHintResponse => {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as GetHintRequest;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
+    bucketId: 'get-hint'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Too many hint requests. Please wait a moment.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: GetHintRequest;
+  try {
+    const raw = await request.json();
+    body = hintRequestSchema.parse(raw) as GetHintRequest;
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('HF_TOKEN не задан. Возвращаем fallback подсказку.');
+      logWarn('HF_TOKEN не задан. Возвращаем fallback подсказку.', {
+        component: 'api/get-hint'
+      });
     }
     return NextResponse.json(fallbackResponse);
   }
@@ -153,21 +183,28 @@ export async function POST(request: Request) {
       ? 'You are a patient programming mentor. Help students with hints, but don\'t solve tasks for them. Respond strictly in JSON. All content must be in English.'
       : 'Ты — терпеливый наставник по программированию. Помогай студентам подсказками, но не решай задачи за них. Отвечай строго в JSON.';
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.8,
-      maxTokens: 1000,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: systemMessage
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.8,
+          maxTokens: 1000,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'normal',
+        metadata: { endpoint: 'get-hint', difficulty: body.task.difficulty }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -175,7 +212,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(parsedResponse);
   } catch (error) {
-    console.error('Ошибка при обращении к AI API для подсказки:', error);
+    logError('Ошибка при обращении к AI API для подсказки', error as Error, {
+      component: 'api/get-hint'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/get-hint',
+      action: 'POST'
+    });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 }

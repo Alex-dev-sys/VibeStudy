@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { solutionCheckSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { errorHandler } from '@/lib/error-handler';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { logWarn, logError } from '@/lib/logger';
 
 interface CheckSolutionRequest {
   code: string;
@@ -136,13 +141,43 @@ const parseAiResponse = (content: string): CheckSolutionResponse => {
       score: typeof parsed.score === 'number' ? Math.min(100, Math.max(0, parsed.score)) : 0
     };
   } catch (error) {
-    console.warn('Ошибка парсинга ответа AI при проверке кода:', error, content);
+    logWarn('Ошибка парсинга ответа AI при проверке кода', {
+      component: 'api/check-solution',
+      metadata: { error: error instanceof Error ? error.message : 'unknown' }
+    });
     return fallbackResponse;
   }
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as CheckSolutionRequest;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_CHECK, {
+    bucketId: 'check-solution'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Too many solution checks. Please wait and try again.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: CheckSolutionRequest;
+  try {
+    const raw = await request.json();
+    body = solutionCheckSchema.parse(raw) as CheckSolutionRequest;
+  } catch (error) {
+    errorHandler.report(error as Error, {
+      component: 'api/check-solution',
+      action: 'validate'
+    });
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
   // Базовая валидация
   if (!body.code || body.code.trim().length < 5) {
@@ -175,21 +210,28 @@ export async function POST(request: Request) {
       ? 'You are an experienced code reviewer and instructor. Analyze student code constructively and in detail. Respond strictly in JSON. All content must be in English.'
       : 'Ты — опытный code reviewer и преподаватель. Анализируй код студентов конструктивно и подробно. Отвечай строго в JSON.';
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      maxTokens: 1500,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: systemMessage
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          maxTokens: 1500,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'normal',
+        metadata: { endpoint: 'check-solution', languageId: body.languageId }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -197,7 +239,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(parsedResponse);
   } catch (error) {
-    console.error('Ошибка при обращении к AI API для проверки кода:', error);
+    logError('Ошибка при обращении к AI API для проверки кода', error as Error, {
+      component: 'api/check-solution'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/check-solution',
+      action: 'POST'
+    });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 }

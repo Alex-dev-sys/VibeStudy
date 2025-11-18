@@ -21,36 +21,44 @@ export interface ProgressData {
   activeDay: number;
 }
 
-/**
- * Get total time spent on a day from task attempts
- * Task IDs are in format "day_X_taskY", so we extract day from task_id
- */
-async function getDayTimeSpent(
+async function getTimeSpentMap(
   supabase: any,
   userId: string,
-  day: number
-): Promise<number> {
+  dayKeys: number[]
+): Promise<Map<number, number>> {
+  const map = new Map<number, number>();
+  const daySet = new Set(dayKeys);
+
   try {
-    // Task IDs are in format "day_X_taskY", so we filter by prefix
-    const dayPrefix = `day${day}_`;
-    
     const { data, error } = await supabase
       .from('task_attempts')
       .select('time_spent, task_id')
-      .eq('user_id', userId)
-      .like('task_id', `${dayPrefix}%`);
+      .eq('user_id', userId);
 
-    if (error || !data || !Array.isArray(data)) {
-      return 0;
+    if (error || !data) {
+      return map;
     }
 
-    // Sum all time_spent values for this day
-    return data.reduce((total: number, attempt: any) => {
-      return total + (attempt.time_spent || 0);
-    }, 0);
+    data.forEach((attempt: any) => {
+      if (!attempt?.task_id) {
+        return;
+      }
+      const match = attempt.task_id.match(/day(\d+)_/);
+      if (!match) {
+        return;
+      }
+      const day = parseInt(match[1], 10);
+      if (!daySet.has(day)) {
+        return;
+      }
+      const current = map.get(day) ?? 0;
+      map.set(day, current + (attempt.time_spent || 0));
+    });
   } catch {
-    return 0;
+    // no-op
   }
+
+  return map;
 }
 
 /**
@@ -65,14 +73,8 @@ export async function upsertProgress(data: ProgressData): Promise<DatabaseResult
 
   try {
     // Get time spent for each day from task attempts
-    const timeSpentPromises = Object.keys(data.dayStates).map(async (day) => {
-      const dayNum = Number(day);
-      const timeSpent = await getDayTimeSpent(supabase, data.userId, dayNum);
-      return { day: dayNum, timeSpent };
-    });
-
-    const timeSpentResults = await Promise.all(timeSpentPromises);
-    const timeSpentMap = new Map(timeSpentResults.map(r => [r.day, r.timeSpent]));
+    const dayKeys = Object.keys(data.dayStates).map(Number);
+    const timeSpentMap = await getTimeSpentMap(supabase, data.userId, dayKeys);
 
     // Store progress for each day
     const progressEntries = Object.entries(data.dayStates).map(([day, state]) => {

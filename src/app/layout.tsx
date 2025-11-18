@@ -79,6 +79,7 @@ export const viewport: Viewport = {
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { AutoMigrationGate } from '@/components/migration/AutoMigrationGate';
 import { Toaster } from 'sonner';
 
 export default function RootLayout({
@@ -92,10 +93,13 @@ export default function RootLayout({
         <ErrorBoundary>
           <RealtimeProvider>
             <OnboardingProvider>
+              <AutoMigrationGate />
               <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-white">
                 Перейти к основному содержимому
               </a>
-              {children}
+              <div id="main-content" tabIndex={-1} className="focus:outline-none">
+                {children}
+              </div>
               <Toaster position="bottom-right" />
             </OnboardingProvider>
           </RealtimeProvider>

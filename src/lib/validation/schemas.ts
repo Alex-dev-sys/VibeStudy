@@ -20,24 +20,34 @@ export const codeExecutionSchema = z.object({
   language: z.string().min(1).max(50)
 });
 
+const taskSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  difficulty: z.enum(['easy', 'medium', 'hard', 'advanced', 'challenge']),
+  hints: z.array(z.string()).optional()
+});
+
 // Solution check validation
 export const solutionCheckSchema = z.object({
   code: z.string().min(5).max(50000),
-  task: z.object({
-    title: z.string(),
-    description: z.string(),
-    difficulty: z.enum(['easy', 'medium', 'hard', 'advanced', 'challenge']),
-    hints: z.array(z.string()).optional()
-  }),
+  task: taskSchema,
   languageId: z.string().min(1).max(50),
   locale: z.enum(['ru', 'en']).optional()
+});
+
+export const codeReviewSchema = solutionCheckSchema.extend({
+  day: z.number().int().min(1).max(90)
 });
 
 // Theory explanation validation
 export const theoryExplanationSchema = z.object({
   question: z.string().min(3).max(1000),
-  day: z.number().int().min(1).max(90).optional(),
-  languageId: z.string().min(1).max(50).optional(),
+  context: z.object({
+    day: z.number().int().min(1).max(90),
+    topic: z.string().min(1).max(200),
+    theory: z.string().max(5000).optional()
+  }),
+  languageId: z.string().min(1).max(50),
   locale: z.enum(['ru', 'en']).optional()
 });
 
@@ -72,14 +82,25 @@ export const adaptiveRecommendationsSchema = z.object({
 // Regenerate task validation
 export const regenerateTaskSchema = z.object({
   day: z.number().int().min(1).max(90),
+  languageId: z.string().min(1).max(50),
   taskId: z.string().min(1),
-  languageId: z.string().min(1).max(50)
+  difficulty: z.enum(['easy', 'medium', 'hard', 'advanced', 'challenge']),
+  dayTopic: z.string().min(1).max(200),
+  dayDescription: z.string().min(1).max(500),
+  existingTasks: z.array(
+    z.object({
+      id: z.string(),
+      difficulty: z.enum(['easy', 'medium', 'hard', 'advanced', 'challenge']),
+      prompt: z.string()
+    })
+  )
 });
 
 export type TaskGenerationInput = z.infer<typeof taskGenerationSchema>;
 export type CodeExecutionInput = z.infer<typeof codeExecutionSchema>;
 export type SolutionCheckInput = z.infer<typeof solutionCheckSchema>;
 export type TheoryExplanationInput = z.infer<typeof theoryExplanationSchema>;
+export type CodeReviewInput = z.infer<typeof codeReviewSchema>;
 export type HintRequestInput = z.infer<typeof hintRequestSchema>;
 export type AnalyticsTrackingInput = z.infer<typeof analyticsTrackingSchema>;
 export type AdaptiveRecommendationsInput = z.infer<typeof adaptiveRecommendationsSchema>;

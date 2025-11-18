@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/error-handler';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +32,17 @@ interface AnalyticsInsights {
 
 export async function GET(request: NextRequest) {
   try {
+    const rateState = evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
+      bucketId: 'analytics-insights'
+    });
+
+    if (!rateState.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded' },
+        { status: 429, headers: buildRateLimitHeaders(rateState) }
+      );
+    }
+
     const user = await getCurrentUser();
     
     if (!user) {
@@ -48,7 +62,9 @@ export async function GET(request: NextRequest) {
       .order('start_time', { ascending: true });
     
     if (error) {
-      console.error('Error fetching analytics:', error);
+      logError('Error fetching analytics', error, {
+        component: 'api/analytics/insights'
+      });
       return NextResponse.json(
         { error: 'Failed to fetch analytics' },
         { status: 500 }
@@ -214,7 +230,13 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(insights);
   } catch (error) {
-    console.error('Error in analytics insights endpoint:', error);
+    logError('Error in analytics insights endpoint', error as Error, {
+      component: 'api/analytics/insights'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/analytics/insights',
+      action: 'GET'
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

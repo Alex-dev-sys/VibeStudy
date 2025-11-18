@@ -3,6 +3,8 @@
  * Provides retry functionality for failed operations
  */
 
+import { logInfo, logWarn } from '@/lib/logger';
+
 export interface RetryConfig {
   maxRetries: number;
   initialDelay: number;
@@ -81,7 +83,10 @@ export async function retryWithBackoff<T>(
 
       // Check if we should retry this error
       if (shouldRetry && !shouldRetry(lastError)) {
-        console.log(`[RetryLogic] Error not retryable: ${lastError.message}`);
+        logWarn('RetryLogic: error not retryable', {
+          component: 'retry-logic',
+          metadata: { message: lastError.message }
+        });
         break;
       }
 
@@ -92,10 +97,14 @@ export async function retryWithBackoff<T>(
 
       // Calculate delay and wait
       const delay = calculateBackoffDelay(attempt, config);
-      console.log(
-        `[RetryLogic] Attempt ${attempt + 1}/${config.maxRetries + 1} failed. ` +
-          `Retrying in ${delay}ms...`
-      );
+      logInfo('RetryLogic: retry scheduled', {
+        component: 'retry-logic',
+        metadata: {
+          attempt: attempt + 1,
+          maxAttempts: config.maxRetries + 1,
+          delay
+        }
+      });
       await sleep(delay);
     }
   }

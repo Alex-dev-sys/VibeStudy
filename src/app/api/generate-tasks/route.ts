@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { saveGeneratedContent } from '@/lib/db';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import { taskGenerationSchema } from '@/lib/validation/schemas';
-import { rateLimiter, RATE_LIMITS, getRateLimitIdentifier } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { logWarn, logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/error-handler';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
 
 interface RequestBody {
   day: number;
@@ -486,25 +490,20 @@ const parseAiResponse = (content: string): GeneratedContent => {
 };
 
 export async function POST(request: Request) {
-  // Rate limiting
-  const identifier = getRateLimitIdentifier(request);
-  const rateLimit = RATE_LIMITS.AI_GENERATION;
-  if (!rateLimiter.check(identifier, rateLimit.limit, rateLimit.windowMs)) {
-    const remaining = rateLimiter.getRemaining(identifier, rateLimit.limit);
-    const resetTime = rateLimiter.getResetTime(identifier);
+  const rateLimitState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
+    bucketId: 'generate-tasks'
+  });
+
+  if (!rateLimitState.allowed) {
     return NextResponse.json(
       {
         error: 'Rate limit exceeded',
         message: 'Too many requests. Please try again later.',
-        retryAfter: resetTime ? Math.ceil((resetTime - Date.now()) / 1000) : 60
+        retryAfter: rateLimitState.retryAfterSeconds
       },
       {
         status: 429,
-        headers: {
-          'X-RateLimit-Limit': rateLimit.limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'Retry-After': resetTime ? Math.ceil((resetTime - Date.now()) / 1000).toString() : '60'
-        }
+        headers: buildRateLimitHeaders(rateLimitState)
       }
     );
   }
@@ -526,6 +525,27 @@ export async function POST(request: Request) {
     );
   }
 
+  const cacheFingerprint = createHash('sha256')
+    .update(
+      JSON.stringify({
+        day: body.day,
+        languageId: body.languageId,
+        theorySummary: body.theorySummary,
+        previousDaySummary: body.previousDaySummary ?? '',
+        locale: body.locale ?? 'ru'
+      })
+    )
+    .digest('hex');
+  const cacheKey = generateCacheKey('ai:generate-tasks', cacheFingerprint);
+  const cached = apiCache.get<(GeneratedContent & { isFallback?: boolean })>(cacheKey);
+  if (cached) {
+    return NextResponse.json({
+      ...cached,
+      isFallback: cached.isFallback ?? false,
+      fromCache: true
+    });
+  }
+
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
       logWarn('HF_TOKEN not configured, returning fallback', { component: 'api', action: 'generate-tasks' });
@@ -535,11 +555,6 @@ export async function POST(request: Request) {
 
   try {
     const prompt = buildPrompt(body);
-
-    // Add timeout wrapper
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('AI request timeout')), 60000) // 60 seconds
-    );
 
     const systemMessage = body.locale === 'en'
       ? 'You are an educational platform methodologist. Generate structured assignments, respond strictly in JSON. All content must be in English. IMPORTANT: Include detailed theory with code examples and task descriptions.'
@@ -552,23 +567,28 @@ export async function POST(request: Request) {
     // Retry logic for incomplete content
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const { data, raw } = await Promise.race([
-          callChatCompletion({
-            messages: [
-              {
-                role: 'system',
-                content: systemMessage
-              },
-              {
-                role: 'user',
-                content: prompt
-              }
-            ],
-            temperature: 0.8,
-            maxTokens: 1500
-          }),
-          timeoutPromise
-        ]) as any;
+        const { data, raw } = await aiQueue.enqueue(
+          () =>
+            callChatCompletion({
+              messages: [
+                {
+                  role: 'system',
+                  content: systemMessage
+                },
+                {
+                  role: 'user',
+                  content: prompt
+                }
+              ],
+              temperature: 0.8,
+              maxTokens: 1500
+            }),
+          {
+            timeoutMs: 60_000,
+            priority: 'high',
+            metadata: { endpoint: 'generate-tasks', attempt, day: body.day, languageId: body.languageId }
+          }
+        );
 
         const content = raw || extractMessageContent(data);
         
@@ -627,6 +647,7 @@ export async function POST(request: Request) {
           recapTask: parsedResponse.recapTask,
           tasks: parsedResponse.tasks
         });
+        apiCache.set(cacheKey, { ...parsedResponse, isFallback }, CACHE_TTL.AI_CONTENT);
       } catch (dbError) {
         logError('Failed to save generated content to DB', dbError as Error, {
           component: 'api',
@@ -642,6 +663,11 @@ export async function POST(request: Request) {
     logError('Error calling AI API', error as Error, {
       component: 'api',
       action: 'generate-tasks',
+      metadata: { day: body.day, languageId: body.languageId }
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/generate-tasks',
+      action: 'POST',
       metadata: { day: body.day, languageId: body.languageId }
     });
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });

@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { theoryExplanationSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { errorHandler } from '@/lib/error-handler';
+import { logWarn, logError } from '@/lib/logger';
+import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
+import { createHash } from 'crypto';
 
 interface ExplainTheoryRequest {
   question: string;
@@ -106,7 +113,10 @@ const parseAiResponse = (content: string): ExplainTheoryResponse | null => {
       relatedTopics: Array.isArray(parsed.relatedTopics) ? parsed.relatedTopics : []
     };
   } catch (error) {
-    console.warn('Ошибка парсинга ответа AI при объяснении теории:', error, content);
+    logWarn('Ошибка парсинга ответа AI при объяснении теории', {
+      component: 'api/explain-theory',
+      metadata: { error: error instanceof Error ? error.message : 'unknown' }
+    });
     return null;
   }
 };
@@ -266,7 +276,30 @@ function createFallbackResponse(request: ExplainTheoryRequest, reason?: string):
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ExplainTheoryRequest;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
+    bucketId: 'explain-theory'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Please wait before requesting another explanation.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: ExplainTheoryRequest;
+  try {
+    const raw = await request.json();
+    body = theoryExplanationSchema.parse(raw) as ExplainTheoryRequest;
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
 
   // Валидация
   if (!body.question || body.question.trim().length < 3) {
@@ -282,9 +315,30 @@ export async function POST(request: Request) {
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('HF_TOKEN не задан. Возвращаем fallback объяснение.');
+      logWarn('HF_TOKEN не задан. Возвращаем fallback объяснение.', {
+        component: 'api/explain-theory'
+      });
     }
     return NextResponse.json(createFallbackResponse(body, 'missing_api_key'));
+  }
+
+  const cacheKey = generateCacheKey(
+    'ai:explain-theory',
+    createHash('sha1')
+      .update(
+        JSON.stringify({
+          question: body.question,
+          topic: body.context.topic,
+          languageId: body.languageId,
+          locale: body.locale ?? 'ru'
+        })
+      )
+      .digest('hex')
+  );
+
+  const cached = apiCache.get<ExplainTheoryResponse>(cacheKey);
+  if (cached) {
+    return NextResponse.json({ ...cached, fromCache: true });
   }
 
   try {
@@ -294,21 +348,28 @@ export async function POST(request: Request) {
       ? 'You are a programming teacher. Explain concepts clearly with examples. Respond strictly in JSON. All content must be in English.'
       : 'Ты — преподаватель программирования. Объясняй концепции понятно и с примерами. Отвечай строго в JSON на русском языке.';
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      maxTokens: 1500,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: systemMessage
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          maxTokens: 1500,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'normal',
+        metadata: { endpoint: 'explain-theory', topic: body.context.topic }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -318,9 +379,16 @@ export async function POST(request: Request) {
       return NextResponse.json(createFallbackResponse(body, 'parse_error'), { status: 200 });
     }
 
+    apiCache.set(cacheKey, parsedResponse, CACHE_TTL.AI_CONTENT);
     return NextResponse.json(parsedResponse);
   } catch (error) {
-    console.error('Ошибка при обращении к AI API для объяснения теории:', error);
+    logError('Ошибка при обращении к AI API для объяснения теории', error as Error, {
+      component: 'api/explain-theory'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/explain-theory',
+      action: 'POST'
+    });
     return NextResponse.json(createFallbackResponse(body, 'unexpected_error'), { status: 200 });
   }
 }

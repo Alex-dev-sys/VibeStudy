@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { codeExecutionSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { errorHandler } from '@/lib/error-handler';
+import { retryWithBackoff, isRetryableError } from '@/lib/sync/retry-logic';
+import { logWarn, logError } from '@/lib/logger';
 
 /**
  * API endpoint for executing code in a secure sandbox
@@ -18,9 +23,38 @@ const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   go: { language: 'go', version: '1.16.2' },
 };
 
+interface ExecutionResult {
+  result: any;
+  executionTime: number;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { code, language } = await request.json();
+    const rateState = evaluateRateLimit(request, RATE_LIMITS.API_GENERAL, {
+      bucketId: 'execute-code'
+    });
+
+    if (!rateState.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many code executions',
+          message: 'Please wait a few seconds and try again.'
+        },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(rateState)
+        }
+      );
+    }
+
+    const rawBody = await request.json();
+    let parsedBody: { code: string; language: string };
+    try {
+      parsedBody = codeExecutionSchema.parse(rawBody);
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    const { code, language } = parsedBody;
 
     if (!code || !language) {
       return NextResponse.json(
@@ -31,38 +65,55 @@ export async function POST(request: NextRequest) {
 
     const languageConfig = LANGUAGE_MAP[language];
     if (!languageConfig) {
+      logWarn('Unsupported language execution attempt', {
+        component: 'api/execute-code',
+        metadata: { language }
+      });
       return NextResponse.json(
         { error: `Язык ${language} не поддерживается` },
         { status: 400 }
       );
     }
 
-    // Execute code using Piston API
-    const startTime = Date.now();
-    const response = await fetch(`${PISTON_API}/execute`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        language: languageConfig.language,
-        version: languageConfig.version,
-        files: [
-          {
-            name: getFileName(language),
-            content: code,
+    const execution = await retryWithBackoff<ExecutionResult>(
+      async () => {
+        const startTime = Date.now();
+        const response = await fetch(`${PISTON_API}/execute`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        ],
-      }),
-    });
+          body: JSON.stringify({
+            language: languageConfig.language,
+            version: languageConfig.version,
+            files: [
+              {
+                name: getFileName(language),
+                content: code,
+              },
+            ],
+          }),
+        });
 
-    const executionTime = Date.now() - startTime;
+        if (!response.ok) {
+          throw new Error(`Ошибка при выполнении кода: ${response.status}`);
+        }
 
-    if (!response.ok) {
-      throw new Error('Ошибка при выполнении кода');
+        const result = await response.json();
+        return {
+          result,
+          executionTime: Date.now() - startTime,
+        };
+      },
+      undefined,
+      isRetryableError
+    );
+
+    if (!execution.success || !execution.result) {
+      throw execution.error ?? new Error('Не удалось выполнить код');
     }
 
-    const result = await response.json();
+    const { result, executionTime } = execution.result;
 
     // Format output
     let output = '';
@@ -88,7 +139,13 @@ export async function POST(request: NextRequest) {
       executionTime,
     });
   } catch (error) {
-    console.error('Error executing code:', error);
+    logError('Error executing code', error as Error, {
+      component: 'api/execute-code'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/execute-code',
+      action: 'POST'
+    });
     return NextResponse.json(
       {
         error: 'Не удалось выполнить код. Попробуйте позже.',

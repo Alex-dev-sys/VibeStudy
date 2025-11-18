@@ -108,6 +108,9 @@ export function OnboardingTour() {
     };
   };
 
+  const titleId = `onboarding-title-${currentStep}`;
+  const descriptionId = `onboarding-description-${currentStep}`;
+
   return (
     <AnimatePresence>
       {isActive && (
@@ -146,6 +149,10 @@ export function OnboardingTour() {
             className="fixed z-[10000] w-full max-w-md rounded-2xl border border-white/20 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-6 shadow-2xl"
             style={getTooltipPosition()}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            aria-describedby={descriptionId}
           >
             {/* Progress indicator */}
             <div className="mb-4 flex items-center justify-between">
@@ -172,10 +179,10 @@ export function OnboardingTour() {
             </div>
 
             {/* Content */}
-            <h3 className="mb-3 text-xl font-semibold text-white">
+            <h3 id={titleId} className="mb-3 text-xl font-semibold text-white">
               {currentStepData.title}
             </h3>
-            <p className="mb-6 text-sm leading-relaxed text-white/70">
+            <p id={descriptionId} className="mb-6 text-sm leading-relaxed text-white/70">
               {currentStepData.description}
             </p>
 

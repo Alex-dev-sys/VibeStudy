@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getGeneratedContent, saveGeneratedContent } from '@/lib/db';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import type { Difficulty, GeneratedTask } from '@/types';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { regenerateTaskSchema } from '@/lib/validation/schemas';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { logWarn, logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/error-handler';
 
 interface RequestBody {
   day: number;
@@ -59,10 +64,35 @@ const parseTask = (content: string): GeneratedTask => {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as RequestBody;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
+    bucketId: 'regenerate-task'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Too many regeneration requests. Please wait.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: RequestBody;
+  try {
+    const raw = await request.json();
+    body = regenerateTaskSchema.parse(raw) as RequestBody;
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('HF_TOKEN не задан. Перегенерация задачи недоступна.');
+      logWarn('HF_TOKEN не задан. Перегенерация задачи недоступна.', {
+        component: 'api/regenerate-task'
+      });
     }
     return NextResponse.json({ error: 'AI недоступен: отсутствует ключ API' }, { status: 500 });
   }
@@ -70,21 +100,28 @@ export async function POST(request: Request) {
   try {
     const prompt = buildPrompt(body);
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.8,
-      maxTokens: 800,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.8,
+          maxTokens: 800,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'high',
+        metadata: { endpoint: 'regenerate-task', difficulty: body.difficulty }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -100,8 +137,11 @@ export async function POST(request: Request) {
           if (typeof stored.tasks === 'string') {
             try {
               return JSON.parse(stored.tasks) as GeneratedTask[];
-            } catch (error) {
-              console.warn('Не удалось распарсить сохранённые задачи, создаём заново.', error);
+      } catch (error) {
+        logWarn('Не удалось распарсить сохранённые задачи, создаём заново.', {
+          component: 'api/regenerate-task',
+          metadata: { error: error instanceof Error ? error.message : 'unknown' }
+        });
               return [];
             }
           }
@@ -122,12 +162,20 @@ export async function POST(request: Request) {
         });
       }
     } catch (dbError) {
-      console.error('Не удалось сохранить перегенерированную задачу в БД', dbError);
+      logError('Не удалось сохранить перегенерированную задачу в БД', dbError as Error, {
+        component: 'api/regenerate-task'
+      });
     }
 
     return NextResponse.json({ task: regeneratedTask });
   } catch (error) {
-    console.error('Ошибка перегенерации задачи:', error);
+    logError('Ошибка перегенерации задачи', error as Error, {
+      component: 'api/regenerate-task'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/regenerate-task',
+      action: 'POST'
+    });
     const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
     return NextResponse.json({ error: message }, { status: 500 });
   }

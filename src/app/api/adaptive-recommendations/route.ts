@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { adaptiveRecommendationsSchema } from '@/lib/validation/schemas';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { aiQueue } from '@/lib/ai/pipeline';
+import { logWarn, logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/error-handler';
 
 interface AdaptiveRecommendationsRequest {
   knowledgeProfile: {
@@ -136,11 +141,46 @@ const fallbackResponse: AdaptiveRecommendationsResponse = {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as AdaptiveRecommendationsRequest;
+  const rateState = evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
+    bucketId: 'adaptive-recommendations'
+  });
+
+  if (!rateState.allowed) {
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Please wait before requesting new recommendations.'
+      },
+      {
+        status: 429,
+        headers: buildRateLimitHeaders(rateState)
+      }
+    );
+  }
+
+  let body: AdaptiveRecommendationsRequest;
+  try {
+    const raw = await request.json();
+    body = raw as AdaptiveRecommendationsRequest;
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const metaValidation = adaptiveRecommendationsSchema.safeParse({
+    currentDay: body.currentDay,
+    languageId: body.languageId,
+    userId: (body as any).userId
+  });
+
+  if (!metaValidation.success) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+      logWarn('HF_TOKEN не задан. Возвращаем fallback.', {
+        component: 'api/adaptive-recommendations'
+      });
     }
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
@@ -148,21 +188,28 @@ export async function POST(request: Request) {
   try {
     const prompt = buildRecommendationsPrompt(body);
 
-    const { data, raw } = await callChatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: 'Ты — адаптивная система обучения. Анализируй профиль студента и давай персональные рекомендации. Отвечай строго в JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      maxTokens: 2000,
-      responseFormat: { type: 'json_object' }
-    });
+    const { data, raw } = await aiQueue.enqueue(
+      () =>
+        callChatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: 'Ты — адаптивная система обучения. Анализируй профиль студента и давай персональные рекомендации. Отвечай строго в JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          maxTokens: 2000,
+          responseFormat: { type: 'json_object' }
+        }),
+      {
+        priority: 'high',
+        metadata: { endpoint: 'adaptive-recommendations', day: body.currentDay }
+      }
+    );
 
     const content = raw || extractMessageContent(data);
 
@@ -171,17 +218,27 @@ export async function POST(request: Request) {
       const parsed = JSON.parse(sanitized) as AdaptiveRecommendationsResponse;
 
       if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
-        console.warn('Некорректный формат ответа AI:', parsed);
+        logWarn('Некорректный формат ответа AI', {
+          component: 'api/adaptive-recommendations'
+        });
         return NextResponse.json(fallbackResponse, { status: 200 });
       }
 
       return NextResponse.json(parsed);
     } catch (parseError) {
-      console.error('Ошибка парсинга ответа AI:', parseError, content);
+      logError('Ошибка парсинга ответа AI', parseError as Error, {
+        component: 'api/adaptive-recommendations'
+      });
       return NextResponse.json(fallbackResponse, { status: 200 });
     }
   } catch (error) {
-    console.error('Ошибка при получении рекомендаций:', error);
+    logError('Ошибка при получении рекомендаций', error as Error, {
+      component: 'api/adaptive-recommendations'
+    });
+    errorHandler.report(error as Error, {
+      component: 'api/adaptive-recommendations',
+      action: 'POST'
+    });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
 }
