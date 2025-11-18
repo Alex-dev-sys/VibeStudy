@@ -85,7 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
     errorHandler.report(error, {
       component: 'ErrorBoundary',
       action: 'componentDidCatch',
-      metadata: errorInfo
+      metadata: { componentStack: errorInfo.componentStack }
     });
 
     if (this.props.onError) {

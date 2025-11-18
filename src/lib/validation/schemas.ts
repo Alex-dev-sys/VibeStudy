@@ -55,10 +55,14 @@ export const theoryExplanationSchema = z.object({
 export const hintRequestSchema = z.object({
   code: z.string().min(1).max(50000),
   task: z.object({
-    prompt: z.string(),
-    difficulty: z.string()
+    title: z.string(),
+    description: z.string(),
+    difficulty: z.string(),
+    hints: z.array(z.string()).optional()
   }),
   languageId: z.string().min(1).max(50),
+  errorMessage: z.string().optional(),
+  attemptNumber: z.number().int().min(1).max(10).default(1),
   locale: z.enum(['ru', 'en']).optional()
 });
 

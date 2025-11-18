@@ -1,23 +1,12 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
-import { hintRequestSchema } from '@/lib/validation/schemas';
+import { hintRequestSchema, type HintRequestInput } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { logWarn, logError } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
 
-interface GetHintRequest {
-  code: string;
-  task: {
-    title: string;
-    description: string;
-    difficulty: string;
-  };
-  languageId: string;
-  errorMessage?: string;
-  attemptNumber: number;
-  locale?: 'ru' | 'en';
-}
+type GetHintRequest = HintRequestInput;
 
 interface GetHintResponse {
   hint: string;
@@ -162,7 +151,7 @@ export async function POST(request: Request) {
   let body: GetHintRequest;
   try {
     const raw = await request.json();
-    body = hintRequestSchema.parse(raw) as GetHintRequest;
+    body = hintRequestSchema.parse(raw);
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
