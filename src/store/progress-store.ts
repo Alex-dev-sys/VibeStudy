@@ -382,8 +382,37 @@ export const useProgressStore = create<ProgressStore>()(
       },
       
       processQueue: async () => {
-        // TODO: Implement in next task
-        console.log('processQueue called - not yet implemented');
+        const state = get();
+        const { getCurrentUser } = await import('@/lib/supabase/auth');
+        const { syncQueue } = await import('@/lib/sync');
+        
+        const user = await getCurrentUser();
+        if (!user) {
+          console.log('[ProgressStore] No user logged in, skipping queue processing');
+          return;
+        }
+        
+        set({ isSyncing: true, syncError: null });
+        
+        try {
+          // Обрабатываем очередь синхронизации
+          await syncQueue.processQueue();
+          
+          // Очищаем локальную очередь после успешной синхронизации
+          set({ 
+            queuedOperations: [],
+            isSyncing: false,
+            lastSyncTime: Date.now()
+          });
+          
+          console.log('[ProgressStore] Queue processed successfully');
+        } catch (error) {
+          set({ 
+            isSyncing: false, 
+            syncError: error as Error 
+          });
+          console.error('[ProgressStore] Failed to process queue:', error);
+        }
       }
     }),
     {

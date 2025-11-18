@@ -153,6 +153,11 @@ export default function PlaygroundPage() {
         }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {

@@ -21,6 +21,38 @@ export interface ProgressData {
 }
 
 /**
+ * Get total time spent on a day from task attempts
+ * Task IDs are in format "day_X_taskY", so we extract day from task_id
+ */
+async function getDayTimeSpent(
+  supabase: any,
+  userId: string,
+  day: number
+): Promise<number> {
+  try {
+    // Task IDs are in format "day_X_taskY", so we filter by prefix
+    const dayPrefix = `day${day}_`;
+    
+    const { data, error } = await supabase
+      .from('task_attempts')
+      .select('time_spent, task_id')
+      .eq('user_id', userId)
+      .like('task_id', `${dayPrefix}%`);
+
+    if (error || !data || !Array.isArray(data)) {
+      return 0;
+    }
+
+    // Sum all time_spent values for this day
+    return data.reduce((total: number, attempt: any) => {
+      return total + (attempt.time_spent || 0);
+    }, 0);
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Upsert user progress data
  */
 export async function upsertProgress(data: ProgressData): Promise<DatabaseResult<void>> {
@@ -31,21 +63,36 @@ export async function upsertProgress(data: ProgressData): Promise<DatabaseResult
   }
 
   try {
+    // Get time spent for each day from task attempts
+    const timeSpentPromises = Object.keys(data.dayStates).map(async (day) => {
+      const dayNum = Number(day);
+      const timeSpent = await getDayTimeSpent(supabase, data.userId, dayNum);
+      return { day: dayNum, timeSpent };
+    });
+
+    const timeSpentResults = await Promise.all(timeSpentPromises);
+    const timeSpentMap = new Map(timeSpentResults.map(r => [r.day, r.timeSpent]));
+
     // Store progress for each day
-    const progressEntries = Object.entries(data.dayStates).map(([day, state]) => ({
-      user_id: data.userId,
-      topic_id: `day_${day}`,
-      completed: data.record.completedDays.includes(Number(day)),
-      score: state.completedTasks.length * 20, // Simple scoring
-      time_spent: 0, // TODO: Track time
-      last_accessed: new Date(state.lastUpdated).toISOString(),
-      metadata: {
-        code: state.code,
-        notes: state.notes,
-        completedTasks: state.completedTasks,
-        recapAnswer: state.recapAnswer
-      }
-    }));
+    const progressEntries = Object.entries(data.dayStates).map(([day, state]) => {
+      const dayNum = Number(day);
+      return {
+        user_id: data.userId,
+        topic_id: `day_${dayNum}`,
+        completed: data.record.completedDays.includes(dayNum),
+        score: state.completedTasks.length * 20, // Simple scoring
+        time_spent: timeSpentMap.get(dayNum) || 0,
+        last_accessed: new Date(state.lastUpdated).toISOString(),
+        metadata: {
+          code: state.code,
+          notes: state.notes,
+          completedTasks: state.completedTasks,
+          recapAnswer: state.recapAnswer,
+          languageId: data.languageId,
+          history: data.record.history || []
+        }
+      };
+    });
 
     const { error } = await supabase
       .from('user_progress')
@@ -92,14 +139,45 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
     const dayStates: Record<number, DayStateSnapshot> = {};
     const completedDays: number[] = [];
 
+    // Extract language and history from entries
+    let languageId = 'python';
+    const historyMap = new Map<number, { day: number; timestamp: number; notes?: string }>();
+
     data.forEach((entry: any) => {
-      const day = parseInt(entry.topic_id.replace('day_', ''));
+      const day = parseInt(entry.topic_id.replace('day_', ''), 10);
+      
+      // Пропускаем невалидные записи
+      if (isNaN(day)) {
+        console.warn(`[fetchProgress] Invalid topic_id: ${entry.topic_id}, skipping entry`);
+        return;
+      }
+      
+      // Extract languageId from metadata (use first valid entry)
+      if (entry.metadata?.languageId) {
+        // Only update if we haven't found a language yet, or use the first one found
+        if (languageId === 'python') {
+          languageId = entry.metadata.languageId;
+        }
+      }
+      
+      // Collect history entries from metadata
+      // History is stored per day, so we merge all history entries
+      if (entry.metadata?.history && Array.isArray(entry.metadata.history)) {
+        entry.metadata.history.forEach((histEntry: { day: number; timestamp: number; notes?: string }) => {
+          // Use the most recent entry for each day
+          const existing = historyMap.get(histEntry.day);
+          if (!existing || histEntry.timestamp > existing.timestamp) {
+            historyMap.set(histEntry.day, histEntry);
+          }
+        });
+      }
+      
       dayStates[day] = {
         code: entry.metadata?.code || '',
         notes: entry.metadata?.notes || '',
         completedTasks: entry.metadata?.completedTasks || [],
         isLocked: false,
-        lastUpdated: new Date(entry.last_accessed).getTime(),
+        lastUpdated: entry.last_accessed ? new Date(entry.last_accessed).getTime() : Date.now(),
         recapAnswer: entry.metadata?.recapAnswer || ''
       };
 
@@ -108,17 +186,20 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
       }
     });
 
+    // Convert history map to sorted array
+    const history = Array.from(historyMap.values()).sort((a, b) => a.day - b.day);
+
     const progressData: ProgressData = {
       userId,
       dayStates,
       record: {
         completedDays: completedDays.sort((a, b) => a - b),
-        lastActiveDay: Math.max(...completedDays, 1),
+        lastActiveDay: completedDays.length > 0 ? Math.max(...completedDays) : 1,
         streak: completedDays.length,
-        history: [] // TODO: Implement history
+        history: history
       },
-      languageId: 'python', // TODO: Store language preference
-      activeDay: Math.max(...completedDays, 1)
+      languageId: languageId,
+      activeDay: completedDays.length > 0 ? Math.max(...completedDays) : 1
     };
 
     return { data: progressData, error: null };
@@ -164,7 +245,7 @@ export async function fetchDayProgress(
       notes: data.metadata?.notes || '',
       completedTasks: data.metadata?.completedTasks || [],
       isLocked: false,
-      lastUpdated: new Date(data.last_accessed).getTime(),
+      lastUpdated: data.last_accessed ? new Date(data.last_accessed).getTime() : Date.now(),
       recapAnswer: data.metadata?.recapAnswer || ''
     };
 
@@ -242,10 +323,14 @@ export async function fetchAchievements(
       return { data: null, error };
     }
 
+    if (!data || !Array.isArray(data)) {
+      return { data: [], error: null };
+    }
+
     // Transform to Achievement format (will need to merge with ACHIEVEMENTS constant)
     const achievements = data.map((entry: any) => ({
       id: entry.achievement_id,
-      unlockedAt: new Date(entry.unlocked_at).getTime()
+      unlockedAt: entry.unlocked_at ? new Date(entry.unlocked_at).getTime() : Date.now()
     })) as Achievement[];
 
     return { data: achievements, error: null };
@@ -317,6 +402,10 @@ export async function fetchUserStats(userId: string): Promise<DatabaseResult<Use
         return { data: null, error: null };
       }
       return { data: null, error };
+    }
+
+    if (!data || !data.metadata) {
+      return { data: null, error: null };
     }
 
     return { data: data.metadata as UserStats, error: null };
@@ -419,7 +508,7 @@ export async function fetchProfile(userId: string): Promise<DatabaseResult<Profi
       email: data.email,
       avatar: data.metadata?.avatar,
       bio: data.metadata?.bio,
-      joinedAt: new Date(data.created_at).getTime(),
+      joinedAt: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
       preferredLanguage: data.metadata?.preferredLanguage || 'python',
       interfaceLanguage: data.metadata?.interfaceLanguage || 'ru',
       telegramUsername: data.metadata?.telegramUsername,
@@ -519,6 +608,10 @@ export async function fetchTaskAttempts(
       return { data: null, error };
     }
 
+    if (!data || !Array.isArray(data)) {
+      return { data: [], error: null };
+    }
+
     const attempts: TaskAttempt[] = data.map((entry: any) => ({
       id: entry.id,
       userId: entry.user_id,
@@ -529,7 +622,7 @@ export async function fetchTaskAttempts(
       isCorrect: entry.is_correct,
       hintsUsed: entry.hints_used,
       timeSpent: entry.time_spent,
-      attemptedAt: new Date(entry.attempted_at).getTime()
+      attemptedAt: entry.attempted_at ? new Date(entry.attempted_at).getTime() : Date.now()
     }));
 
     return { data: attempts, error: null };
@@ -566,6 +659,10 @@ export async function fetchRecentAttempts(
       return { data: null, error };
     }
 
+    if (!data || !Array.isArray(data)) {
+      return { data: [], error: null };
+    }
+
     const attempts: TaskAttempt[] = data.map((entry: any) => ({
       id: entry.id,
       userId: entry.user_id,
@@ -576,7 +673,7 @@ export async function fetchRecentAttempts(
       isCorrect: entry.is_correct,
       hintsUsed: entry.hints_used,
       timeSpent: entry.time_spent,
-      attemptedAt: new Date(entry.attempted_at).getTime()
+      attemptedAt: entry.attempted_at ? new Date(entry.attempted_at).getTime() : Date.now()
     }));
 
     return { data: attempts, error: null };
@@ -681,13 +778,17 @@ export async function fetchTopicMastery(
       return { data: null, error };
     }
 
+    if (!data || !Array.isArray(data)) {
+      return { data: [], error: null };
+    }
+
     const mastery: TopicMastery[] = data.map((entry: any) => ({
       userId: entry.user_id,
       topic: entry.topic,
       totalAttempts: entry.total_attempts,
       successfulAttempts: entry.successful_attempts,
       masteryLevel: entry.mastery_level,
-      lastPracticed: new Date(entry.last_practiced).getTime()
+      lastPracticed: entry.last_practiced ? new Date(entry.last_practiced).getTime() : Date.now()
     }));
 
     return { data: mastery, error: null };

@@ -35,7 +35,9 @@ export function LearningVelocityChart() {
     return days;
   }, [taskAttempts]);
   
-  const maxCount = Math.max(...chartData.map((d) => d.count), 1);
+  const maxCount = chartData.length > 0 
+    ? Math.max(...chartData.map((d) => d.count), 1)
+    : 1;
   
   return (
     <Card>
