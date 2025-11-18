@@ -4,7 +4,6 @@ import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from '@/store/locale-store';
-import { RoleGuard } from '@/components/auth/RoleGuard';
 
 export default function AnalyticsPage() {
   const t = useTranslations();
@@ -33,9 +32,7 @@ export default function AnalyticsPage() {
         
         {/* Dashboard */}
         <section aria-label={t.analytics.overview}>
-          <RoleGuard allowed={['mentor', 'admin']}>
-            <AnalyticsDashboard />
-          </RoleGuard>
+          <AnalyticsDashboard />
         </section>
       </div>
     </main>
