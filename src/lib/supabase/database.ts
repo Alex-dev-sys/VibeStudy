@@ -2,6 +2,7 @@ import { getSupabaseClient } from './client';
 import type { DatabaseResult } from './types';
 import type { DayStateSnapshot, ProgressRecord } from '@/types';
 import type { UserStats, Achievement } from '@/types/achievements';
+import { logWarn, logError } from '@/lib/logger';
 
 /**
  * Database Helper Functions
@@ -148,7 +149,11 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
       
       // Пропускаем невалидные записи
       if (isNaN(day)) {
-        console.warn(`[fetchProgress] Invalid topic_id: ${entry.topic_id}, skipping entry`);
+        logWarn(`Invalid topic_id: ${entry.topic_id}, skipping entry`, {
+          component: 'database',
+          action: 'fetchProgress',
+          metadata: { topic_id: entry.topic_id }
+        });
         return;
       }
       

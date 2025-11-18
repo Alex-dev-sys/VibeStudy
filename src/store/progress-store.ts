@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { DayStateSnapshot, ProgressRecord } from '@/types';
 import { useAchievementsStore } from './achievements-store';
 import { showAchievementToast } from '@/components/achievements/AchievementToast';
+import { logInfo, logError } from '@/lib/logger';
 
 interface ProgressStore {
   activeDay: number;
@@ -310,7 +311,7 @@ export const useProgressStore = create<ProgressStore>()(
         
         const user = await getCurrentUser();
         if (!user) {
-          console.log('No user logged in, skipping sync');
+          logInfo('No user logged in, skipping sync', { component: 'progress-store', action: 'syncToCloud' });
           return;
         }
         
@@ -330,10 +331,10 @@ export const useProgressStore = create<ProgressStore>()(
           }
           
           set({ isSyncing: false, lastSyncTime: Date.now() });
-          console.log('✅ Progress synced to cloud');
+          logInfo('Progress synced to cloud', { component: 'progress-store', action: 'syncToCloud', userId: user.id });
         } catch (error) {
           set({ isSyncing: false, syncError: error as Error });
-          console.error('❌ Failed to sync progress:', error);
+          logError('Failed to sync progress', error as Error, { component: 'progress-store', action: 'syncToCloud', userId: user.id });
         }
       },
       
@@ -343,7 +344,7 @@ export const useProgressStore = create<ProgressStore>()(
         
         const user = await getCurrentUser();
         if (!user) {
-          console.log('No user logged in, skipping fetch');
+          logInfo('No user logged in, skipping fetch', { component: 'progress-store', action: 'fetchFromCloud' });
           return;
         }
         
@@ -365,13 +366,13 @@ export const useProgressStore = create<ProgressStore>()(
               isSyncing: false,
               lastSyncTime: Date.now()
             });
-            console.log('✅ Progress fetched from cloud');
+            logInfo('Progress fetched from cloud', { component: 'progress-store', action: 'fetchFromCloud', userId: user.id });
           } else {
             set({ isSyncing: false });
           }
         } catch (error) {
           set({ isSyncing: false, syncError: error as Error });
-          console.error('❌ Failed to fetch progress:', error);
+          logError('Failed to fetch progress', error as Error, { component: 'progress-store', action: 'fetchFromCloud', userId: user.id });
         }
       },
       
@@ -388,7 +389,7 @@ export const useProgressStore = create<ProgressStore>()(
         
         const user = await getCurrentUser();
         if (!user) {
-          console.log('[ProgressStore] No user logged in, skipping queue processing');
+          logInfo('No user logged in, skipping queue processing', { component: 'progress-store', action: 'processQueue' });
           return;
         }
         
@@ -405,13 +406,13 @@ export const useProgressStore = create<ProgressStore>()(
             lastSyncTime: Date.now()
           });
           
-          console.log('[ProgressStore] Queue processed successfully');
+          logInfo('Queue processed successfully', { component: 'progress-store', action: 'processQueue', userId: user.id });
         } catch (error) {
           set({ 
             isSyncing: false, 
             syncError: error as Error 
           });
-          console.error('[ProgressStore] Failed to process queue:', error);
+          logError('Failed to process queue', error as Error, { component: 'progress-store', action: 'processQueue', userId: user.id });
         }
       }
     }),

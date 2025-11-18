@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { saveGeneratedContent } from '@/lib/db';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { taskGenerationSchema } from '@/lib/validation/schemas';
+import { rateLimiter, RATE_LIMITS, getRateLimitIdentifier } from '@/lib/rate-limit';
+import { logWarn, logError } from '@/lib/logger';
 
 interface RequestBody {
   day: number;
@@ -483,11 +486,49 @@ const parseAiResponse = (content: string): GeneratedContent => {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ExtendedRequestBody;
+  // Rate limiting
+  const identifier = getRateLimitIdentifier(request);
+  const rateLimit = RATE_LIMITS.AI_GENERATION;
+  if (!rateLimiter.check(identifier, rateLimit.limit, rateLimit.windowMs)) {
+    const remaining = rateLimiter.getRemaining(identifier, rateLimit.limit);
+    const resetTime = rateLimiter.getResetTime(identifier);
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter: resetTime ? Math.ceil((resetTime - Date.now()) / 1000) : 60
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimit.limit.toString(),
+          'X-RateLimit-Remaining': remaining.toString(),
+          'Retry-After': resetTime ? Math.ceil((resetTime - Date.now()) / 1000).toString() : '60'
+        }
+      }
+    );
+  }
+
+  // Validate request body
+  let body: ExtendedRequestBody;
+  try {
+    const rawBody = await request.json();
+    body = taskGenerationSchema.parse(rawBody) as ExtendedRequestBody;
+  } catch (error) {
+    logWarn('Invalid request body for generate-tasks', {
+      component: 'api',
+      action: 'generate-tasks',
+      metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
+    });
+    return NextResponse.json(
+      { error: 'Invalid request body', details: error instanceof Error ? error.message : 'Validation failed' },
+      { status: 400 }
+    );
+  }
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('HF_TOKEN не задан. Возвращаем fallback.');
+      logWarn('HF_TOKEN not configured, returning fallback', { component: 'api', action: 'generate-tasks' });
     }
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
@@ -531,12 +572,20 @@ export async function POST(request: Request) {
 
         const content = raw || extractMessageContent(data);
         
-        console.log(`🤖 AI Response attempt ${attempt} (first 500 chars):`, String(content).slice(0, 500));
+        logWarn(`AI Response attempt ${attempt}`, {
+          component: 'api',
+          action: 'generate-tasks',
+          metadata: { preview: String(content).slice(0, 100) }
+        });
 
         parsedResponse = parseAiResponse(String(content));
         isFallback = parsedResponse.tasks?.[0]?.id?.startsWith('fallback-') ?? false;
         
-        console.log(`📊 Attempt ${attempt}:`, isFallback ? 'FALLBACK' : 'SUCCESS', 'Tasks:', parsedResponse.tasks?.length);
+        logWarn(`Attempt ${attempt} result`, {
+          component: 'api',
+          action: 'generate-tasks',
+          metadata: { isFallback, tasksCount: parsedResponse.tasks?.length }
+        });
 
         // If we got valid content, break the retry loop
         if (!isFallback) {
@@ -545,14 +594,21 @@ export async function POST(request: Request) {
 
         // If this was the last attempt, log failure
         if (attempt === MAX_RETRIES) {
-          console.warn('⚠️ All retry attempts failed, using fallback content');
+          logWarn('All retry attempts failed, using fallback content', {
+            component: 'api',
+            action: 'generate-tasks',
+            metadata: { day: body.day, languageId: body.languageId }
+          });
         } else {
-          console.log(`🔄 Retrying generation (attempt ${attempt + 1}/${MAX_RETRIES})...`);
           // Wait a bit before retrying
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       } catch (attemptError) {
-        console.error(`❌ Attempt ${attempt} failed:`, attemptError);
+        logError(`Attempt ${attempt} failed`, attemptError as Error, {
+          component: 'api',
+          action: 'generate-tasks',
+          metadata: { day: body.day, attempt }
+        });
         if (attempt === MAX_RETRIES) {
           throw attemptError;
         }
@@ -571,16 +627,23 @@ export async function POST(request: Request) {
           recapTask: parsedResponse.recapTask,
           tasks: parsedResponse.tasks
         });
-        console.log(`✅ Контент для дня ${body.day} (${body.languageId}) сохранён в БД`);
       } catch (dbError) {
-        console.error('Ошибка сохранения в БД:', dbError);
+        logError('Failed to save generated content to DB', dbError as Error, {
+          component: 'api',
+          action: 'generate-tasks',
+          metadata: { day: body.day, languageId: body.languageId }
+        });
         // Продолжаем работу даже если не удалось сохранить
       }
     }
 
     return NextResponse.json({ ...parsedResponse, isFallback });
   } catch (error) {
-    console.error('Ошибка при обращении к AI API', error);
+    logError('Error calling AI API', error as Error, {
+      component: 'api',
+      action: 'generate-tasks',
+      metadata: { day: body.day, languageId: body.languageId }
+    });
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
 }

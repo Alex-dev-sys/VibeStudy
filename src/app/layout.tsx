@@ -78,6 +78,7 @@ export const viewport: Viewport = {
 
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from 'sonner';
 
 export default function RootLayout({
@@ -88,15 +89,17 @@ export default function RootLayout({
   return (
     <html lang="ru" className="dark">
       <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>
-        <RealtimeProvider>
-          <OnboardingProvider>
-            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-white">
-              Перейти к основному содержимому
-            </a>
-            {children}
-            <Toaster position="bottom-right" />
-          </OnboardingProvider>
-        </RealtimeProvider>
+        <ErrorBoundary>
+          <RealtimeProvider>
+            <OnboardingProvider>
+              <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-white">
+                Перейти к основному содержимому
+              </a>
+              {children}
+              <Toaster position="bottom-right" />
+            </OnboardingProvider>
+          </RealtimeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
