@@ -47,7 +47,7 @@
 └─ Отвечает на вопросы по теории
 ```
 
-**Технологии:** Hugging Face Router, MiniMax-M2, адаптивные алгоритмы
+**Технологии:** GPT Lama API, GPT-4o-mini, адаптивные алгоритмы
 
 ### 📚 7 языков программирования
 
@@ -146,7 +146,9 @@ cd vibestudy
 npm install
 
 # 3. Создайте минимальный .env.local
-echo "HF_TOKEN=hf_your_token_here" > .env.local
+echo "HF_TOKEN=your_gptlama_token" > .env.local
+echo "HF_API_BASE_URL=https://api.gptlama.ru/v1" >> .env.local
+echo "HF_MODEL=gpt-4o-mini" >> .env.local
 
 # 4. Запустите!
 npm run dev
@@ -154,7 +156,7 @@ npm run dev
 
 🎉 Откройте [http://localhost:3000](http://localhost:3000) и начинайте учиться!
 
-> **Совет:** Получите бесплатный HF_TOKEN на [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+> **Совет:** Получите токен на [gptlama.ru](https://gptlama.ru/)
 
 ### Вариант 2: Полная настройка (15 минут)
 
@@ -172,9 +174,9 @@ npm install
 # 2. Создайте .env.local со всеми настройками
 cat > .env.local << 'EOF'
 # 🤖 AI (обязательно)
-HF_TOKEN=hf_your_access_token
-HF_API_BASE_URL=https://router.huggingface.co/v1
-HF_MODEL=MiniMaxAI/MiniMax-M2:novita
+HF_TOKEN=your_gptlama_token
+HF_API_BASE_URL=https://api.gptlama.ru/v1
+HF_MODEL=gpt-4o-mini
 
 # ☁️ Supabase (для синхронизации)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -207,20 +209,21 @@ npm run start        # ▶️  Production server
 
 ## � Настсройка интеграций
 
-### 🤖 Hugging Face (обязательно для AI)
+### 🤖 GPT Lama API (обязательно для AI)
 
 <details>
 <summary>Как получить токен?</summary>
 
-1. Зарегистрируйтесь на [huggingface.co](https://huggingface.co/)
-2. Перейдите в [Settings → Access Tokens](https://huggingface.co/settings/tokens)
-3. Создайте токен с правами `read`
-4. Добавьте в `.env.local`:
+1. Зарегистрируйтесь на [gptlama.ru](https://gptlama.ru/)
+2. Получите API токен в личном кабинете
+3. Добавьте в `.env.local`:
    ```bash
-   HF_TOKEN=hf_ваш_токен
+   HF_TOKEN=ваш_токен
+   HF_API_BASE_URL=https://api.gptlama.ru/v1
+   HF_MODEL=gpt-4o-mini
    ```
 
-**Бесплатно:** 1000 запросов/день (достаточно для обучения)
+**Модель:** GPT-4o-mini для быстрых и качественных ответов
 
 </details>
 
@@ -354,7 +357,7 @@ VibeStudy/
 
 **Backend & Services**
 - 🗄️ Supabase (PostgreSQL)
-- 🤖 Hugging Face Router
+- 🤖 GPT Lama API (GPT-4o-mini)
 - 📱 Telegram Bot API
 - 🔐 Supabase Auth
 - 💾 Zustand + localStorage
@@ -626,8 +629,8 @@ git push origin feature/amazing-feature
 <br><strong>Next.js</strong>
 </td>
 <td align="center" width="25%">
-<img src="https://huggingface.co/front/assets/huggingface_logo.svg" width="48" height="48" alt="Hugging Face"/>
-<br><strong>Hugging Face</strong>
+<img src="https://www.gptlama.ru/favicon.ico" width="48" height="48" alt="GPT Lama"/>
+<br><strong>GPT Lama</strong>
 </td>
 <td align="center" width="25%">
 <img src="https://supabase.com/favicon/favicon.ico" width="48" height="48" alt="Supabase"/>
