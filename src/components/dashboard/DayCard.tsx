@@ -175,7 +175,7 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
       {hasGenerated && (
         <>
           {/* Блок теории */}
-          <TheoryBlock theory={theory} dayNumber={day.day} topic={dayTopic.topic} />
+          <TheoryBlock theory={theory} dayNumber={day.day} topic={dayTopic.topic} languageId={languageId} />
 
           {/* Визуальный разделитель между теорией и практикой */}
           <div className="relative flex items-center justify-center py-4">

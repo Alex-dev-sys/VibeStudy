@@ -1,23 +1,33 @@
 'use client';
 
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 
 interface TheoryBlockProps {
   theory: string;
   dayNumber: number;
   topic: string;
+  languageId?: string;
 }
 
-export function TheoryBlock({ theory, dayNumber, topic }: TheoryBlockProps) {
+export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }: TheoryBlockProps) {
   return (
     <Card className="border border-[#ff0094]/25 glow-border">
       <CardHeader>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-xl text-white sm:h-10 sm:w-10 sm:text-2xl">📚</span>
-          <div>
-            <CardTitle className="text-sm sm:text-base">Теория дня {dayNumber}</CardTitle>
-            <p className="text-xs text-white/90 sm:text-sm">{topic}</p>
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-xl text-white sm:h-10 sm:w-10 sm:text-2xl">📚</span>
+            <div>
+              <CardTitle className="text-sm sm:text-base">Теория дня {dayNumber}</CardTitle>
+              <p className="text-xs text-white/90 sm:text-sm">{topic}</p>
+            </div>
           </div>
+          <FeedbackButtons
+            contentType="theory"
+            contentKey={`${languageId}-day-${dayNumber}-theory`}
+            metadata={{ language: languageId, day: dayNumber, topic }}
+            className="hidden sm:flex"
+          />
         </div>
       </CardHeader>
       <div className="space-y-3 px-4 pb-4 sm:space-y-4 sm:px-6 sm:pb-6">
@@ -58,6 +68,13 @@ export function TheoryBlock({ theory, dayNumber, topic }: TheoryBlockProps) {
             💡 <strong>Совет:</strong> Внимательно изучи теорию перед выполнением заданий. Все задачи можно решить, используя
             только материал из этой теории.
           </p>
+        </div>
+        <div className="flex sm:hidden justify-center">
+          <FeedbackButtons
+            contentType="theory"
+            contentKey={`${languageId}-day-${dayNumber}-theory`}
+            metadata={{ language: languageId, day: dayNumber, topic }}
+          />
         </div>
       </div>
     </Card>

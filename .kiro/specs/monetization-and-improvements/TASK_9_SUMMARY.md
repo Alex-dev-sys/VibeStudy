@@ -1,119 +1,112 @@
 # Task 9: Обработка реферальных регистраций - Implementation Summary
 
-## Completed Changes
+## Overview
+Implemented referral registration tracking system that captures referral codes during registration and processes them on first login.
 
-### 1. Login Page (`src/app/login/page.tsx`)
-- Added logic to capture `?ref=userId` parameter from URL
-- Stores referral code in `sessionStorage` when present
-- Referral code persists through the authentication flow
+## Changes Made
 
-**Implementation:**
-```typescript
-// Store referral code in sessionStorage if present
-const params = new URLSearchParams(window.location.search);
-const refParam = params.get('ref');
-if (refParam) {
-  sessionStorage.setItem('referral_code', refParam);
-  console.log('[Referral] Stored referral code:', refParam);
-}
+### 1. Updated Login Page (Already Implemented)
+**File:** `src/app/login/page.tsx`
+- Captures `?ref=userId` parameter from URL
+- Stores referral code in sessionStorage for later use
+- Logs referral code capture for debugging
+
+### 2. Updated Auth Callback
+**File:** `src/app/auth/callback/route.ts`
+- Simplified callback logic
+- Passes `new_user=true` parameter for new registrations
+- Removed unnecessary `registered` parameter
+
+### 3. Created Referral Processing API
+**File:** `src/app/api/referrals/process/route.ts`
+- New API endpoint: `POST /api/referrals/process`
+- Handles both new user referral creation and referral completion
+- Parameters:
+  - `referrerId`: ID of the user who referred this user (optional)
+  - `isNewUser`: Boolean indicating if this is a new registration
+- Creates referral record in database for new users with referrer
+- Marks referral as completed after first successful login
+- Graceful error handling - doesn't block user flow if referral fails
+
+### 4. Updated Registration Success Notification
+**File:** `src/components/auth/RegistrationSuccessNotification.tsx`
+- Refactored to use new API endpoint
+- Processes referrals for both new and returning users
+- Retrieves referral code from sessionStorage
+- Calls `/api/referrals/process` API with appropriate parameters
+- Clears referral code from sessionStorage after processing
+- Shows success notification for new users
+- Cleans up URL parameters after processing
+
+## Flow Diagram
+
+```
+User clicks referral link (?ref=userId)
+    ↓
+Login page stores ref in sessionStorage
+    ↓
+User authenticates (Google/Email)
+    ↓
+Auth callback detects new user → redirects with new_user=true
+    ↓
+Learn page loads RegistrationSuccessNotification
+    ↓
+Component reads referral code from sessionStorage
+    ↓
+Calls /api/referrals/process with referrerId and isNewUser
+    ↓
+API creates referral record (if new user with referrer)
+    ↓
+API marks referral as completed (activates user)
+    ↓
+Clears sessionStorage and URL parameters
 ```
 
-### 2. Auth Callback (`src/app/auth/callback/route.ts`)
-- Added `new_user` parameter to redirect URL for new registrations
-- This flag helps distinguish between new users and returning users
-- Enables proper referral handling on the client side
+## Database Operations
 
-**Implementation:**
-```typescript
-if (isNewUser) {
-  redirectUrl.searchParams.set('registered', 'true');
-  redirectUrl.searchParams.set('new_user', 'true');
-}
+### Referral Creation (New Users)
+```sql
+INSERT INTO referrals (referrer_id, referred_id, status)
+VALUES (referrer_id, new_user_id, 'pending')
 ```
 
-### 3. Registration Success Notification (`src/components/auth/RegistrationSuccessNotification.tsx`)
-- Enhanced to handle referral registration flow
-- Creates referral record when new user registers with referral code
-- Completes referral immediately after first successful login
-- Handles both new users and returning users with pending referrals
+### Referral Completion (First Login)
+```sql
+UPDATE referrals
+SET status = 'completed', completed_at = NOW()
+WHERE referred_id = user_id AND status = 'pending'
+```
 
-**Implementation Flow:**
-1. **New User with Referral Code:**
-   - Retrieves referral code from `sessionStorage`
-   - Calls `createReferral(referrerId, userId)` to create pending referral
-   - Calls `completeReferral(userId)` to mark referral as completed
-   - Clears referral code from `sessionStorage`
+## Key Features
 
-2. **Returning User:**
-   - Checks for pending referrals
-   - Completes any pending referrals on login
+1. **Persistent Referral Tracking**: Uses sessionStorage to preserve referral code across authentication flow
+2. **Automatic Completion**: Referrals are automatically marked as completed on first successful login
+3. **Graceful Degradation**: Errors in referral processing don't block user authentication
+4. **Duplicate Prevention**: Database unique constraint prevents duplicate referral records
+5. **Trigger Integration**: Completion triggers the `handle_referral_completion()` function which grants Premium tier after 5 completed referrals
 
-## Database Structure
+## Testing Checklist
 
-The referral system uses the existing `referrals` table with:
-- `referrer_id`: User who shared the referral link
-- `referred_id`: User who registered via the link
-- `status`: 'pending' or 'completed'
-- `completed_at`: Timestamp when referral was completed
+- [ ] User clicks referral link with `?ref=userId`
+- [ ] Referral code is stored in sessionStorage
+- [ ] User registers via Google OAuth
+- [ ] Referral record is created in database with status 'pending'
+- [ ] Referral is marked as 'completed' after first login
+- [ ] Referrer receives Premium tier after 5 completed referrals
+- [ ] User registers via Email magic link
+- [ ] Duplicate referral attempts are handled gracefully
+- [ ] Referral processing doesn't block authentication flow on errors
 
-## Trigger Functionality
+## Requirements Satisfied
 
-The database trigger `handle_referral_completion()` automatically:
-- Counts completed referrals for the referrer
-- Grants 1 month of Premium tier for every 5 completed referrals
-- Extends existing subscription if already active
+✅ Обновить страницу регистрации для обработки параметра `?ref=userId`
+✅ Создать запись в таблице `referrals` при регистрации по реферальной ссылке
+✅ Обновлять статус реферала на `completed` после первого входа
+✅ Отслеживание регистраций по реферальным ссылкам
 
-## Testing Scenarios
+## Notes
 
-### Scenario 1: New User Registration with Referral
-1. User A shares referral link: `https://app.com/login?ref=user-a-id`
-2. User B clicks link and registers
-3. System stores `user-a-id` in sessionStorage
-4. After authentication, system creates referral record
-5. Referral is immediately marked as completed
-6. When User A reaches 5 completed referrals, they get 1 month Premium
-
-### Scenario 2: Returning User
-1. User logs in normally
-2. System checks for pending referrals
-3. If found, marks them as completed
-
-### Scenario 3: No Referral Code
-1. User registers without referral link
-2. No referral record is created
-3. Normal registration flow continues
-
-## Error Handling
-
-- Duplicate referral errors are silently ignored (user can't refer same person twice)
-- Referral failures don't block user registration
-- All errors are logged for debugging
-- User experience is not affected by referral system failures
-
-## Security Considerations
-
-- Referral code is stored in sessionStorage (cleared after use)
-- RLS policies ensure users can only view their own referrals
-- Trigger runs with SECURITY DEFINER to ensure proper permissions
-- No direct user manipulation of referral status
-
-## Next Steps
-
-To fully test the implementation:
-1. Apply migration 002_subscription_tiers.sql to database
-2. Test referral link generation in ReferralWidget
-3. Test registration flow with referral parameter
-4. Verify referral completion and tier upgrade
-5. Test edge cases (duplicate referrals, expired sessions, etc.)
-
-## Files Modified
-
-1. `src/app/login/page.tsx` - Capture referral parameter
-2. `src/app/auth/callback/route.ts` - Pass new_user flag
-3. `src/components/auth/RegistrationSuccessNotification.tsx` - Handle referral creation and completion
-
-## Dependencies
-
-- `src/lib/supabase/referrals.ts` - Existing referral utilities
-- `src/lib/supabase/auth.ts` - Authentication utilities
-- `supabase/migrations/002_subscription_tiers.sql` - Database schema and trigger
+- The referral system integrates with the existing database trigger `handle_referral_completion()` which automatically grants 1 month of Premium tier for every 5 completed referrals
+- SessionStorage is used instead of cookies to avoid GDPR complications
+- The system works for both Google OAuth and Email magic link authentication methods
+- Referral completion happens automatically on first login, no manual action required

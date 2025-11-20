@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocaleStore } from '@/store/locale-store';
 import { showAuthNotification } from '@/lib/auth/notifications';
 import { getCurrentUser } from '@/lib/supabase/auth';
-import { createReferral, completeReferral } from '@/lib/supabase/referrals';
 
 export function RegistrationSuccessNotification() {
   const searchParams = useSearchParams();
@@ -13,63 +12,66 @@ export function RegistrationSuccessNotification() {
   const { locale } = useLocaleStore();
   
   useEffect(() => {
-    const registered = searchParams.get('registered');
     const isNewUser = searchParams.get('new_user');
     
     const handleRegistration = async () => {
-      if (registered === 'true') {
-        // Show success message using the reusable utility
-        showAuthNotification({
-          type: 'registration',
-          locale: locale as 'ru' | 'en'
-        });
+      const user = await getCurrentUser();
+      
+      if (user) {
+        // Process referral for both new and returning users
+        const referralCode = sessionStorage.getItem('referral_code');
         
-        // Handle referral logic
-        const user = await getCurrentUser();
-        if (user) {
-          // Check if this is a new user registration
-          if (isNewUser === 'true') {
-            // Get referral code from sessionStorage
-            const referralCode = sessionStorage.getItem('referral_code');
+        try {
+          console.log('[Referral] Processing referral:', {
+            userId: user.id,
+            isNewUser: isNewUser === 'true',
+            hasReferralCode: !!referralCode
+          });
+          
+          // Call the API to process referral
+          const response = await fetch('/api/referrals/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              referrerId: referralCode || null,
+              isNewUser: isNewUser === 'true'
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('[Referral] Referral processed successfully');
             
+            // Clear the referral code from sessionStorage
             if (referralCode) {
-              try {
-                console.log('[Referral] Creating referral record for new user:', user.id, 'referred by:', referralCode);
-                await createReferral(referralCode, user.id);
-                
-                // Complete the referral immediately after first successful login
-                console.log('[Referral] Completing referral for user:', user.id);
-                await completeReferral(user.id);
-                
-                // Clear the referral code from sessionStorage
-                sessionStorage.removeItem('referral_code');
-                
-                console.log('[Referral] Referral process completed successfully');
-              } catch (error) {
-                console.error('[Referral] Error processing referral:', error);
-                // Don't block the user flow if referral fails
-              }
+              sessionStorage.removeItem('referral_code');
+            }
+            
+            // Show success notification for new users
+            if (isNewUser === 'true') {
+              showAuthNotification({
+                type: 'registration',
+                locale: locale as 'ru' | 'en'
+              });
             }
           } else {
-            // For returning users, check if they have a pending referral to complete
-            try {
-              console.log('[Referral] Checking for pending referral for user:', user.id);
-              await completeReferral(user.id);
-              console.log('[Referral] Completed pending referral for user:', user.id);
-            } catch (error) {
-              // Silently fail - user might not have a pending referral
-              console.log('[Referral] No pending referral to complete or error:', error);
-            }
+            console.error('[Referral] Failed to process referral:', await response.text());
           }
+        } catch (error) {
+          console.error('[Referral] Error processing referral:', error);
+          // Don't block the user flow if referral fails
         }
         
         // Clean up URL by removing the query parameters
-        if (typeof window !== 'undefined') {
-          const { pathname } = window.location;
-          window.history.replaceState({}, '', pathname);
-          router.replace(pathname, { scroll: false });
-        } else {
-          router.replace('/learn', { scroll: false });
+        if (isNewUser === 'true') {
+          if (typeof window !== 'undefined') {
+            const { pathname } = window.location;
+            window.history.replaceState({}, '', pathname);
+            router.replace(pathname, { scroll: false });
+          } else {
+            router.replace('/learn', { scroll: false });
+          }
         }
       }
     };

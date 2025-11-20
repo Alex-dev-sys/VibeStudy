@@ -39,10 +39,6 @@ export async function GET(request: NextRequest) {
       // Redirect to /learn with registration flag if new user
       const redirectUrl = new URL('/learn', origin);
       if (isNewUser) {
-        redirectUrl.searchParams.set('registered', 'true');
-        
-        // Pass referral code to the client if present in session
-        // The client will handle creating the referral record
         redirectUrl.searchParams.set('new_user', 'true');
       }
       

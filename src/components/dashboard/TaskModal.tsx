@@ -6,6 +6,7 @@ import Editor from '@monaco-editor/react';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
@@ -347,6 +348,21 @@ export function TaskModal({
               }`}
             >
               <pre className="whitespace-pre-wrap text-xs sm:text-sm">{output}</pre>
+              {checkResult && (
+                <div className="mt-3 pt-3 border-t border-white/10">
+                  <FeedbackButtons
+                    contentType="explanation"
+                    contentKey={`${languageId}-day-${day}-task-${task.id}-explanation`}
+                    metadata={{ 
+                      language: languageId, 
+                      day, 
+                      taskId: task.id,
+                      success: checkResult.success,
+                      difficulty: task.difficulty
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -379,10 +395,24 @@ export function TaskModal({
               <h4 className="mb-2 text-sm font-semibold text-purple-200">
                 💡 {t.taskModal.hintsUsed}: {hints.length}
               </h4>
-              <div className="space-y-2 text-xs text-purple-200/80 sm:text-sm">
+              <div className="space-y-3 text-xs text-purple-200/80 sm:text-sm">
                 {hints.map((hint, i) => (
-                  <div key={i} className="border-l-2 border-purple-500/40 pl-3">
-                    <span className="font-semibold">{t.taskModal.hintNumber} {i + 1}:</span> {hint}
+                  <div key={i} className="space-y-2">
+                    <div className="border-l-2 border-purple-500/40 pl-3">
+                      <span className="font-semibold">{t.taskModal.hintNumber} {i + 1}:</span> {hint}
+                    </div>
+                    <FeedbackButtons
+                      contentType="hint"
+                      contentKey={`${languageId}-day-${day}-task-${task.id}-hint-${i}`}
+                      metadata={{ 
+                        language: languageId, 
+                        day, 
+                        taskId: task.id,
+                        hintNumber: i + 1,
+                        difficulty: task.difficulty
+                      }}
+                      className="ml-3"
+                    />
                   </div>
                 ))}
               </div>

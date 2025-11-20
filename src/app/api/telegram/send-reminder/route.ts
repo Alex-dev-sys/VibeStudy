@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { sendTelegramMessage, generateMotivationalMessage, generatePersonalizedAdvice } from '@/telegram/bot';
 import { getUsersForReminder } from '@/lib/telegram-db';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * API для отправки напоминаний пользователям
  * Вызывается по расписанию (cron job)

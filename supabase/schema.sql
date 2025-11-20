@@ -71,6 +71,21 @@ CREATE TABLE IF NOT EXISTS generated_content_cache (
   expires_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Таблица для кэширования AI контента (новая система)
+CREATE TABLE IF NOT EXISTS ai_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cache_key TEXT NOT NULL UNIQUE,
+  content JSONB NOT NULL,
+  model TEXT NOT NULL,
+  language TEXT,
+  day_number INTEGER,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  hit_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE
+);
+
 -- Таблица платежей
 CREATE TABLE IF NOT EXISTS payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -122,6 +137,13 @@ CREATE INDEX IF NOT EXISTS idx_payments_pending ON payments(status, created_at) 
 CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
 CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_id);
 CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals(referrer_id, status);
+
+-- Индексы для AI кэша
+CREATE INDEX IF NOT EXISTS idx_ai_cache_key ON ai_cache(cache_key);
+CREATE INDEX IF NOT EXISTS idx_ai_cache_language_day ON ai_cache(language, day_number) WHERE language IS NOT NULL AND day_number IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ai_cache_model ON ai_cache(model);
+CREATE INDEX IF NOT EXISTS idx_ai_cache_expires ON ai_cache(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ai_cache_created ON ai_cache(created_at);
 
 -- Функция для автоматического обновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -186,6 +208,15 @@ CREATE POLICY "Users can update own mastery" ON topic_mastery
 -- Публичный доступ к кэшу контента (только чтение)
 CREATE POLICY "Anyone can view content cache" ON generated_content_cache
   FOR SELECT USING (true);
+
+-- Политики для AI кэша
+ALTER TABLE ai_cache ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read cache" ON ai_cache
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Service role can write cache" ON ai_cache
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- Политики для платежей
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;

@@ -6,6 +6,10 @@ import {
   type TierType,
 } from '@/lib/ton-client';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * Cron Job: Verify Pending TON Payments
  * 
