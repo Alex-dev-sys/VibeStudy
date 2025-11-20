@@ -66,10 +66,11 @@ const buildRussianPrompt = ({ day, languageId, dayTopic, dayDescription, previou
 
 ⚠️ УЧИТЫВАЙ ПРОГРЕСС ОБУЧЕНИЯ:
 ${day === 1 ? '- Это ПЕРВЫЙ день! Ученик НИЧЕГО не знает о программировании\n- НЕ используй термины, которые ещё не изучались\n- Только самые базовые концепции темы "${dayTopic}"' : ''}
-${day <= 10 ? '- Дни 1-10: только БАЗОВЫЙ синтаксис, НЕТ сложных конструкций\n- Ученик только начинает, не знает циклов, функций, классов' : ''}
+${day <= 10 ? '- Дни 1-10: только БАЗОВЫЙ синтаксис, НЕТ сложных конструкций\n- Ученик только начинает, не знает циклов, функций, классов, списков\n- ЗАПРЕЩЕНО: циклы (for, while), функции (def), списки ([]), словари ({}), условия (if)' : ''}
 ${day <= 30 ? '- Дни 11-30: можно использовать базовые конструкции из предыдущих дней' : ''}
 - Задачи СТРОГО по теме "${dayTopic}", без забегания вперёд
-- Если тема "Переменные" — НЕ используй функции, циклы, списки
+- Если тема "Переменные" — ТОЛЬКО переменные, типы данных, print(), input(), базовые операции (+, -, *, /)
+- Если тема "Переменные" — ЗАПРЕЩЕНО: функции, циклы, списки, словари, условия if
 - Если тема "Циклы" — можно использовать переменные, но НЕ функции, классы
 
 ЗАДАНИЕ:
@@ -171,7 +172,7 @@ ${day > 1 ? `КОНТРОЛЬНОЕ ЗАДАНИЕ ПО ПРЕДЫДУЩЕМУ �
 5. CHALLENGE: "Создай пустой словарь, запроси у пользователя 2 предмета и их оценки, добавь их как ключ-значение, а потом выведи весь словарь."
 
 ${day === 1 ? 'ОБРАЗЕЦ ДЛЯ ДНЯ 1 (тема "Первая программа"):\n1. EASY: "Выведи на экран фразу: Привет, мир!"\n2. EASY: "Выведи своё имя на экран"\n3. MEDIUM: "Выведи две строки: своё имя и свой возраст"\n4. HARD: "Выведи фразу: Меня зовут [твоё имя] и мне [твой возраст] лет"\n5. CHALLENGE: "Выведи 3 строки: приветствие, своё имя и город"\n' : ''}
-${day === 2 ? 'ОБРАЗЕЦ ДЛЯ ДНЯ 2 (тема "Переменные"):\n1. EASY: "Создай переменную с числом 10 и выведи её"\n2. EASY: "Создай две переменные с числами и выведи их"\n3. MEDIUM: "Создай переменную с твоим именем и выведи приветствие"\n4. HARD: "Создай две числовые переменные, сложи их и выведи результат"\n5. CHALLENGE: "Создай переменные с именем и возрастом, выведи фразу: Меня зовут [имя], мне [возраст] лет"\n' : ''}
+${day === 2 ? 'ОБРАЗЕЦ ДЛЯ ДНЯ 2 (тема "Переменные и типы данных"):\n1. EASY: "Создай переменную x с числом 10 и выведи её значение"\n2. EASY: "Создай две переменные: name со строкой и age с числом. Выведи их"\n3. MEDIUM: "Запроси у пользователя имя через input(), сохрани в переменную и выведи приветствие"\n4. HARD: "Создай две числовые переменные a=5 и b=3. Вычисли их сумму, сохрани в переменную result и выведи"\n5. CHALLENGE: "Запроси у пользователя имя и возраст через input(), сохрани в переменные и выведи фразу: Меня зовут [имя], мне [возраст] лет"\n\n⚠️ ЗАПРЕЩЕНО для дня 2: функции (def), циклы (for/while), условия (if), списки ([]), словари ({}), операторы сравнения (==, >, <)\n✅ РАЗРЕШЕНО для дня 2: переменные, типы (int, float, str, bool), print(), input(), арифметика (+, -, *, /), конкатенация строк\n' : ''}
 
 СОЗДАЙ АНАЛОГИЧНЫЕ ЗАДАЧИ ДЛЯ ТЕМЫ "${dayTopic}" С УЧЁТОМ ДНЯ ${day}:
 
@@ -220,10 +221,12 @@ ${day === 2 ? 'ОБРАЗЕЦ ДЛЯ ДНЯ 2 (тема "Переменные"):
 - EASY #1: создать + вывести (1 действие)
 - EASY #2: создать + изменить (2 действия)
 - MEDIUM: ввод + обработка + вывод (3 действия)
-- HARD: работа с данными + вычисления/цикл (3-4 действия)
+- HARD: работа с данными + вычисления (3-4 действия, БЕЗ циклов для дней 1-8)
 - CHALLENGE: создание + ввод + обработка + вывод (4-5 действий)
 - НЕТ сложных алгоритмов, оптимизаций, мини-проектов
 - Задачи как в примере: простые, понятные, практичные
+${day <= 8 ? '\n⚠️ ДНИ 1-8: ЗАПРЕЩЕНО использовать циклы (for, while), функции (def), условия (if), списки ([]), словари ({})\n⚠️ РАЗРЕШЕНО: переменные, print(), input(), арифметика, строки, базовые операции' : ''}
+${day === 2 ? '\n⚠️ ДЕНЬ 2 "Переменные": Задачи ТОЛЬКО про создание переменных, присваивание значений, вывод, ввод, простые вычисления\n⚠️ НЕ используй: проверки типов (isinstance, type), операторы сравнения, условия, циклы, функции' : ''}
 - Верни ТОЛЬКО валидный JSON без комментариев`;
 
 const buildEnglishPrompt = ({ day, languageId, dayTopic, dayDescription, previousDaySummary }: PromptParams) => `You are an experienced programming instructor. Create educational material for day ${day} of a 90-day course.
@@ -239,10 +242,11 @@ STUDENT LEVEL: ${day <= 10 ? 'ABSOLUTE BEGINNER (knows nothing)' : day <= 30 ? '
 
 ⚠️ CONSIDER LEARNING PROGRESS:
 ${day === 1 ? '- This is the FIRST day! Student knows NOTHING about programming\n- DO NOT use terms that haven\'t been studied yet\n- Only the most basic concepts of "${dayTopic}"' : ''}
-${day <= 10 ? '- Days 1-10: only BASIC syntax, NO complex constructs\n- Student is just starting, doesn\'t know loops, functions, classes' : ''}
+${day <= 10 ? '- Days 1-10: only BASIC syntax, NO complex constructs\n- Student is just starting, doesn\'t know loops, functions, classes, lists\n- FORBIDDEN: loops (for, while), functions (def), lists ([]), dictionaries ({}), conditions (if)' : ''}
 ${day <= 30 ? '- Days 11-30: can use basic constructs from previous days' : ''}
 - Tasks STRICTLY on topic "${dayTopic}", no jumping ahead
-- If topic is "Variables" — DO NOT use functions, loops, lists
+- If topic is "Variables" — ONLY variables, data types, print(), input(), basic operations (+, -, *, /)
+- If topic is "Variables" — FORBIDDEN: functions, loops, lists, dictionaries, if conditions
 - If topic is "Loops" — can use variables, but NOT functions, classes
 
 TASK:
@@ -344,7 +348,7 @@ SAMPLE CORRECT GRADATION (for topic "Dictionaries" on ~day 14):
 5. CHALLENGE: "Create empty dictionary, ask user for 2 items and their scores, add them as key-value, then print entire dictionary."
 
 ${day === 1 ? 'SAMPLE FOR DAY 1 (topic "First Program"):\n1. EASY: "Print the phrase: Hello, world!"\n2. EASY: "Print your name to the screen"\n3. MEDIUM: "Print two lines: your name and your age"\n4. HARD: "Print the phrase: My name is [your name] and I am [your age] years old"\n5. CHALLENGE: "Print 3 lines: greeting, your name, and city"\n' : ''}
-${day === 2 ? 'SAMPLE FOR DAY 2 (topic "Variables"):\n1. EASY: "Create a variable with number 10 and print it"\n2. EASY: "Create two variables with numbers and print them"\n3. MEDIUM: "Create a variable with your name and print a greeting"\n4. HARD: "Create two numeric variables, add them and print result"\n5. CHALLENGE: "Create variables with name and age, print phrase: My name is [name], I am [age] years old"\n' : ''}
+${day === 2 ? 'SAMPLE FOR DAY 2 (topic "Variables and Data Types"):\n1. EASY: "Create variable x with number 10 and print its value"\n2. EASY: "Create two variables: name with string and age with number. Print them"\n3. MEDIUM: "Ask user for name using input(), save to variable and print greeting"\n4. HARD: "Create two numeric variables a=5 and b=3. Calculate their sum, save to variable result and print"\n5. CHALLENGE: "Ask user for name and age using input(), save to variables and print phrase: My name is [name], I am [age] years old"\n\n⚠️ FORBIDDEN for day 2: functions (def), loops (for/while), conditions (if), lists ([]), dictionaries ({}), comparison operators (==, >, <)\n✅ ALLOWED for day 2: variables, types (int, float, str, bool), print(), input(), arithmetic (+, -, *, /), string concatenation\n' : ''}
 
 CREATE SIMILAR TASKS FOR TOPIC "${dayTopic}" CONSIDERING DAY ${day}:
 
@@ -393,10 +397,12 @@ RESPONSE FORMAT (JSON only, no markdown):
 - EASY #1: create + print (1 action)
 - EASY #2: create + modify (2 actions)
 - MEDIUM: input + processing + output (3 actions)
-- HARD: work with data + calculations/loop (3-4 actions)
+- HARD: work with data + calculations (3-4 actions, NO loops for days 1-8)
 - CHALLENGE: create + input + processing + output (4-5 actions)
 - NO complex algorithms, optimizations, mini-projects
 - Tasks like in example: simple, clear, practical
+${day <= 8 ? '\n⚠️ DAYS 1-8: FORBIDDEN to use loops (for, while), functions (def), conditions (if), lists ([]), dictionaries ({})\n⚠️ ALLOWED: variables, print(), input(), arithmetic, strings, basic operations' : ''}
+${day === 2 ? '\n⚠️ DAY 2 "Variables": Tasks ONLY about creating variables, assigning values, output, input, simple calculations\n⚠️ DO NOT use: type checks (isinstance, type), comparison operators, conditions, loops, functions' : ''}
 - Return ONLY valid JSON without comments
 - ALL TEXT IN ENGLISH (theory, tasks, hints)`;
 
