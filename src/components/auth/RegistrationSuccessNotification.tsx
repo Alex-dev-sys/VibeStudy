@@ -75,7 +75,7 @@ export function RegistrationSuccessNotification() {
     };
     
     handleRegistration();
-  }, [searchParams, router, locale, isNewUser]);
+  }, [searchParams, router, locale]);
   
   return null;
 }
