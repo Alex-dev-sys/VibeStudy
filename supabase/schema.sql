@@ -3,6 +3,10 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE,
+  tier TEXT DEFAULT 'free' CHECK (tier IN ('free', 'premium', 'pro_plus')),
+  ai_requests_today INTEGER DEFAULT 0,
+  ai_requests_reset_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_DATE,
+  tier_expires_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -67,12 +71,57 @@ CREATE TABLE IF NOT EXISTS generated_content_cache (
   expires_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Таблица платежей
+CREATE TABLE IF NOT EXISTS payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  payment_method TEXT NOT NULL CHECK (payment_method IN ('ton', 'telegram_stars')),
+  amount_ton DECIMAL(10, 4),
+  amount_usd DECIMAL(10, 2),
+  tier TEXT NOT NULL CHECK (tier IN ('premium', 'pro_plus')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'expired')),
+  payment_comment TEXT,
+  transaction_hash TEXT,
+  ton_sender_address TEXT,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() + INTERVAL '24 hours'
+);
+
+-- Таблица рефералов
+CREATE TABLE IF NOT EXISTS referrals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  referred_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed')),
+  completed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(referrer_id, referred_id)
+);
+
 -- Индексы для оптимизации запросов
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_task_attempts_user_id ON task_attempts(user_id);
 CREATE INDEX IF NOT EXISTS idx_task_attempts_task_id ON task_attempts(task_id);
 CREATE INDEX IF NOT EXISTS idx_topic_mastery_user_id ON topic_mastery(user_id);
 CREATE INDEX IF NOT EXISTS idx_generated_content_cache_lookup ON generated_content_cache(content_type, topic, difficulty, language);
+
+-- Индексы для тарифов
+CREATE INDEX IF NOT EXISTS idx_users_tier ON users(tier);
+CREATE INDEX IF NOT EXISTS idx_users_tier_expires ON users(tier_expires_at) WHERE tier_expires_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_tier_ai_requests ON users(id, tier, ai_requests_today, ai_requests_reset_at);
+
+-- Индексы для платежей
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
+CREATE INDEX IF NOT EXISTS idx_payments_comment ON payments(payment_comment) WHERE payment_comment IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_payments_pending ON payments(status, created_at) WHERE status = 'pending';
+
+-- Индексы для рефералов
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals(referrer_id, status);
 
 -- Функция для автоматического обновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -137,4 +186,28 @@ CREATE POLICY "Users can update own mastery" ON topic_mastery
 -- Публичный доступ к кэшу контента (только чтение)
 CREATE POLICY "Anyone can view content cache" ON generated_content_cache
   FOR SELECT USING (true);
+
+-- Политики для платежей
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own payments" ON payments
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own payments" ON payments
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Политики для рефералов
+ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own referrals as referrer" ON referrals
+  FOR SELECT USING (auth.uid() = referrer_id);
+
+CREATE POLICY "Users can view own referrals as referred" ON referrals
+  FOR SELECT USING (auth.uid() = referred_id);
+
+CREATE POLICY "Users can insert referrals" ON referrals
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "System can update referrals" ON referrals
+  FOR UPDATE USING (true);
 

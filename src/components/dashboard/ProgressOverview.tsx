@@ -42,6 +42,11 @@ export function ProgressOverview() {
         </div>
         <div className="flex flex-wrap gap-2">
           <LocaleSwitcher />
+          <Link href="/pricing">
+            <Button variant="primary" size="sm" className="text-xs sm:text-sm">
+              ⭐ Premium
+            </Button>
+          </Link>
           <Link href="/profile">
             <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
               👤 {t.dashboard.profile}

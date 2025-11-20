@@ -48,6 +48,14 @@ export default function LoginPage() {
       console.error('Auth check failed:', error);
     });
     checkUrlErrors();
+
+    // Store referral code in sessionStorage if present
+    const params = new URLSearchParams(window.location.search);
+    const refParam = params.get('ref');
+    if (refParam) {
+      sessionStorage.setItem('referral_code', refParam);
+      console.log('[Referral] Stored referral code:', refParam);
+    }
   }, [router, checkUrlErrors]);
 
   async function handleEmailSignIn(e: React.FormEvent) {

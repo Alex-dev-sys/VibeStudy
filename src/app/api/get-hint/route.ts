@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import { hintRequestSchema, type HintRequestInput } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { logWarn, logError } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
+import { withTierCheck } from '@/middleware/with-tier-check';
 
 type GetHintRequest = HintRequestInput;
 
@@ -130,7 +131,7 @@ const parseAiResponse = (content: string): GetHintResponse => {
   }
 };
 
-export async function POST(request: Request) {
+export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
     bucketId: 'get-hint'
   });
@@ -210,4 +211,4 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
-}
+});

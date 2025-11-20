@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import { codeReviewSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { errorHandler } from '@/lib/error-handler';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { logWarn, logError } from '@/lib/logger';
+import { withTierCheck } from '@/middleware/with-tier-check';
 
 interface CheckCodeRequest {
   code: string;
@@ -86,7 +87,7 @@ const fallbackResponse: CheckCodeResponse = {
   detectedIssues: []
 };
 
-export async function POST(request: Request) {
+export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_CHECK, {
     bucketId: 'check-code'
   });
@@ -195,5 +196,5 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(fallbackResponse, { status: 200 });
   }
-}
+});
 

@@ -24,7 +24,9 @@
         "list_projects",
         "get_project",
         "get_project_url",
-        "execute_sql"
+        "execute_sql",
+        "list_tables",
+        "list_migrations"
       ]
     },
     "playwright": {

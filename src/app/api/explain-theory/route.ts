@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import { theoryExplanationSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
@@ -7,6 +7,7 @@ import { errorHandler } from '@/lib/error-handler';
 import { logWarn, logError } from '@/lib/logger';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
 import { createHash } from 'crypto';
+import { withTierCheck } from '@/middleware/with-tier-check';
 
 interface ExplainTheoryRequest {
   question: string;
@@ -275,7 +276,7 @@ function createFallbackResponse(request: ExplainTheoryRequest, reason?: string):
   };
 }
 
-export async function POST(request: Request) {
+export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
     bucketId: 'explain-theory'
   });
@@ -391,4 +392,4 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(createFallbackResponse(body, 'unexpected_error'), { status: 200 });
   }
-}
+});

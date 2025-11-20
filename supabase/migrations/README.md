@@ -24,6 +24,34 @@ Creates the core database schema for Telegram bot functionality:
 - `cleanup_old_messages()` - Removes messages older than 90 days
 - `reset_daily_ai_limits()` - Resets AI question limits for new day
 
+### 002_subscription_tiers.sql
+
+Adds subscription tier system with monetization features:
+
+**Schema Changes:**
+- Adds `tier`, `ai_requests_today`, `ai_requests_reset_at`, `tier_expires_at` columns to `users` table
+
+**New Tables:**
+- `payments` - Stores TON and Telegram Stars payment transactions
+- `referrals` - Tracks referral program (5 referrals = 1 month Premium)
+
+**Indexes:**
+- Optimized indexes for tier lookups, AI rate limiting, and payment queries
+
+**Functions:**
+- `reset_daily_ai_requests()` - Resets AI request counters daily
+- `downgrade_expired_tiers()` - Downgrades expired subscriptions to free tier
+- `expire_pending_payments()` - Marks pending payments as expired after 24 hours
+- `handle_referral_completion()` - Automatically grants Premium for completed referrals
+
+**Triggers:**
+- `trigger_referral_completion` - Executes when referral status changes to completed
+
+**Tier System:**
+- **Free**: 5 AI requests/day, Gemini 2.5 model
+- **Premium**: 30 requests/min, GPT-4o model, 5 TON/month (~$12)
+- **Pro+**: 100 requests/min, Claude 3.5 Sonnet model, 12 TON/month (~$29)
+
 ## Running Migrations
 
 ### Option 1: Supabase Dashboard
@@ -86,19 +114,33 @@ WHERE schemaname = 'public';
 
 Set up these cron jobs for database maintenance:
 
-### Hourly: Refresh Analytics Summary
+### Hourly Tasks
+
+**Refresh Analytics Summary:**
 ```sql
 SELECT refresh_analytics_summary();
 ```
 
-### Daily: Cleanup Old Messages
+**Expire Pending Payments:**
+```sql
+SELECT expire_pending_payments();
+```
+
+### Daily Tasks
+
+**Cleanup Old Messages:**
 ```sql
 SELECT cleanup_old_messages();
 ```
 
-### Daily: Reset AI Limits
+**Reset AI Request Limits:**
 ```sql
-SELECT reset_daily_ai_limits();
+SELECT reset_daily_ai_requests();
+```
+
+**Downgrade Expired Tiers:**
+```sql
+SELECT downgrade_expired_tiers();
 ```
 
 ## Rollback

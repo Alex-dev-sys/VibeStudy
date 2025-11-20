@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { saveGeneratedContent } from '@/lib/db';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
@@ -8,6 +8,7 @@ import { logWarn, logError } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
+import { withTierCheck } from '@/middleware/with-tier-check';
 
 interface RequestBody {
   day: number;
@@ -489,7 +490,7 @@ const parseAiResponse = (content: string): GeneratedContent => {
   }
 };
 
-export async function POST(request: Request) {
+export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   const rateLimitState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
     bucketId: 'generate-tasks'
   });
@@ -672,7 +673,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ ...fallbackResponse, isFallback: true }, { status: 200 });
   }
-}
+});
 
 export async function GET() {
   return NextResponse.json(

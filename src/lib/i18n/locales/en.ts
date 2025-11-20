@@ -331,6 +331,140 @@ export const en: Translations = {
     success: 'Success',
     error: 'Error',
     score: 'Score'
+  },
+  referral: {
+    title: 'Referral Program',
+    description: 'Invite friends and get 1 month Premium for every 5 completed registrations',
+    progress: 'Progress to next reward',
+    completed: 'Completed',
+    pending: 'Pending',
+    total: 'Total',
+    yourLink: 'Your referral link',
+    copy: 'Copy',
+    copied: 'Copied',
+    rewardsEarned: 'rewards earned',
+    startInviting: 'Invite 5 friends to get 1 month Premium',
+    friendsLeft: '{count} friends left to invite',
+    howItWorks: 'How it works:',
+    step1: 'Share the link with friends',
+    step2: 'Friend registers using your link',
+    step3: 'After friend\'s first login, referral is counted',
+    step4: 'For every 5 referrals you get 1 month Premium',
+    authRequired: 'Authentication required to view referral program'
+  },
+  pricing: {
+    title: 'Choose Your Plan',
+    subtitle: 'Unlock the full potential of learning with premium access',
+    backToLearning: 'Back to Learning',
+    currentPlan: 'Your current plan',
+    validUntil: 'Valid until',
+    selectPlan: 'Select Plan',
+    currentPlanBadge: 'Current Plan',
+    activePlan: 'Active Plan',
+    popularBadge: 'Popular',
+    tiers: {
+      free: {
+        name: 'Free',
+        duration: 'Forever',
+        features: [
+          '5 AI requests per day',
+          'Basic AI model (Gemini 2.5)',
+          'Access to all lessons',
+          'Interactive code editor',
+          'Progress tracking',
+          'Achievement system'
+        ]
+      },
+      premium: {
+        name: 'Premium',
+        duration: '30 days',
+        features: [
+          'Unlimited AI requests',
+          'Advanced AI model (GPT-4o)',
+          'Priority content generation',
+          'All Free features',
+          'Extended analytics',
+          'Personal recommendations'
+        ]
+      },
+      proPlus: {
+        name: 'Pro+',
+        duration: '30 days',
+        features: [
+          'Unlimited AI requests',
+          'Best AI model (Claude 3.5 Sonnet)',
+          'Instant content generation',
+          'All Premium features',
+          'Detailed learning analytics',
+          'Individual development plan',
+          'Priority support'
+        ]
+      }
+    },
+    benefits: {
+      title: 'What You Get with Premium',
+      unlimitedAi: {
+        title: 'Unlimited AI',
+        description: 'Unlimited AI requests for explanations, hints and task generation'
+      },
+      bestModels: {
+        title: 'Best AI Models',
+        description: 'Access to GPT-4o and Claude 3.5 Sonnet for maximum learning quality'
+      },
+      personalization: {
+        title: 'Personalization',
+        description: 'Individual recommendations and adaptive learning plan'
+      }
+    },
+    faq: {
+      title: 'Frequently Asked Questions',
+      whatIsTon: {
+        question: 'What is TON?',
+        answer: 'TON (The Open Network) is a fast and secure blockchain with low fees. You will need a TON Wallet (Tonkeeper, Tonhub, etc.) for payment.'
+      },
+      howToPay: {
+        question: 'How does payment work?',
+        answer: 'After selecting a plan, you will receive a wallet address and unique comment. Send the specified amount of TON with this comment, and your tier will be automatically updated.'
+      },
+      canCancel: {
+        question: 'Can I cancel my subscription?',
+        answer: 'The subscription is valid for 30 days from the payment date and does not renew automatically. After expiration, you will return to the free plan.'
+      },
+      paymentNotConfirmed: {
+        question: 'What if payment is not confirmed?',
+        answer: 'Transaction verification may take a few minutes. If payment is not confirmed, make sure you specified the correct comment and sent the right amount.'
+      }
+    },
+    payment: {
+      title: 'Payment',
+      sendAmount: 'Send {amount} TON to the specified address',
+      amount: 'Amount',
+      walletAddress: 'Wallet Address',
+      comment: 'Comment (required!)',
+      commentWarning: '⚠️ Be sure to specify the comment when transferring',
+      validFor: 'Valid for',
+      expired: 'Expired',
+      scanQr: 'Scan QR code in TON Wallet',
+      instructions: {
+        title: 'Payment Instructions:',
+        step1: '1. Open TON Wallet (Tonkeeper, Tonhub, etc.)',
+        step2: '2. Scan QR code or copy address and comment',
+        step3: '3. Send {amount} TON with the specified comment',
+        step4: '4. Click "Verify Payment" after sending'
+      },
+      verifyPayment: 'Verify Payment',
+      verifying: 'Verifying...',
+      close: 'Close',
+      needWallet: 'Need a TON Wallet?',
+      paymentSuccess: '🎉 Payment successfully confirmed! Your tier has been updated.',
+      paymentPending: 'Transaction not found yet. Please wait a few minutes and try again.'
+    },
+    errors: {
+      createPaymentFailed: 'Failed to create payment',
+      verifyPaymentFailed: 'Failed to verify payment',
+      authRequired: 'Authentication required',
+      tonNotConfigured: 'TON payment system is not configured'
+    }
   }
 };
 
