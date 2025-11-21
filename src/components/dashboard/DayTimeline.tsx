@@ -76,16 +76,13 @@ export function DayTimeline() {
   return (
     <section className="relative glass-panel-soft rounded-2xl p-4 sm:rounded-3xl sm:p-6">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-white/95 sm:text-lg">Твой путь</h2>
           <p className="mt-1 text-xs text-white/60 sm:text-sm">
             {completedDays.length} из 90 дней завершено
           </p>
         </div>
-        <p className="text-xs text-white/55 sm:text-right sm:text-sm">
-          Совет: используй клавиши ← → для быстрого переключения
-        </p>
       </div>
 
       {/* Legend */}
@@ -108,11 +105,10 @@ export function DayTimeline() {
         </span>
       </div>
 
-      {/* Horizontal scrollable timeline */}
+      {/* Timeline Grid - All days visible */}
       <div 
         ref={scrollContainerRef}
-        className="mt-6 flex gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent scroll-smooth"
-        style={{ scrollBehavior: 'smooth' }}
+        className="mt-6 grid grid-cols-10 gap-2 sm:gap-3"
       >
         {daysWithProgress.map((dayData) => (
           <motion.button
@@ -123,9 +119,9 @@ export function DayTimeline() {
             whileHover={!dayData.isLocked ? { scale: 1.05 } : {}}
             whileTap={!dayData.isLocked ? { scale: 0.95 } : {}}
             className={clsx(
-              'group relative flex-shrink-0 w-24 h-28 rounded-xl p-3 flex flex-col items-center justify-between transition-all duration-200',
+              'group relative w-full aspect-square rounded-lg p-2 flex flex-col items-center justify-center transition-all duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-              dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50 scale-105',
+              dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50',
               dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/20 border border-green-500/50 hover:bg-green-500/30',
               !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'bg-white/5 border border-white/10 hover:bg-white/10',
               dayData.isLocked && 'bg-white/5 border border-white/5 opacity-50 cursor-not-allowed'
@@ -140,7 +136,7 @@ export function DayTimeline() {
           >
             {/* Day number */}
             <div className={clsx(
-              'text-lg font-bold transition-colors',
+              'text-sm sm:text-base font-bold transition-colors',
               dayData.isCurrent && 'text-primary',
               dayData.isCompleted && !dayData.isCurrent && 'text-green-400',
               dayData.isLocked && 'text-white/30',
@@ -150,45 +146,20 @@ export function DayTimeline() {
             </div>
             
             {/* Status icon */}
-            <div className="text-2xl">
+            <div className="text-lg sm:text-xl">
               {dayData.isCompleted ? '✓' : dayData.isLocked ? '🔒' : dayData.isCurrent ? '▶️' : '○'}
             </div>
             
-            {/* Progress indicator for non-completed days with some progress */}
-            {!dayData.isCompleted && dayData.completedTasksCount > 0 && (
-              <div className="absolute bottom-2 left-2 right-2">
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${dayData.progress}%` }}
-                    className="h-full bg-gradient-to-r from-primary to-accent"
-                  />
-                </div>
-                <div className="text-[9px] text-white/50 text-center mt-0.5">
-                  {dayData.completedTasksCount}/{dayData.totalTasks}
-                </div>
-              </div>
-            )}
-            
-            {/* Topic hint - shown on hover */}
-            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48">
-              <div className="bg-[#1a0b2e] border border-white/20 rounded-lg p-2 text-[10px] text-white/90 text-center shadow-xl">
-                {dayData.topic}
-              </div>
+            {/* Topic name below */}
+            <div className="text-[8px] sm:text-[9px] text-white/50 text-center mt-1 line-clamp-2 leading-tight">
+              {dayData.topic}
             </div>
+            
+
           </motion.button>
         ))}
       </div>
-      
-      {/* Week markers */}
-      <div className="mt-8 flex items-center justify-between text-xs text-white/40 px-2">
-        {WEEK_MARKERS.map((marker, index) => (
-          <div key={marker.week} className="flex items-center gap-2">
-            {index > 0 && <div className="flex-1 border-t border-white/10 w-16 sm:w-24" />}
-            <span className="whitespace-nowrap">Неделя {marker.week}</span>
-          </div>
-        ))}
-      </div>
+
     </section>
   );
 }
