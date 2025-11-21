@@ -117,7 +117,7 @@ export function withPerformanceMonitoring<P extends object>(
   Component: ComponentType<P>,
   componentName: string
 ) {
-  return memo((props: P) => {
+  const MemoizedComponent = memo((props: P) => {
     if (process.env.NODE_ENV === 'development') {
       const startTime = performance.now();
       
@@ -137,6 +137,9 @@ export function withPerformanceMonitoring<P extends object>(
     
     return <Component {...props} />;
   });
+  
+  MemoizedComponent.displayName = `withPerformanceMonitoring(${componentName})`;
+  return MemoizedComponent;
 }
 
 /**
@@ -148,7 +151,7 @@ export function withDebounce<P extends object>(
 ) {
   let timeoutId: NodeJS.Timeout;
   
-  return memo((props: P) => {
+  const DebouncedComponent = memo((props: P) => {
     clearTimeout(timeoutId);
     
     return new Promise<JSX.Element>((resolve) => {
@@ -157,4 +160,7 @@ export function withDebounce<P extends object>(
       }, delay);
     }) as any;
   });
+  
+  DebouncedComponent.displayName = `withDebounce(${Component.displayName || Component.name || 'Component'})`;
+  return DebouncedComponent;
 }

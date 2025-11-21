@@ -14,11 +14,6 @@ export function StatisticsPanel() {
   const { record, dayStates } = useProgressStore();
   const { stats } = useAchievementsStore();
 
-  // Show empty state if no completed days
-  if (record.completedDays.length === 0) {
-    return <EmptyStatistics onStartLearning={() => router.push('/learn')} />;
-  }
-
   const statistics = useMemo(() => {
     const totalTasks = Object.values(dayStates).reduce(
       (sum, state) => sum + (state.completedTasks?.length || 0),
@@ -50,6 +45,11 @@ export function StatisticsPanel() {
       challengeTasks: stats.challengeTasksCompleted
     };
   }, [record, dayStates, stats]);
+
+  // Show empty state if no completed days
+  if (record.completedDays.length === 0) {
+    return <EmptyStatistics onStartLearning={() => router.push('/learn')} />;
+  }
 
   return (
     <div className="space-y-6">
