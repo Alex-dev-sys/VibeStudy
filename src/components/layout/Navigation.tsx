@@ -31,7 +31,7 @@ export function Navigation() {
         className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl border-b border-white/10"
         aria-label="Main navigation"
       >
-        <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-6 py-3 grid grid-cols-3 items-center gap-4">
+        <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-8 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-6 lg:gap-8">
           {/* Logo - Left */}
           <div className="flex justify-start">
             <Link 
@@ -45,7 +45,7 @@ export function Navigation() {
           </div>
           
           {/* Nav Items - Center */}
-          <div className="flex items-center justify-center gap-1 lg:gap-2">
+          <div className="flex items-center justify-center gap-2">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -55,7 +55,7 @@ export function Navigation() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-2 rounded-full transition-all text-sm lg:text-base',
+                    'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all text-sm',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
                     isActive
                       ? 'bg-gradient-to-r from-accent/20 to-secondary/20 text-white shadow-lg shadow-accent/20'
@@ -63,15 +63,15 @@ export function Navigation() {
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="w-4 h-4 lg:w-5 lg:h-5" aria-hidden="true" />
-                  <span className="font-medium hidden lg:inline">{item.label}</span>
+                  <Icon className="w-5 h-5" aria-hidden="true" />
+                  <span className="font-medium">{item.label}</span>
                 </Link>
               );
             })}
           </div>
           
           {/* User Actions - Right */}
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 lg:gap-3">
             {/* Premium and Challenges buttons */}
             <Link href="/pricing" className="hidden lg:block">
               <Button variant="primary" size="sm" className="text-xs whitespace-nowrap">
