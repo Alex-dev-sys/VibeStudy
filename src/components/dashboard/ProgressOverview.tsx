@@ -45,16 +45,6 @@ export function ProgressOverview() {
               ⭐ Premium
             </Button>
           </Link>
-          <Link href="/profile">
-            <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
-              👤 {t.dashboard.profile}
-            </Button>
-          </Link>
-          <Link href="/playground">
-            <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
-              🎨 {t.dashboard.playground}
-            </Button>
-          </Link>
           <Link href="/challenges">
             <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
               🎯 {t.challenges.title}
