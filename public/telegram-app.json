@@ -1,0 +1,28 @@
+{
+  "name": "VibeStudy",
+  "short_name": "VibeStudy",
+  "description": "90-day programming education platform - learn coding from beginner to junior developer",
+  "start_url": "/telegram-mini",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0315",
+  "background_color": "#0a0315",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "telegram": {
+    "bot_username": "vibestudy_bot",
+    "supports_inline_mode": false,
+    "supports_settings_button": true
+  }
+}

@@ -37,11 +37,15 @@ https://vibe-study-c3yn.vercel.app
 - `TONCENTER_API_KEY` (для TON платежей)
 - `CRON_SECRET` (для безопасности cron jobs)
 
-### 4. Настройте Vercel Cron Jobs (для TON платежей)
-После деплоя Vercel автоматически настроит cron job из `vercel.json`:
-- Проверка pending платежей: каждые 10 минут
-- Endpoint: `/api/cron/verify-pending-payments`
-- Требует `CRON_SECRET` в environment variables
+### 4. Настройте Vercel Cron Jobs
+После деплоя Vercel автоматически настроит cron jobs из `vercel.json`:
+- **Проверка pending платежей**: ежедневно в 00:00 UTC
+  - Endpoint: `/api/cron/verify-pending-payments`
+  - Требует `CRON_SECRET` в environment variables
+- **Генерация Daily Challenges**: ежедневно в 00:00 UTC
+  - Endpoint: `/api/cron/generate-challenge`
+  - Требует `CRON_SECRET` в environment variables
+  - Требует `AI_API_TOKEN` для генерации контента
 
 Проверьте настройку в Vercel Dashboard → Settings → Cron Jobs
 

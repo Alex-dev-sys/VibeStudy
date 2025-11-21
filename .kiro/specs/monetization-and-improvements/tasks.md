@@ -174,45 +174,77 @@
 
 ## Блок 3: Telegram Bot улучшения (Приоритет P1)
 
-- [ ] 15. Telegram Mini App - манифест
+- [x] 15. Telegram Mini App - манифест
+
+
+
+
+
   - Создать файл `public/telegram-app.json` с метаданными приложения
   - Настроить theme_color и display параметры
   - _Requirements: Конфигурация Mini App_
 
-- [ ] 16. Telegram Mini App - страница
+-
+
+- [x] 16. Telegram Mini App - страница
+
+
+
   - Создать страницу `src/app/telegram-mini/page.tsx`
   - Интегрировать Telegram WebApp SDK
   - Создать компонент `src/components/telegram/MiniCodeChallenge.tsx`
   - Реализовать упрощенный интерфейс для решения задач
   - Добавить поддержку Telegram theme colors
+
   - _Requirements: Мини-приложение внутри Telegram_
+- [x] 17. Настройка Telegram Bot Menu Button
+
+
 
 - [ ] 17. Настройка Telegram Bot Menu Button
   - Обновить скрипт `scripts/setup-telegram-webhook.js`
   - Добавить команду для настройки menu button через Bot API
   - Установить URL Mini App в качестве menu button
   - _Requirements: Кнопка запуска Mini App в боте_
+-
 
-- [ ] 18. Daily Challenges - база данных
+- [x] 18. Daily Challenges - база данных
+
+
+
+
   - Создать таблицу `daily_challenges` в Supabase
   - Добавить поля: date, language, problem, test_cases
   - Создать уникальный индекс на поле `date`
   - _Requirements: Хранение ежедневных челленджей_
 
-- [ ] 19. Daily Challenges - генерация
+-
+
+- [x] 19. Daily Challenges - генерация
+
+
+
   - Создать API роут `src/app/api/cron/generate-challenge/route.ts`
   - Реализовать генерацию челленджа через AI
   - Сохранять челлендж в базу данных
   - Добавить проверку на дубликаты по дате
   - _Requirements: Автоматическая генерация челленджей_
 
-- [ ] 20. Daily Challenges - Vercel Cron
+
+- [x] 20. Daily Challenges - Vercel Cron
+
+
   - Создать файл `vercel.json` с конфигурацией cron job
   - Настроить запуск генерации челленджа в 00:00 UTC
   - Добавить проверку `CRON_SECRET` для безопасности
   - _Requirements: Ежедневный запуск генерации_
 
-- [ ] 21. Daily Challenges - UI
+- [x] 21. Daily Challenges - UI
+
+
+
+
+
   - Создать компонент `src/components/challenges/DailyChallenge.tsx`
   - Добавить страницу `src/app/challenges/page.tsx`
   - Показывать челлендж дня с возможностью решения

@@ -52,6 +52,38 @@ Adds subscription tier system with monetization features:
 - **Premium**: 30 requests/min, GPT-4o model, 5 TON/month (~$12)
 - **Pro+**: 100 requests/min, Claude 3.5 Sonnet model, 12 TON/month (~$29)
 
+### 003_ai_cache.sql
+
+Adds AI response caching to reduce API costs and improve performance.
+
+### 004_ai_feedback.sql
+
+Adds user feedback collection for AI-generated content quality.
+
+### 005_daily_challenges.sql
+
+Creates infrastructure for daily coding challenges:
+
+**New Tables:**
+- `daily_challenges` - Stores daily coding challenges for each programming language
+- `user_challenge_attempts` - Tracks user attempts and solutions
+
+**Indexes:**
+- Unique index on `(date, language)` to ensure one challenge per day per language
+- Optimized indexes for date and language lookups
+
+**Functions:**
+- `get_todays_challenge(language)` - Retrieves today's challenge for a specific language
+- `get_user_challenge_stats(user_id)` - Calculates user statistics including streaks
+- `update_updated_at_column()` - Automatically updates timestamp on row changes
+
+**Features:**
+- One unique challenge per language per day
+- Support for 7 programming languages (Python, JavaScript, TypeScript, Java, C++, C#, Go)
+- Tracks user attempts with test results and execution time
+- Calculates current and longest streaks for gamification
+- Row Level Security enabled for data protection
+
 ## Running Migrations
 
 ### Option 1: Supabase Dashboard

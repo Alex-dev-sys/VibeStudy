@@ -57,6 +57,11 @@ export function ProgressOverview() {
               🎨 {t.dashboard.playground}
             </Button>
           </Link>
+          <Link href="/challenges">
+            <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
+              🎯 {t.challenges.title}
+            </Button>
+          </Link>
           <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm hover:text-white">
             {t.common.reset}
           </Button>
