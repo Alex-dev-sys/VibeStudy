@@ -17,8 +17,8 @@ const buttonVariants = cva(
         primary:
           'bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] text-[#25031f] font-bold shadow-[0_20px_45px_rgba(255,0,148,0.45)] hover:brightness-110 hover:shadow-[0_28px_60px_rgba(255,0,148,0.55)] hover:-translate-y-1 hover:scale-[1.02] disabled:bg-[var(--disabled-bg)] disabled:border disabled:border-[var(--disabled-border)] disabled:text-[var(--disabled-text)] disabled:shadow-none disabled:from-transparent disabled:via-transparent disabled:to-transparent disabled:brightness-100 disabled:translate-y-0 disabled:scale-100 z-[var(--z-content)]',
         secondary:
-          'bg-transparent border border-white/8 text-white/85 font-medium hover:border-white/15 hover:bg-white/5 shadow-[0_8px_20px_rgba(12,6,28,0.25)] hover:shadow-[0_12px_28px_rgba(12,6,28,0.35)] disabled:bg-[var(--disabled-bg)] disabled:border-[var(--disabled-border)] disabled:text-[var(--disabled-text)] disabled:shadow-none',
-        ghost: 'bg-transparent text-white/75 font-normal hover:bg-white/5 hover:text-white/90 border border-transparent hover:border-white/5 disabled:text-[var(--disabled-text)] disabled:bg-transparent'
+          'bg-white/10 text-white/90 font-medium hover:bg-white/15 shadow-[0_8px_20px_rgba(12,6,28,0.25)] hover:shadow-[0_12px_28px_rgba(12,6,28,0.35)] hover:-translate-y-0.5 disabled:bg-[var(--disabled-bg)] disabled:text-[var(--disabled-text)] disabled:shadow-none disabled:translate-y-0',
+        ghost: 'bg-white/5 text-white/80 font-normal hover:bg-white/10 hover:text-white/95 hover:-translate-y-0.5 disabled:text-[var(--disabled-text)] disabled:bg-transparent disabled:translate-y-0'
       },
       size: {
         sm: 'px-3 py-1.5 text-sm min-h-[44px] min-w-[44px]',
