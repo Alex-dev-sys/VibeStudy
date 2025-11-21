@@ -27,7 +27,8 @@
         "execute_sql",
         "list_tables",
         "list_migrations",
-        "apply_migration"
+        "apply_migration",
+        "get_anon_key"
       ]
     },
     "playwright": {

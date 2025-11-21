@@ -14,10 +14,11 @@ export async function handleStartCommand(
   
   const isNewUser = !existingProfile;
   
-  // Create/update profile
-  if (!existingProfile && userId) {
+  // Create/update profile for new users
+  // Note: userId might be empty for new users, we'll create a guest profile
+  if (!existingProfile) {
     await upsertTelegramProfile({
-      user_id: userId,
+      user_id: userId || null, // Allow null for guest users
       telegram_user_id: telegramUserId,
       chat_id: chatId,
       language_code: 'ru',

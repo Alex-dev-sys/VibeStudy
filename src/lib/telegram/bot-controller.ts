@@ -123,6 +123,16 @@ export class BotController {
       return;
     }
     
+    // Allow /start command without userId (for new users)
+    if (command !== '/start' && !userId) {
+      const response: BotResponse = {
+        text: '👋 Привет! Отправь /start чтобы начать работу с ботом.',
+        parseMode: 'Markdown'
+      };
+      await this.sendResponse(chatId, response);
+      return;
+    }
+    
     // Execute command handler
     try {
       const response = await handler(userId || '', telegramUserId, chatId, args);
