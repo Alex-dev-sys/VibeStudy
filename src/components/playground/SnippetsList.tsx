@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { usePlaygroundStore, type CodeSnippet } from '@/store/playground-store';
 import { EmptySnippets } from './EmptySnippets';
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { OptimizedImage, LazyImage } from '@/lib/performance/image-optimizer';
 import { contentCache, progressCache, apiCache, cacheKeys } from '@/lib/performance/cache-manager';

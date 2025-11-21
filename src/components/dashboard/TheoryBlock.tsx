@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 
 interface TheoryBlockProps {

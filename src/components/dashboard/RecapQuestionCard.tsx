@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useProgressStore } from '@/store/progress-store';
 
 interface RecapQuestionCardProps {

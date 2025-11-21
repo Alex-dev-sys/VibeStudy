@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LearningVelocityChart } from './LearningVelocityChart';
 import { TopicMasteryRadar } from './TopicMasteryRadar';
 import { WeakAreasPanel } from './WeakAreasPanel';

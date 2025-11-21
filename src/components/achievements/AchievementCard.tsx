@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import type { Achievement } from '@/types/achievements';
 import { getAchievementProgress, ACHIEVEMENTS } from '@/lib/achievements';
 import { useAchievementsStore } from '@/store/achievements-store';

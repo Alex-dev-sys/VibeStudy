@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { useProgressStore } from '@/store/progress-store';
 
 const LEVEL_NAMES = [

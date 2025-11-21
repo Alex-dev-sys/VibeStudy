@@ -3,7 +3,7 @@
 import Editor from '@monaco-editor/react';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 
 interface CodeWorkspaceProps {
   languageId: string;

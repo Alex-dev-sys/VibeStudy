@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DailyChallenge } from '@/components/challenges/DailyChallenge';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { useProgressStore } from '@/store/progress-store';
 import { useTranslations } from '@/store/locale-store';
 import { LANGUAGES } from '@/lib/languages';

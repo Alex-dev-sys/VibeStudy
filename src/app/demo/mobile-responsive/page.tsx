@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FloatingActionButton, MiniFAB } from '@/components/ui/FloatingActionButton';
 import { Plus, Settings, Share2, Heart, MessageCircle } from 'lucide-react';
 import { useMobileResponsive, useBreakpoint, useSafeAreaInsets } from '@/hooks/useMobileResponsive';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 
 export default function MobileResponsiveDemoPage() {
   const mobile = useMobileResponsive();

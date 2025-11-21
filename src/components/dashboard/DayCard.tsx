@@ -3,8 +3,8 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TaskList } from './TaskList';
 import { TheoryBlock } from './TheoryBlock';
 import { useTaskGenerator } from '@/hooks/useTaskGenerator';

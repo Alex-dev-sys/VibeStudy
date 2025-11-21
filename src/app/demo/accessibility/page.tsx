@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Modal } from '@/components/ui/modal';
 import { Input, Textarea, Select, Checkbox, RadioGroup, Label } from '@/components/ui/Form';
 import { announce } from '@/lib/accessibility/aria-announcer';

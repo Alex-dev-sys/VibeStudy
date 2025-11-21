@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HelpTooltip } from '@/components/help/HelpTooltip';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 
 export default function HelpDemoPage() {
   return (

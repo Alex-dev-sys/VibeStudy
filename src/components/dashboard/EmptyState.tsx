@@ -1,7 +1,7 @@
 'use client';
 
 import { BookOpen } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getDayTopic } from '@/lib/curriculum';
 

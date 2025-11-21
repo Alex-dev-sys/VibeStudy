@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useTranslations } from '@/store/locale-store';

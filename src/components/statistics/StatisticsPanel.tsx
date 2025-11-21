@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ActivityCalendar } from './ActivityCalendar';
 import { ProgressChart } from './ProgressChart';
 import { EmptyStatistics } from '@/components/profile/EmptyStatistics';

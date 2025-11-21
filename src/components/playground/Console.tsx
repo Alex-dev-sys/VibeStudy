@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { useTranslations } from '@/store/locale-store';
 import type { ConsoleMessage } from '@/store/playground-store';
 

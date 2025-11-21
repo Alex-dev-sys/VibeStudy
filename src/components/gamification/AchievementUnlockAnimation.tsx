@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import type { Achievement } from '@/types/achievements';
 
 interface AchievementUnlockAnimationProps {

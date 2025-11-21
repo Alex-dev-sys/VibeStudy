@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAnalyticsStore } from '@/store/analytics-store';
 
 export function WeeklySummary() {

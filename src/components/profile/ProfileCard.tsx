@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useProfileStore } from '@/store/profile-store';
 import { useProgressStore } from '@/store/progress-store';

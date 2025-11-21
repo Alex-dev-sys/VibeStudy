@@ -8,7 +8,7 @@ import {
   AchievementUnlockAnimation 
 } from '@/components/gamification';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { ACHIEVEMENTS } from '@/lib/achievements';
 
 export default function GamificationDemoPage() {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { Modal } from '@/components/ui/modal';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';

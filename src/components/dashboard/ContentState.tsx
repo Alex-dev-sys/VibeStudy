@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Code, ChevronDown, CheckCircle2 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { useProgressStore } from '@/store/progress-store';
 import { getDayTopic } from '@/lib/curriculum';
 import { cn } from '@/lib/utils';

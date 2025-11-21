@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';

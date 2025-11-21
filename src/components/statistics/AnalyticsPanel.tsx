@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
 
 export function AnalyticsPanel() {

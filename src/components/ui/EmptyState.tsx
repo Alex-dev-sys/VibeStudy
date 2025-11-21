@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {

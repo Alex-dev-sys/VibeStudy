@@ -394,6 +394,67 @@ export const en: Translations = {
     submitError: 'Failed to submit solution',
     selectLanguage: 'Select programming language'
   },
+  help: {
+    title: 'Help Center',
+    subtitle: 'Find answers to frequently asked questions and learn how to use the platform effectively',
+    search: 'Search questions...',
+    noResults: 'No results found. Try a different query.',
+    categories: {
+      all: 'All',
+      learning: 'Learning',
+      playground: 'Playground',
+      analytics: 'Analytics',
+      progress: 'Progress',
+      account: 'Account'
+    },
+    needMoreHelp: 'Need more help?',
+    needMoreHelpDescription: 'If you still have questions, try the interactive tutorial again or contact support.',
+    startLearning: 'Start Learning',
+    contactSupport: 'Contact Support',
+    floatingButton: {
+      learn: {
+        title: 'How does learning work?',
+        startDay: 'How to start a day?',
+        completeTasks: 'What to do with tasks?',
+        completeDay: 'How to complete a day?',
+        streak: 'What is a streak?'
+      },
+      playground: {
+        title: 'How to use the playground?',
+        purpose: 'What is the playground for?',
+        runCode: 'How to run code?',
+        saveSnippet: 'Can I save code?'
+      },
+      analytics: {
+        title: 'How to read analytics?',
+        calendar: 'What does the activity calendar show?',
+        perfectDays: 'What are "perfect days"?',
+        recommendations: 'How to use recommendations?'
+      },
+      profile: {
+        title: 'Profile Management',
+        changeLanguage: 'How to change programming language?',
+        achievements: 'What are achievements?',
+        syncProgress: 'How to sync progress?'
+      }
+    }
+  },
+  settings: {
+    title: 'Settings',
+    replayTutorial: 'Replay Tutorial',
+    replayTutorialDescription: 'Go through the interactive tutorial again',
+    helpStatistics: 'Help Statistics',
+    helpStatisticsDescription: 'See which topics you viewed most often',
+    deleteAllData: 'Delete All Data',
+    deleteAllDataDescription: 'Delete all progress and start from scratch',
+    deleteConfirmTitle: 'Delete all data?',
+    deleteConfirmDescription: 'This action cannot be undone. All your progress, achievements and settings will be deleted.',
+    tutorialReset: 'Tutorial reset',
+    tutorialResetDescription: 'Go to the learning page to start again',
+    noHelpStats: 'You haven\'t used the help system yet',
+    dataDeleted: 'Data deleted',
+    dataDeletedDescription: 'All local data has been deleted. The page will be reloaded.'
+  },
   pricing: {
     title: 'Choose Your Plan',
     subtitle: 'Unlock the full potential of learning with premium access',
