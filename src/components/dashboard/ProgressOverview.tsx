@@ -40,16 +40,6 @@ export function ProgressOverview() {
           <p className="mt-1 text-xs text-white/65 sm:text-sm">{t.dashboard.subtitle}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/pricing">
-            <Button variant="primary" size="sm" className="text-xs sm:text-sm">
-              ⭐ Premium
-            </Button>
-          </Link>
-          <Link href="/challenges">
-            <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
-              🎯 {t.challenges.title}
-            </Button>
-          </Link>
           <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm hover:text-white">
             {t.common.reset}
           </Button>

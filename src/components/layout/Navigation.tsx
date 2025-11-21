@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Code, BarChart3 } from 'lucide-react';
+import { BookOpen, Code, BarChart3, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgressStore } from '@/store/progress-store';
 import { StreakIndicator } from './StreakIndicator';
 import { UserMenu } from '@/components/layout/UserMenu';
+import { Button } from '@/components/ui/button';
 
 const NAV_ITEMS = [
   { href: '/learn', label: 'Обучение', labelEn: 'Learn', icon: BookOpen },
@@ -69,6 +70,18 @@ export function Navigation() {
           
           {/* User Actions */}
           <div className="flex items-center gap-3">
+            {/* Premium and Challenges buttons */}
+            <Link href="/pricing">
+              <Button variant="primary" size="sm" className="text-xs">
+                ⭐ Premium
+              </Button>
+            </Link>
+            <Link href="/challenges">
+              <Button variant="secondary" size="sm" className="text-xs">
+                🎯 Челленджи
+              </Button>
+            </Link>
+            
             {/* Streak indicator */}
             {streak > 0 && <StreakIndicator streak={streak} />}
             
