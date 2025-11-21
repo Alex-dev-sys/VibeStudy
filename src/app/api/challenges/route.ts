@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { logError, logInfo } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabaseClient();
+    // Use service role key to bypass RLS for public read access
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    if (!supabase) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: 'Database service not configured' },
         { status: 503 }
       );
     }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');

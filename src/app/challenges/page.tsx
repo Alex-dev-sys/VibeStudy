@@ -54,8 +54,17 @@ export default function ChallengesPage() {
       if (todayResponse.ok) {
         const todayData = await todayResponse.json();
         setTodayChallenge(todayData.challenge);
-      } else if (todayResponse.status !== 404) {
-        throw new Error('Failed to load today\'s challenge');
+      } else if (todayResponse.status === 404) {
+        // No challenge for today - this is expected if not generated yet
+        setTodayChallenge(null);
+      } else if (todayResponse.status === 503) {
+        // Database not configured - show error
+        setError(t.challenges.loadError);
+        return;
+      } else {
+        // Other errors
+        const errorData = await todayResponse.json();
+        console.warn('Failed to load today\'s challenge:', errorData);
       }
 
       // Load challenge history
@@ -64,6 +73,9 @@ export default function ChallengesPage() {
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
         setChallengeHistory(historyData.challenges || []);
+      } else if (historyResponse.status !== 503) {
+        // Only log warning if not a configuration issue
+        console.warn('Failed to load challenge history');
       }
 
       logInfo('Challenges loaded', {
