@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { useTranslations } from '@/store/locale-store';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export function OnboardingTour() {
   const t = useTranslations();

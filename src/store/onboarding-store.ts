@@ -15,6 +15,7 @@ interface OnboardingStore {
   currentStep: number;
   steps: OnboardingStep[];
   hasCompletedOnboarding: boolean;
+  lastStepCompleted: number; // Track progress for resume
   
   startOnboarding: () => void;
   nextStep: () => void;
@@ -32,15 +33,23 @@ export const useOnboardingStore = create<OnboardingStore>()(
       currentStep: 0,
       steps: [],
       hasCompletedOnboarding: false,
+      lastStepCompleted: -1,
       
       startOnboarding: () => {
-        set({ isActive: true, currentStep: 0 });
+        const { lastStepCompleted } = get();
+        // Resume from last completed step if available
+        const resumeStep = lastStepCompleted >= 0 ? lastStepCompleted + 1 : 0;
+        set({ isActive: true, currentStep: resumeStep });
       },
       
       nextStep: () => {
         const { currentStep, steps } = get();
         if (currentStep < steps.length - 1) {
-          set({ currentStep: currentStep + 1 });
+          const nextStepIndex = currentStep + 1;
+          set({ 
+            currentStep: nextStepIndex,
+            lastStepCompleted: currentStep // Save progress
+          });
         } else {
           get().completeOnboarding();
         }
@@ -57,15 +66,18 @@ export const useOnboardingStore = create<OnboardingStore>()(
         set({ 
           isActive: false, 
           hasCompletedOnboarding: true,
-          currentStep: 0
+          currentStep: 0,
+          lastStepCompleted: -1
         });
       },
       
       completeOnboarding: () => {
+        const { steps } = get();
         set({ 
           isActive: false, 
           hasCompletedOnboarding: true,
-          currentStep: 0
+          currentStep: 0,
+          lastStepCompleted: steps.length - 1
         });
       },
       
@@ -73,7 +85,8 @@ export const useOnboardingStore = create<OnboardingStore>()(
         set({ 
           isActive: false,
           currentStep: 0,
-          hasCompletedOnboarding: false
+          hasCompletedOnboarding: false,
+          lastStepCompleted: -1
         });
       },
       
@@ -84,7 +97,8 @@ export const useOnboardingStore = create<OnboardingStore>()(
     {
       name: 'vibestudy-onboarding',
       partialize: (state) => ({
-        hasCompletedOnboarding: state.hasCompletedOnboarding
+        hasCompletedOnboarding: state.hasCompletedOnboarding,
+        lastStepCompleted: state.lastStepCompleted
       })
     }
   )

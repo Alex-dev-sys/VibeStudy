@@ -7,7 +7,7 @@ import { useProgressStore } from '@/store/progress-store';
 import { ProgressOverview } from './ProgressOverview';
 import { LanguageSelector } from './LanguageSelector';
 import { DayTimeline } from './DayTimeline';
-import { DayCard } from './DayCard';
+import { SimplifiedDayCard } from './SimplifiedDayCard';
 import { AdaptiveRecommendationsPanel } from './AdaptiveRecommendationsPanel';
 
 export default function LearningDashboard() {
@@ -26,7 +26,7 @@ export default function LearningDashboard() {
       <ProgressOverview />
       <LanguageSelector />
       <DayTimeline />
-      <DayCard day={currentDay} previousDay={previousDay} languageId={languageId} />
+      <SimplifiedDayCard day={currentDay} previousDay={previousDay} languageId={languageId} />
       
       {/* Панель адаптивных рекомендаций */}
       <AdaptiveRecommendationsPanel currentDay={activeDay} languageId={languageId} />

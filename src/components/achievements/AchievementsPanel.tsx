@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { AchievementCard } from './AchievementCard';
+import { EmptyAchievements } from '@/components/profile/EmptyAchievements';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { ACHIEVEMENTS } from '@/lib/achievements';
 import type { AchievementCategory } from '@/types/achievements';
@@ -17,6 +19,7 @@ const CATEGORY_LABELS: Record<AchievementCategory, string> = {
 };
 
 export function AchievementsPanel() {
+  const router = useRouter();
   const { unlockedAchievements } = useAchievementsStore();
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
 
@@ -39,6 +42,11 @@ export function AchievementsPanel() {
       percentage: Math.round((unlocked / total) * 100)
     };
   }, [unlockedAchievements]);
+
+  // Show empty state if no achievements unlocked
+  if (unlockedAchievements.length === 0) {
+    return <EmptyAchievements onStartLearning={() => router.push('/learn')} />;
+  }
 
   return (
     <div className="space-y-6">

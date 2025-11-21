@@ -20,7 +20,7 @@ export interface AIJobOptions {
   metadata?: Record<string, unknown>;
 }
 
-const DEFAULT_TIMEOUT = 60_000;
+const DEFAULT_TIMEOUT = 120_000; // Увеличен до 2 минут
 
 class AIProcessingQueue {
   private queue: AIJob<any>[] = [];
@@ -99,6 +99,16 @@ class AIProcessingQueue {
         job.resolve(result);
       })
       .catch((error) => {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logWarn(`AI job failed: ${errorMessage}`, {
+          component: 'ai-queue',
+          action: 'execute',
+          metadata: { 
+            jobId: job.id, 
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
+            ...job.options.metadata 
+          }
+        });
         errorHandler.report(error as Error, {
           component: 'ai-queue',
           action: 'execute',

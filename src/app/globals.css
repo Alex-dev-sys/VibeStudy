@@ -2,6 +2,171 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   ACCESSIBILITY STYLES
+   ============================================ */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible styles - only show focus ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #ff0094;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove default focus outline */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  :root {
+    --bg-primary: #000000;
+    --text-primary: #FFFFFF;
+    --border-color: #FFFFFF;
+    --focus-color: #FFFF00;
+  }
+
+  * {
+    border-color: var(--border-color) !important;
+  }
+
+  a, button {
+    text-decoration: underline;
+  }
+
+  *:focus-visible {
+    outline: 3px solid var(--focus-color) !important;
+    outline-offset: 3px;
+  }
+}
+
+/* Windows High Contrast Mode */
+@media (forced-colors: active) {
+  * {
+    forced-color-adjust: auto;
+  }
+
+  .glass-panel,
+  .glass-panel-enhanced {
+    background: Canvas !important;
+    border: 1px solid CanvasText !important;
+  }
+
+  button, a {
+    border: 1px solid ButtonText !important;
+  }
+
+  *:focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-reduce {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Skip links */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  padding: 12px 24px;
+  background: #ff0094;
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  transition: top 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 0, 148, 0.3);
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #ffd200;
+  outline-offset: 2px;
+}
+
+/* Ensure minimum touch target size (44x44px) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improve text readability */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ensure sufficient color contrast for links */
+a {
+  text-decoration-skip-ink: auto;
+}
+
+/* Form accessibility */
+input:invalid,
+textarea:invalid,
+select:invalid {
+  border-color: #ef4444;
+}
+
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+}
+
+/* Loading state accessibility */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+/* Disabled state accessibility */
+[aria-disabled="true"],
+:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ============================================
+   DESIGN SYSTEM VARIABLES
+   ============================================ */
+
 :root {
   color-scheme: dark;
   --hdr-gradient: linear-gradient(
@@ -29,6 +194,44 @@
   
   /* Accessible gradient with better contrast */
   --text-gradient-accessible: linear-gradient(120deg, #ff2da6 0%, #ffe000 60%, #ff9aff 100%);
+  
+  /* Typography Scale - 1.25 ratio minimum between levels */
+  /* Base: 16px (1rem) */
+  --font-size-caption: 0.75rem;      /* 12px */
+  --font-size-small: 0.875rem;       /* 14px */
+  --font-size-body: 1rem;            /* 16px */
+  --font-size-body-lg: 1.125rem;     /* 18px - 1.125x */
+  --font-size-h3: 1.25rem;           /* 20px - 1.25x */
+  --font-size-h2: 1.5rem;            /* 24px - 1.2x (close to 1.25) */
+  --font-size-h1: 2rem;              /* 32px - 1.33x */
+  --font-size-hero: 3rem;            /* 48px - 1.5x */
+  --font-size-hero-mobile: 2rem;     /* 32px */
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  
+  /* Spacing Scale - 8px base with minimum 32px between sections */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px - minimum section spacing */
+  --spacing-2xl: 3rem;      /* 48px */
+  --spacing-3xl: 4rem;      /* 64px */
+  
+  /* Z-Index Hierarchy */
+  --z-base: 0;
+  --z-content: 10;
+  --z-sticky: 20;
+  --z-navigation: 30;
+  --z-dropdown: 40;
+  --z-overlay: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-tooltip: 80;
 }
 
 body {
@@ -43,6 +246,307 @@ body {
 @supports not (background: var(--hdr-gradient)) {
   body {
     background: var(--sdr-gradient);
+  }
+}
+
+/* ============================================
+   MOBILE-FIRST RESPONSIVE DESIGN SYSTEM
+   ============================================ */
+
+/* Safe area insets for mobile devices (notches, home indicators) */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-inset-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-inset-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Touch-friendly spacing - minimum 8px between interactive elements */
+.touch-spacing {
+  gap: 0.5rem; /* 8px */
+}
+
+.touch-spacing-safe {
+  gap: 0.75rem; /* 12px - recommended */
+}
+
+/* Touch target sizing - minimum 44x44px */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.touch-target-recommended {
+  min-width: 48px;
+  min-height: 48px;
+}
+
+/* Mobile-optimized padding */
+.mobile-padding {
+  padding-left: 1rem;  /* 16px */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mobile-padding {
+    padding-left: 1.5rem;  /* 24px */
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-padding {
+    padding-left: 2rem;  /* 32px */
+    padding-right: 2rem;
+  }
+}
+
+/* Responsive container with mobile-first approach */
+.responsive-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    max-width: 1280px;
+  }
+}
+
+/* Mobile-first grid system */
+.mobile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mobile-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Responsive text sizing with fluid typography */
+.text-responsive-sm {
+  font-size: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(2rem, 1.7rem + 1.5vw, 3rem);
+}
+
+/* Mobile-optimized scrolling */
+.mobile-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 0, 148, 0.5) transparent;
+}
+
+.mobile-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.mobile-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 148, 0.5);
+  border-radius: 999px;
+}
+
+.mobile-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hide scrollbar but keep functionality */
+.mobile-scroll-hidden {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobile-scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile-friendly card spacing */
+.mobile-card-stack > * + * {
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-card-stack > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Responsive aspect ratios */
+.aspect-mobile-hero {
+  aspect-ratio: 4 / 3;
+}
+
+@media (min-width: 768px) {
+  .aspect-mobile-hero {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* Mobile-optimized focus states */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch devices - larger focus indicators */
+  *:focus-visible {
+    outline: 3px solid rgba(255, 75, 193, 0.7);
+    outline-offset: 3px;
+  }
+}
+
+/* Prevent text size adjustment on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Optimize tap highlighting */
+* {
+  -webkit-tap-highlight-color: rgba(255, 0, 148, 0.2);
+}
+
+/* Disable pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Mobile-friendly modal sizing */
+.mobile-modal {
+  width: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0;
+  border-radius: 0;
+}
+
+@media (min-width: 640px) {
+  .mobile-modal {
+    width: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    margin: auto;
+    border-radius: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-modal {
+    max-width: 600px;
+  }
+}
+
+/* Responsive image optimization */
+.responsive-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Mobile-first button sizing */
+.mobile-button {
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-button {
+    min-height: 48px;
+    padding: 0.875rem 2rem;
+    font-size: 1.125rem;
+  }
+}
+
+/* Responsive spacing utilities */
+.space-mobile-sm {
+  margin-bottom: 1rem;
+}
+
+.space-mobile-md {
+  margin-bottom: 1.5rem;
+}
+
+.space-mobile-lg {
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .space-mobile-sm {
+    margin-bottom: 1.5rem;
+  }
+  
+  .space-mobile-md {
+    margin-bottom: 2rem;
+  }
+  
+  .space-mobile-lg {
+    margin-bottom: 3rem;
   }
 }
 
@@ -81,6 +585,7 @@ a {
 
 .text-gradient {
   background: var(--text-gradient-accessible);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
@@ -175,27 +680,120 @@ a {
   border-radius: 999px;
 }
 
-/* Screen reader only - for accessibility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+/* ============================================
+   VISUAL HIERARCHY SYSTEM
+   ============================================
+   
+   Typography Scale: 1.25 minimum ratio between levels
+   - Ensures clear distinction between heading levels
+   - Improves scannability and content hierarchy
+   
+   Button Hierarchy: Primary CTAs have 2x visual weight
+   - Primary: Bold font, larger size, prominent shadow
+   - Secondary: Medium font, smaller shadow
+   - Ghost: Normal font, minimal styling
+   
+   Spacing: Minimum 32px (2rem) between content sections
+   - Provides clear visual separation
+   - Reduces cognitive load
+   - Improves content flow
+   
+   Z-Index Hierarchy: Clear layering system
+   - Base (0): Default content
+   - Content (10): Cards and panels
+   - Navigation (30): Fixed navigation bars
+   - Overlay (50): Modal backdrops
+   - Modal (60): Modal dialogs
+   - Toast (70): Notifications
+   - Tooltip (80): Contextual help
+   
+   Accent Color Usage: Limited to <10% of screen area
+   - Primary actions and CTAs
+   - Critical information and alerts
+   - Active states and highlights
+   ============================================ */
+
+/* Typography Utilities - Enhanced Hierarchy */
+.text-hero {
+  font-size: var(--font-size-hero);
+  line-height: var(--line-height-tight);
+  font-weight: 700;
 }
 
-.sr-only:focus,
-.sr-only:active {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
+.text-h1 {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-snug);
+  font-weight: 700;
 }
+
+.text-h2 {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-snug);
+  font-weight: 600;
+}
+
+.text-h3 {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-normal);
+  font-weight: 600;
+}
+
+.text-body-lg {
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-relaxed);
+}
+
+.text-caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-normal);
+}
+
+@media (max-width: 768px) {
+  .text-hero {
+    font-size: var(--font-size-hero-mobile);
+  }
+  
+  .text-h1 {
+    font-size: var(--font-size-h2);
+  }
+  
+  .text-h2 {
+    font-size: var(--font-size-h3);
+  }
+}
+
+/* Spacing Utilities - Section Spacing */
+.section-spacing {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-spacing-lg {
+  margin-top: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.section-spacing-xl {
+  margin-top: var(--spacing-3xl);
+  margin-bottom: var(--spacing-3xl);
+}
+
+/* Content spacing between elements */
+.content-spacing > * + * {
+  margin-top: var(--spacing-lg);
+}
+
+.content-spacing-tight > * + * {
+  margin-top: var(--spacing-md);
+}
+
+/* Z-Index Utilities */
+.z-base { z-index: var(--z-base); }
+.z-content { z-index: var(--z-content); }
+.z-sticky { z-index: var(--z-sticky); }
+.z-navigation { z-index: var(--z-navigation); }
+.z-dropdown { z-index: var(--z-dropdown); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-modal { z-index: var(--z-modal); }
+.z-toast { z-index: var(--z-toast); }
+.z-tooltip { z-index: var(--z-tooltip); }

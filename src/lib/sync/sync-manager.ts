@@ -263,6 +263,65 @@ class SyncManager {
   }
 
   /**
+   * Sync all data at once (used for guest data migration)
+   */
+  async syncAllData(data: any): Promise<void> {
+    const { userId, activeDay, languageId, dayStates, record, achievements, profile, analytics, playground } = data;
+    
+    if (!userId) {
+      throw new Error('User ID is required for syncing all data');
+    }
+
+    // Temporarily set userId for sync operations
+    const previousUserId = this.userId;
+    this.userId = userId;
+
+    try {
+      // Sync progress data
+      if (dayStates && record) {
+        await this.syncImmediate('progress', 'update', {
+          active_day: activeDay,
+          language_id: languageId,
+          day_states: dayStates,
+          record: record,
+          updated_at: Date.now(),
+        });
+      }
+
+      // Sync achievements
+      if (achievements?.unlockedAchievements) {
+        for (const achievementId of achievements.unlockedAchievements) {
+          await this.syncAchievementUnlock(achievementId);
+        }
+      }
+
+      // Sync achievement stats
+      if (achievements?.stats) {
+        await this.syncUserStats(achievements.stats);
+      }
+
+      // Sync profile
+      if (profile) {
+        await this.syncImmediate('profile', 'update', {
+          ...profile,
+          updated_at: Date.now(),
+        });
+      }
+
+      // Note: Analytics and playground data are stored locally only
+      // They can be synced through profile metadata if needed in the future
+
+      console.log('[SyncManager] All data synced successfully');
+    } catch (error) {
+      console.error('[SyncManager] Failed to sync all data:', error);
+      throw error;
+    } finally {
+      // Restore previous userId
+      this.userId = previousUserId;
+    }
+  }
+
+  /**
    * Fetch data from cloud
    */
   async fetchFromCloud(type: SyncOperationType): Promise<any> {

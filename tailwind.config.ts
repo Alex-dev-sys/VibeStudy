@@ -32,7 +32,21 @@ const config: Config = {
       spacing: {
         touch: '44px',
         'mobile-padding': '1.5rem',
-        'desktop-padding': '2rem'
+        'desktop-padding': '2rem',
+        'section': '2rem',      /* 32px - minimum section spacing */
+        'section-lg': '3rem',   /* 48px */
+        'section-xl': '4rem'    /* 64px */
+      },
+      zIndex: {
+        'base': '0',
+        'content': '10',
+        'sticky': '20',
+        'navigation': '30',
+        'dropdown': '40',
+        'overlay': '50',
+        'modal': '60',
+        'toast': '70',
+        'tooltip': '80'
       },
       boxShadow: {
         glow: '0 0 28px rgba(255, 0, 148, 0.35)'

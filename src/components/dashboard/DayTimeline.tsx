@@ -1,122 +1,182 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import { useProgressStore } from '@/store/progress-store';
-const MONTH_SEGMENTS: Array<{ label: string; start: number; end: number }> = [
-  { label: 'Месяц 1 · Фундамент', start: 1, end: 30 },
-  { label: 'Месяц 2 · Практика', start: 31, end: 60 },
-  { label: 'Месяц 3 · Подготовка к собеседованиям', start: 61, end: 90 }
+import { getDayTopic } from '@/lib/curriculum';
+
+const WEEK_MARKERS = [
+  { week: 1, day: 1 },
+  { week: 5, day: 29 },
+  { week: 9, day: 57 },
+  { week: 13, day: 85 }
 ];
 
 export function DayTimeline() {
-  const { activeDay, completedDays, setActiveDay } = useProgressStore((state) => ({
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { activeDay, completedDays, dayStates, setActiveDay } = useProgressStore((state) => ({
     activeDay: state.activeDay,
     completedDays: state.record.completedDays,
+    dayStates: state.dayStates,
     setActiveDay: state.setActiveDay
   }));
 
-  const segmentProgress = useMemo(() => {
-    return MONTH_SEGMENTS.map((segment) => {
-      const days = Array.from({ length: segment.end - segment.start + 1 }, (_, index) => segment.start + index);
-      const completedCount = days.filter((day) => completedDays.includes(day)).length;
+  // Auto-scroll to active day on mount and when activeDay changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const activeDayElement = scrollContainerRef.current.querySelector(`[data-day="${activeDay}"]`);
+      if (activeDayElement) {
+        activeDayElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'nearest', 
+          inline: 'center' 
+        });
+      }
+    }
+  }, [activeDay]);
+
+  // Calculate progress for each day
+  const daysWithProgress = useMemo(() => {
+    return Array.from({ length: 90 }, (_, i) => {
+      const day = i + 1;
+      const isCompleted = completedDays.includes(day);
+      const isCurrent = day === activeDay;
+      const lastCompletedDay = completedDays.length > 0 ? Math.max(...completedDays) : 0;
+      const isLocked = day > 1 && day > lastCompletedDay + 1;
+      const dayTopic = getDayTopic(day);
+      
+      // Get task progress for this day
+      const dayState = dayStates[day];
+      const completedTasksCount = dayState?.completedTasks?.length || 0;
+      const totalTasks = 5; // Assuming 5 tasks per day on average
+      
       return {
-        key: `${segment.start}-${segment.end}`,
-        label: segment.label,
-        days,
-        completedCount,
-        total: days.length
+        day,
+        isCompleted,
+        isCurrent,
+        isLocked,
+        topic: dayTopic.topic,
+        progress: isCompleted ? 100 : (completedTasksCount / totalTasks) * 100,
+        completedTasksCount,
+        totalTasks
       };
     });
-  }, [completedDays]);
+  }, [activeDay, completedDays, dayStates]);
 
   return (
     <section className="relative glass-panel-soft rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-white/95 sm:text-lg">Навигация по дням</h2>
-          <p className="mt-1 text-xs text-white/60 sm:text-sm">Следи за темпом и переходи к любому дню плана</p>
+          <h2 className="text-base font-semibold text-white/95 sm:text-lg">Твой путь</h2>
+          <p className="mt-1 text-xs text-white/60 sm:text-sm">
+            {completedDays.length} из 90 дней завершено
+          </p>
         </div>
-        <p className="text-xs text-white/55 sm:text-right sm:text-sm">Совет: используй клавиши ← → для быстрого переключения</p>
+        <p className="text-xs text-white/55 sm:text-right sm:text-sm">
+          Совет: используй клавиши ← → для быстрого переключения
+        </p>
       </div>
+
+      {/* Legend */}
       <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-white/55 sm:mt-4 sm:text-xs">
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-transparent bg-gradient-to-br from-[#ff0094]/70 to-[#ffd200]/60 shadow-[0_0_15px_rgba(255,0,148,0.6)]" aria-hidden />
-          Активный день
+          <span className="h-3 w-3 rounded-full border-2 border-primary bg-gradient-to-br from-primary/50 to-accent/50 shadow-[0_0_12px_rgba(255,0,148,0.5)]" aria-hidden />
+          Активный
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-[#ff84ff]/30 bg-[#ff84ff]/15" aria-hidden />
-          ✓ Завершён
+          <span className="h-3 w-3 rounded-full border border-green-500/50 bg-green-500/20" aria-hidden />
+          Завершён
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-white/12 bg-[rgba(255,255,255,0.15)]" aria-hidden />
+          <span className="h-3 w-3 rounded-full border border-white/20 bg-white/10" aria-hidden />
           Доступен
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-full border border-white/8 bg-[rgba(255,255,255,0.05)]" aria-hidden />
-          🔒 Заблокирован
+          <span className="h-3 w-3 rounded-full border border-white/10 bg-white/5" aria-hidden />
+          Заблокирован
         </span>
       </div>
-      <div className="mt-4 space-y-4 sm:mt-5">
-        {segmentProgress.map((segment) => (
-          <div key={segment.key} className="space-y-2">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-white/50 sm:text-xs">
-              <span>{segment.label}</span>
-              <span>
-                {segment.completedCount}/{segment.total} дней выполнено
-              </span>
+
+      {/* Horizontal scrollable timeline */}
+      <div 
+        ref={scrollContainerRef}
+        className="mt-6 flex gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent scroll-smooth"
+        style={{ scrollBehavior: 'smooth' }}
+      >
+        {daysWithProgress.map((dayData) => (
+          <motion.button
+            key={dayData.day}
+            data-day={dayData.day}
+            onClick={() => !dayData.isLocked && setActiveDay(dayData.day)}
+            disabled={dayData.isLocked}
+            whileHover={!dayData.isLocked ? { scale: 1.05 } : {}}
+            whileTap={!dayData.isLocked ? { scale: 0.95 } : {}}
+            className={clsx(
+              'group relative flex-shrink-0 w-24 h-28 rounded-xl p-3 flex flex-col items-center justify-between transition-all duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50 scale-105',
+              dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/20 border border-green-500/50 hover:bg-green-500/30',
+              !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'bg-white/5 border border-white/10 hover:bg-white/10',
+              dayData.isLocked && 'bg-white/5 border border-white/5 opacity-50 cursor-not-allowed'
+            )}
+            title={
+              dayData.isCompleted && !dayData.isCurrent
+                ? `День ${dayData.day}: ${dayData.topic} (завершён)` 
+                : dayData.isLocked 
+                  ? 'Завершите предыдущий день чтобы разблокировать' 
+                  : `День ${dayData.day}: ${dayData.topic}`
+            }
+          >
+            {/* Day number */}
+            <div className={clsx(
+              'text-lg font-bold transition-colors',
+              dayData.isCurrent && 'text-primary',
+              dayData.isCompleted && !dayData.isCurrent && 'text-green-400',
+              dayData.isLocked && 'text-white/30',
+              !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'text-white/80'
+            )}>
+              {dayData.day}
             </div>
-            <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-10 sm:gap-2 lg:grid-cols-15">
-              {segment.days.map((day) => {
-                const isCompleted = completedDays.includes(day);
-                const isActive = day === activeDay;
-                
-                // Логика блокировки:
-                // 1. Завершенные дни можно открыть для просмотра
-                // 2. Можно открыть только день 1 или следующий после последнего завершенного, или любой завершенный
-                const lastCompletedDay = completedDays.length > 0 ? Math.max(...completedDays) : 0;
-                const isLockedFuture = day > 1 && day > lastCompletedDay + 1;
-                const isLocked = isLockedFuture;
-                
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => !isLocked && setActiveDay(day)}
-                    disabled={isLocked}
-                    className={clsx(
-                      'relative flex h-10 items-center justify-center rounded-xl border text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-12 sm:rounded-2xl sm:text-sm',
-                      isActive
-                        ? 'border-transparent bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-white shadow-[0_0_18px_rgba(255,0,148,0.6)]'
-                        : isCompleted
-                          ? 'border-[#ff84ff]/30 bg-[#ff84ff]/12 text-[#ffbdf7] hover:border-[#ff84ff]/50 hover:bg-[#ff84ff]/20'
-                          : isLockedFuture
-                            ? 'border-white/8 bg-[rgba(255,255,255,0.05)] text-white/30 cursor-not-allowed'
-                            : 'border-white/12 bg-[rgba(255,255,255,0.15)] text-white/60 hover:border-white/25'
-                    )}
-                    title={
-                      isCompleted && !isActive
-                        ? 'Нажмите чтобы просмотреть завершенный день' 
-                        : isLockedFuture 
-                          ? 'Завершите предыдущий день чтобы разблокировать' 
-                          : undefined
-                    }
-                  >
-                    {isLockedFuture && (
-                      <span className="absolute inset-0 flex items-center justify-center text-base">
-                        🔒
-                      </span>
-                    )}
-                    {isCompleted && !isActive && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#ff84ff] text-[10px]">
-                        ✓
-                      </span>
-                    )}
-                    <span className={isLockedFuture ? 'opacity-0' : ''}>{day}</span>
-                  </button>
-                );
-              })}
+            
+            {/* Status icon */}
+            <div className="text-2xl">
+              {dayData.isCompleted ? '✓' : dayData.isLocked ? '🔒' : dayData.isCurrent ? '▶️' : '○'}
             </div>
+            
+            {/* Progress indicator for non-completed days with some progress */}
+            {!dayData.isCompleted && dayData.completedTasksCount > 0 && (
+              <div className="absolute bottom-2 left-2 right-2">
+                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${dayData.progress}%` }}
+                    className="h-full bg-gradient-to-r from-primary to-accent"
+                  />
+                </div>
+                <div className="text-[9px] text-white/50 text-center mt-0.5">
+                  {dayData.completedTasksCount}/{dayData.totalTasks}
+                </div>
+              </div>
+            )}
+            
+            {/* Topic hint - shown on hover */}
+            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48">
+              <div className="bg-[#1a0b2e] border border-white/20 rounded-lg p-2 text-[10px] text-white/90 text-center shadow-xl">
+                {dayData.topic}
+              </div>
+            </div>
+          </motion.button>
+        ))}
+      </div>
+      
+      {/* Week markers */}
+      <div className="mt-8 flex items-center justify-between text-xs text-white/40 px-2">
+        {WEEK_MARKERS.map((marker, index) => (
+          <div key={marker.week} className="flex items-center gap-2">
+            {index > 0 && <div className="flex-1 border-t border-white/10 w-16 sm:w-24" />}
+            <span className="whitespace-nowrap">Неделя {marker.week}</span>
           </div>
         ))}
       </div>

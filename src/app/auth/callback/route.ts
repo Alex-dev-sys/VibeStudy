@@ -36,11 +36,13 @@ export async function GET(request: NextRequest) {
         timeDiff: Math.abs(createdAt - lastSignIn)
       });
       
-      // Redirect to /learn with registration flag if new user
+      // Redirect to /learn with flags
       const redirectUrl = new URL('/learn', origin);
       if (isNewUser) {
         redirectUrl.searchParams.set('new_user', 'true');
       }
+      // Always set migrate_guest flag to trigger migration check on client
+      redirectUrl.searchParams.set('migrate_guest', 'true');
       
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
       return NextResponse.redirect(redirectUrl);

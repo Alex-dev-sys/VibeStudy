@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Editor from '@monaco-editor/react';
-import { Button } from '@/components/ui/Button';
+import { LazyMonacoEditor } from '@/lib/performance/lazy-components';
+import { Button } from '@/components/ui/button';
 import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { usePlaygroundStore } from '@/store/playground-store';
@@ -220,7 +220,7 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-white">
+    <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
@@ -331,7 +331,7 @@ export default function PlaygroundPage() {
                   />
                 </div>
               ) : (
-                <Editor
+                <LazyMonacoEditor
                   height="500px"
                   language={currentLanguage?.monacoLanguage || 'python'}
                   theme="vs-dark"

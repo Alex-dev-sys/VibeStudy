@@ -80,7 +80,11 @@ import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AutoMigrationGate } from '@/components/migration/AutoMigrationGate';
+import { Navigation } from '@/components/layout/Navigation';
+import { FloatingHelpButton } from '@/components/help/FloatingHelpButton';
 import { Toaster } from 'sonner';
+import { AriaAnnouncer } from '@/lib/accessibility/aria-announcer';
+import { SkipLinks } from '@/lib/accessibility/skip-links';
 
 export default function RootLayout({
   children
@@ -93,14 +97,32 @@ export default function RootLayout({
         <ErrorBoundary>
           <RealtimeProvider>
             <OnboardingProvider>
+              {/* Accessibility Components */}
+              <AriaAnnouncer />
+              <SkipLinks />
+              
               <AutoMigrationGate />
-              <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-accent focus:text-white">
-                Перейти к основному содержимому
-              </a>
-              <div id="main-content" tabIndex={-1} className="focus:outline-none">
+              <Navigation />
+              <FloatingHelpButton />
+              
+              <main id="main-content" tabIndex={-1} className="focus:outline-none">
                 {children}
-              </div>
-              <Toaster position="bottom-right" />
+              </main>
+              
+              <Toaster 
+                position="bottom-right" 
+                toastOptions={{
+                  style: {
+                    background: 'rgba(26, 11, 46, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(12px)',
+                  },
+                  className: 'rounded-2xl shadow-2xl',
+                }}
+                aria-live="polite"
+                aria-atomic="true"
+              />
             </OnboardingProvider>
           </RealtimeProvider>
         </ErrorBoundary>

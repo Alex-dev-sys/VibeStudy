@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { TaskList } from './TaskList';
@@ -105,14 +105,14 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
                 {isDayCompleted ? 'Режим просмотра — день уже завершен' : dayTopic.description}
               </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               {!isDayCompleted && (
                 <Button
                   variant={generationButtonVariant}
                   size="md"
                   onClick={isPending ? requestInitialGeneration : regenerate}
                   disabled={loading}
-                  className="w-full text-xs sm:w-auto sm:text-sm"
+                  className="w-full text-sm sm:w-auto touch-target"
                 >
                   {generationButtonLabel}
                 </Button>
@@ -131,11 +131,11 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
           <div className="flex flex-col gap-3 px-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Button
               variant="primary"
-              size="md"
+              size="lg"
               onClick={() => markDayComplete(day.day)}
               disabled={finishDisabled}
               title={finishButtonTitle}
-              className="w-full text-xs sm:w-auto sm:text-sm disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full sm:w-auto touch-target disabled:cursor-not-allowed disabled:opacity-70"
             >
               Завершить день
             </Button>

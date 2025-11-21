@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import Confetti from 'react-confetti';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 import { difficultyColorMap } from '@/lib/utils';

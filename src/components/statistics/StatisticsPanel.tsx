@@ -1,15 +1,23 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { ActivityCalendar } from './ActivityCalendar';
 import { ProgressChart } from './ProgressChart';
+import { EmptyStatistics } from '@/components/profile/EmptyStatistics';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
 
 export function StatisticsPanel() {
+  const router = useRouter();
   const { record, dayStates } = useProgressStore();
   const { stats } = useAchievementsStore();
+
+  // Show empty state if no completed days
+  if (record.completedDays.length === 0) {
+    return <EmptyStatistics onStartLearning={() => router.push('/learn')} />;
+  }
 
   const statistics = useMemo(() => {
     const totalTasks = Object.values(dayStates).reduce(

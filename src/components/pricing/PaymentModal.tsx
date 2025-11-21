@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Copy, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { clsx } from 'clsx';
 import QRCode from 'qrcode';
 

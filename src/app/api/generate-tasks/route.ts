@@ -4,7 +4,7 @@ import { saveGeneratedContent } from '@/lib/db';
 import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
 import { taskGenerationSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { logWarn, logError } from '@/lib/logger';
+import { logWarn, logError, logInfo } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
@@ -588,10 +588,10 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
                 }
               ],
               temperature: 0.8,
-              maxTokens: 1500
+              maxTokens: 2000
             }),
           {
-            timeoutMs: 60_000,
+            timeoutMs: 120_000, // Увеличен до 2 минут
             priority: 'high',
             metadata: { endpoint: 'generate-tasks', attempt, day: body.day, languageId: body.languageId }
           }
@@ -627,25 +627,44 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
             metadata: { day: body.day, languageId: body.languageId }
           });
         } else {
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait a bit before retrying (exponential backoff)
+          const waitTime = 1000 * attempt; // 1s, 2s, 3s...
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       } catch (attemptError) {
-        logError(`Attempt ${attempt} failed`, attemptError as Error, {
+        const errorMessage = attemptError instanceof Error ? attemptError.message : String(attemptError);
+        const isNetworkError = errorMessage.includes('timeout') || 
+                              errorMessage.includes('Connection reset') || 
+                              errorMessage.includes('ECONNRESET') ||
+                              errorMessage.includes('socket hang up');
+        
+        logError(`Attempt ${attempt} failed: ${errorMessage}`, attemptError as Error, {
           component: 'api',
           action: 'generate-tasks',
-          metadata: { day: body.day, attempt }
+          metadata: { day: body.day, attempt, isNetworkError }
         });
+        
+        // If it's the last attempt or not a network error, throw
         if (attempt === MAX_RETRIES) {
-          throw attemptError;
+          // Don't throw, just use fallback
+          logWarn('Using fallback after all retries failed', {
+            component: 'api',
+            action: 'generate-tasks',
+            metadata: { day: body.day, languageId: body.languageId, lastError: errorMessage }
+          });
+          break;
         }
+        
+        // Wait before retry (exponential backoff)
+        const waitTime = 2000 * attempt; // 2s, 4s, 6s...
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
 
     // Сохраняем в базу данных
     if (!isFallback) {
       try {
-        saveGeneratedContent({
+        await saveGeneratedContent({
           day: body.day,
           languageId: body.languageId,
           topic: body.dayTopic ?? 'Тема дня',
@@ -655,6 +674,11 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
           tasks: parsedResponse.tasks
         });
         apiCache.set(cacheKey, { ...parsedResponse, isFallback }, CACHE_TTL.AI_CONTENT);
+        logInfo('Content saved successfully', {
+          component: 'api',
+          action: 'generate-tasks',
+          metadata: { day: body.day, languageId: body.languageId }
+        });
       } catch (dbError) {
         logError('Failed to save generated content to DB', dbError as Error, {
           component: 'api',
@@ -663,6 +687,12 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
         });
         // Продолжаем работу даже если не удалось сохранить
       }
+    } else {
+      logWarn('Skipping save for fallback content', {
+        component: 'api',
+        action: 'generate-tasks',
+        metadata: { day: body.day, languageId: body.languageId }
+      });
     }
 
     return NextResponse.json({ ...parsedResponse, isFallback });

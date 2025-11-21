@@ -3,10 +3,9 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { useTranslations } from '@/store/locale-store';
 
 const TOTAL_DAYS = 90;
@@ -41,7 +40,6 @@ export function ProgressOverview() {
           <p className="mt-1 text-xs text-white/65 sm:text-sm">{t.dashboard.subtitle}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <LocaleSwitcher />
           <Link href="/pricing">
             <Button variant="primary" size="sm" className="text-xs sm:text-sm">
               ⭐ Premium

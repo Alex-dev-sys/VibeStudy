@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { usePlaygroundStore, type CodeSnippet } from '@/store/playground-store';
+import { EmptySnippets } from './EmptySnippets';
 
 interface SnippetsListProps {
   onLoadSnippet: (snippet: CodeSnippet) => void;
@@ -49,17 +50,7 @@ export function SnippetsList({ onLoadSnippet }: SnippetsListProps) {
   };
   
   if (snippetsList.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <span className="text-4xl">📝</span>
-        <p className="mt-3 text-sm text-white/60">
-          У вас пока нет сохранённых сниппетов
-        </p>
-        <p className="mt-1 text-xs text-white/40">
-          Нажмите "Сохранить сниппет" чтобы добавить первый
-        </p>
-      </div>
-    );
+    return <EmptySnippets />;
   }
   
   return (

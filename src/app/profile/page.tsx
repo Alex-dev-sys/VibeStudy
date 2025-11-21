@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ProfileCard } from '@/components/profile/ProfileCard';
 import { TelegramSettings } from '@/components/profile/TelegramSettings';
+import { SettingsSection } from '@/components/profile/SettingsSection';
 import { ReferralWidget } from '@/components/referral/ReferralWidget';
 import { AchievementsPanel } from '@/components/achievements/AchievementsPanel';
 import { StatisticsPanel } from '@/components/statistics/StatisticsPanel';
@@ -13,7 +14,7 @@ import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 
 export default function ProfilePage() {
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden text-white">
+    <main id="main-content" className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
@@ -46,6 +47,9 @@ export default function ProfilePage() {
         </section>
         <section aria-label="Настройки Telegram">
           <TelegramSettings />
+        </section>
+        <section aria-label="Настройки">
+          <SettingsSection />
         </section>
         <section aria-label="Реферальная программа">
           <ReferralWidget />

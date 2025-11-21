@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useOnboardingStore } from '@/store/onboarding-store';
 import { ONBOARDING_STEPS } from '@/lib/onboarding/steps';
-import { OnboardingTour } from './OnboardingTour';
+import { InteractiveOnboarding } from './InteractiveOnboarding';
 
 interface OnboardingProviderProps {
   children: React.ReactNode;
@@ -27,9 +27,9 @@ export function OnboardingProvider({ children, context }: OnboardingProviderProp
     // Set onboarding steps
     setSteps(ONBOARDING_STEPS);
 
-    // Only auto-start onboarding in learning or playground contexts
+    // Only auto-start onboarding in learning context
     // Landing page shows benefit cards instead
-    if (!hasCompletedOnboarding && (effectiveContext === 'learning' || effectiveContext === 'playground')) {
+    if (!hasCompletedOnboarding && effectiveContext === 'learning') {
       const timer = setTimeout(() => {
         startOnboarding();
       }, 1500);
@@ -41,8 +41,8 @@ export function OnboardingProvider({ children, context }: OnboardingProviderProp
   return (
     <>
       {children}
-      {/* Only show onboarding tour in learning/playground contexts */}
-      {effectiveContext !== 'landing' && <OnboardingTour />}
+      {/* Only show onboarding in learning context */}
+      {effectiveContext === 'learning' && <InteractiveOnboarding />}
     </>
   );
 }

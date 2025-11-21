@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
 
@@ -31,8 +31,12 @@ const featureCards = [
 ];
 
 import { BenefitCards } from './BenefitCards';
+import { AuthFlow } from '@/components/auth/AuthFlow';
+import { useState } from 'react';
 
 export function HeroShowcase() {
+  const [showAuthFlow, setShowAuthFlow] = useState(false);
+
   return (
     <section className="relative isolate flex min-h-[100svh] flex-col items-center overflow-hidden text-white">
 
@@ -77,26 +81,37 @@ export function HeroShowcase() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
-            <Link href="/login">
-              <Button
-                variant="primary"
-                size="lg"
-                className="group relative w-full overflow-hidden px-8 py-4 text-base font-semibold transition-all sm:w-auto"
+            {!showAuthFlow ? (
+              <>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => setShowAuthFlow(true)}
+                  className="group relative w-full overflow-hidden px-8 py-4 text-base font-semibold transition-all sm:w-auto"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    Начать обучение
+                    <motion.span animate={{ x: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>
+                      →
+                    </motion.span>
+                  </span>
+                  <div className="absolute inset-0 -z-10 bg-[conic-gradient(from_120deg_at_50%_50%,rgba(130,110,255,0.8),rgba(69,174,255,0.7),rgba(130,110,255,0.8))] opacity-0 transition-opacity group-hover:opacity-100" />
+                </Button>
+                <Link href="/playground">
+                  <Button variant="secondary" size="lg" className="w-full px-8 py-4 text-base font-semibold sm:w-auto">
+                    Попробовать Playground
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Начать обучение
-                  <motion.span animate={{ x: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>
-                    →
-                  </motion.span>
-                </span>
-                <div className="absolute inset-0 -z-10 bg-[conic-gradient(from_120deg_at_50%_50%,rgba(130,110,255,0.8),rgba(69,174,255,0.7),rgba(130,110,255,0.8))] opacity-0 transition-opacity group-hover:opacity-100" />
-              </Button>
-            </Link>
-            <Link href="/playground">
-              <Button variant="secondary" size="lg" className="w-full px-8 py-4 text-base font-semibold sm:w-auto">
-                Попробовать Playground
-              </Button>
-            </Link>
+                <AuthFlow trigger="landing" />
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div

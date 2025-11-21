@@ -9,7 +9,7 @@ export default function AnalyticsPage() {
   const t = useTranslations();
   
   return (
-    <main id="main-content" className="min-h-screen bg-gradient-to-br from-[#0c061c] via-[#1a0b2e] to-[#0c061c] px-4 py-8 sm:px-6 lg:px-8">
+    <main id="main-content" className="min-h-screen bg-gradient-to-br from-[#0c061c] via-[#1a0b2e] to-[#0c061c] px-4 py-8 sm:px-6 lg:px-8 pt-[72px] md:pt-8 pb-[80px] md:pb-8">
       <div className="mx-auto max-w-7xl">
         {/* Back button */}
         <Link 

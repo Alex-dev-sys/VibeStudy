@@ -169,14 +169,35 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
   }
 
   try {
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(body)
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 секунд таймаут
+
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'Connection': 'keep-alive'
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      // Обработка ошибок сети
+      if (fetchError instanceof Error) {
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Request timeout - server took too long to respond');
+        }
+        if (fetchError.message.includes('ECONNRESET') || fetchError.message.includes('socket hang up') || fetchError.message.includes('other side closed')) {
+          throw new Error('Connection reset by server - please try again');
+        }
+      }
+      throw fetchError;
+    }
 
     const rawBody = await response.text();
     console.log('🔍 Raw API Response (first 500 chars):', rawBody.slice(0, 500));
@@ -233,14 +254,34 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
           model: DEFAULT_MODEL
         };
 
-        const fallbackResponse = await fetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`
-          },
-          body: JSON.stringify(fallbackBody)
-        });
+        const fallbackController = new AbortController();
+        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 90000);
+
+        let fallbackResponse: Response;
+        try {
+          fallbackResponse = await fetch(`${baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+              'Connection': 'keep-alive'
+            },
+            body: JSON.stringify(fallbackBody),
+            signal: fallbackController.signal
+          });
+          clearTimeout(fallbackTimeoutId);
+        } catch (fallbackFetchError) {
+          clearTimeout(fallbackTimeoutId);
+          if (fallbackFetchError instanceof Error) {
+            if (fallbackFetchError.name === 'AbortError') {
+              throw new Error('Fallback request timeout');
+            }
+            if (fallbackFetchError.message.includes('ECONNRESET') || fallbackFetchError.message.includes('socket hang up') || fallbackFetchError.message.includes('other side closed')) {
+              throw new Error('Fallback connection reset by server');
+            }
+          }
+          throw fallbackFetchError;
+        }
 
         const fallbackRawBody = await fallbackResponse.text();
         console.log('🔍 Fallback API Response (first 500 chars):', fallbackRawBody.slice(0, 500));

@@ -99,7 +99,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-white">
+    <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { PricingCard, type PricingTier } from '@/components/pricing/PricingCard';
 import { PaymentModal } from '@/components/pricing/PaymentModal';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
@@ -224,7 +224,7 @@ export default function PricingPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-white">
+    <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
