@@ -31,19 +31,21 @@ export function Navigation() {
         className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl border-b border-white/10"
         aria-label="Main navigation"
       >
-        <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-6 py-3 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <Link 
-            href="/learn" 
-            className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg shrink-0"
-          >
-            <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
-              VibeStudy
-            </span>
-          </Link>
+        <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-6 py-3 grid grid-cols-3 items-center gap-4">
+          {/* Logo - Left */}
+          <div className="flex justify-start">
+            <Link 
+              href="/learn" 
+              className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg"
+            >
+              <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
+                VibeStudy
+              </span>
+            </Link>
+          </div>
           
           {/* Nav Items - Center */}
-          <div className="flex items-center gap-1 lg:gap-2">
+          <div className="flex items-center justify-center gap-1 lg:gap-2">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -69,7 +71,7 @@ export function Navigation() {
           </div>
           
           {/* User Actions - Right */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center justify-end gap-2">
             {/* Premium and Challenges buttons */}
             <Link href="/pricing" className="hidden lg:block">
               <Button variant="primary" size="sm" className="text-xs whitespace-nowrap">
