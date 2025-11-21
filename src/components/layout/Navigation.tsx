@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Code, BarChart3, Target } from 'lucide-react';
+import { BookOpen, Code, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgressStore } from '@/store/progress-store';
 import { StreakIndicator } from './StreakIndicator';
@@ -31,19 +31,19 @@ export function Navigation() {
         className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl border-b border-white/10"
         aria-label="Main navigation"
       >
-        <div className="max-w-7xl mx-auto w-full px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-6 py-3 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link 
             href="/learn" 
-            className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg"
+            className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg shrink-0"
           >
-            <span className="text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
+            <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
               VibeStudy
             </span>
           </Link>
           
-          {/* Nav Items */}
-          <div className="flex items-center gap-2">
+          {/* Nav Items - Center */}
+          <div className="flex items-center gap-1 lg:gap-2">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -53,7 +53,7 @@ export function Navigation() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-full transition-all',
+                    'flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-2 rounded-full transition-all text-sm lg:text-base',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
                     isActive
                       ? 'bg-gradient-to-r from-accent/20 to-secondary/20 text-white shadow-lg shadow-accent/20'
@@ -61,23 +61,23 @@ export function Navigation() {
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="w-5 h-5" aria-hidden="true" />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon className="w-4 h-4 lg:w-5 lg:h-5" aria-hidden="true" />
+                  <span className="font-medium hidden lg:inline">{item.label}</span>
                 </Link>
               );
             })}
           </div>
           
-          {/* User Actions */}
-          <div className="flex items-center gap-3">
+          {/* User Actions - Right */}
+          <div className="flex items-center gap-2 shrink-0">
             {/* Premium and Challenges buttons */}
-            <Link href="/pricing">
-              <Button variant="primary" size="sm" className="text-xs">
+            <Link href="/pricing" className="hidden lg:block">
+              <Button variant="primary" size="sm" className="text-xs whitespace-nowrap">
                 ⭐ Premium
               </Button>
             </Link>
-            <Link href="/challenges">
-              <Button variant="secondary" size="sm" className="text-xs">
+            <Link href="/challenges" className="hidden lg:block">
+              <Button variant="secondary" size="sm" className="text-xs whitespace-nowrap">
                 🎯 Челленджи
               </Button>
             </Link>
