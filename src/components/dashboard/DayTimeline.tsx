@@ -22,8 +22,17 @@ export function DayTimeline() {
     setActiveDay: state.setActiveDay
   }));
 
-  // Auto-scroll to active day on mount and when activeDay changes
+  // Track if this is the first render
+  const isFirstRender = useRef(true);
+
+  // Auto-scroll to active day only when activeDay changes (not on initial mount)
   useEffect(() => {
+    // Skip scroll on first render
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     if (scrollContainerRef.current) {
       const activeDayElement = scrollContainerRef.current.querySelector(`[data-day="${activeDay}"]`);
       if (activeDayElement) {
