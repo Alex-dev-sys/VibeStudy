@@ -1,6 +1,6 @@
 // Telegram Bot Database Utilities
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type {
   TelegramProfile,
   ReminderSchedule,
@@ -12,6 +12,21 @@ import type {
   ReminderType,
   MessageType
 } from '@/types/telegram';
+
+// ============================================================================
+// Helper: Create Supabase Client
+// ============================================================================
+
+function createClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseKey);
+}
 
 // ============================================================================
 // Telegram Profiles
