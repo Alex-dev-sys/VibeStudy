@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { useProgressStore } from '@/store/progress-store';
 import { getDayTopic } from '@/lib/curriculum';
 
@@ -14,6 +15,7 @@ const WEEK_MARKERS = [
 ];
 
 export function DayTimeline() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { activeDay, completedDays, dayStates, setActiveDay } = useProgressStore((state) => ({
     activeDay: state.activeDay,
@@ -73,17 +75,35 @@ export function DayTimeline() {
     });
   }, [activeDay, completedDays, dayStates]);
 
+  // Calculate current week (7 days around active day)
+  const currentWeekDays = useMemo(() => {
+    const weekStart = Math.floor((activeDay - 1) / 7) * 7 + 1;
+    const weekEnd = Math.min(weekStart + 6, 90);
+    return daysWithProgress.filter(d => d.day >= weekStart && d.day <= weekEnd);
+  }, [activeDay, daysWithProgress]);
+
+  const displayedDays = isExpanded ? daysWithProgress : currentWeekDays;
+
   return (
     <section className="relative glass-panel-soft rounded-2xl p-4 sm:rounded-3xl sm:p-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3">
+      {/* Header with Toggle */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 rounded-lg"
+      >
         <div>
           <h2 className="text-base font-semibold text-white/95 sm:text-lg">Твой путь</h2>
           <p className="mt-1 text-xs text-white/60 sm:text-sm">
             {completedDays.length} из 90 дней завершено
           </p>
         </div>
-      </div>
+        <motion.div
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="w-5 h-5 text-white/60" />
+        </motion.div>
+      </button>
 
       {/* Legend */}
       <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-white/55 sm:mt-4 sm:text-xs">
@@ -105,12 +125,24 @@ export function DayTimeline() {
         </span>
       </div>
 
-      {/* Timeline Grid - All days visible */}
-      <div 
-        ref={scrollContainerRef}
-        className="mt-6 grid grid-cols-10 gap-2 sm:gap-3"
-      >
-        {daysWithProgress.map((dayData) => (
+      {/* Timeline Grid - Collapsible */}
+      <AnimatePresence initial={false}>
+        {(isExpanded || currentWeekDays.length > 0) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div 
+              ref={scrollContainerRef}
+              className={clsx(
+                "mt-6 grid gap-2 sm:gap-3",
+                isExpanded ? "grid-cols-10" : "grid-cols-7"
+              )}
+            >
+              {displayedDays.map((dayData) => (
           <motion.button
             key={dayData.day}
             data-day={dayData.day}
@@ -158,8 +190,10 @@ export function DayTimeline() {
 
           </motion.button>
         ))}
-      </div>
-
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

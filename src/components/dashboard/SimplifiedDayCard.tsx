@@ -29,7 +29,7 @@ export function SimplifiedDayCard({ day, previousDay, languageId }: SimplifiedDa
     currentDay: day, 
     previousDay, 
     languageId, 
-    autoLoad: true 
+    autoLoad: false 
   });
 
   const language = useMemo(
