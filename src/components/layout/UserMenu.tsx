@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, signOut } from '@/lib/supabase/auth';
@@ -103,8 +103,8 @@ export function UserMenu() {
                 role="menuitem"
                 onClick={() => setIsOpen(false)}
               >
-                <Settings className="w-4 h-4 text-white/60" aria-hidden="true" />
-                <span className="text-sm text-white/90">Настройки</span>
+                <User className="w-4 h-4 text-white/60" aria-hidden="true" />
+                <span className="text-sm text-white/90">Профиль</span>
               </Link>
               
               <button

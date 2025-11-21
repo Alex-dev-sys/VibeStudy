@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Code, BarChart3, User } from 'lucide-react';
+import { BookOpen, Code, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgressStore } from '@/store/progress-store';
 import { StreakIndicator } from './StreakIndicator';
@@ -12,7 +12,6 @@ const NAV_ITEMS = [
   { href: '/learn', label: 'Обучение', labelEn: 'Learn', icon: BookOpen },
   { href: '/playground', label: 'Песочница', labelEn: 'Playground', icon: Code },
   { href: '/analytics', label: 'Аналитика', labelEn: 'Analytics', icon: BarChart3 },
-  { href: '/profile', label: 'Профиль', labelEn: 'Profile', icon: User },
 ] as const;
 
 export function Navigation() {
