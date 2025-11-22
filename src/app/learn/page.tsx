@@ -34,8 +34,8 @@ export default function LearnPage() {
         <LearningDashboard />
       </div>
       
-      {/* AI Assistant */}
-      <AIAssistantContainer />
+      {/* AI Assistant - temporarily disabled due to SSR issues */}
+      {/* <AIAssistantContainer /> */}
     </main>
   );
 }
