@@ -17,7 +17,8 @@ export function UserMenu() {
     const checkUser = async () => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
-      setIsGuest(GuestModeManager.isGuestMode());
+      // User is guest only if no authenticated user AND guest mode is active
+      setIsGuest(!currentUser && GuestModeManager.isGuestMode());
     };
     
     checkUser();
