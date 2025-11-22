@@ -10,3 +10,4 @@ export { PaywallModal } from './PaywallModal';
 export { UpgradePrompt } from './UpgradePrompt';
 export { LimitReachedNotification } from './LimitReachedNotification';
 export { FloatingChatButton } from './FloatingChatButton';
+export { AIAssistantContainer } from './AIAssistantContainer';
