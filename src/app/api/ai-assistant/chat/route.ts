@@ -25,15 +25,6 @@ const chatRequestSchema = z.object({
 });
 
 /**
- * Rate limit configuration for AI assistant
- */
-const AI_ASSISTANT_RATE_LIMITS = {
-  free: { requests: 5, window: 24 * 60 * 60 * 1000 }, // 5 per day
-  premium: { requests: 30, window: 60 * 1000 }, // 30 per minute
-  pro_plus: { requests: 100, window: 60 * 1000 }, // 100 per minute
-};
-
-/**
  * POST /api/ai-assistant/chat
  * Send message to AI assistant
  */
@@ -71,10 +62,15 @@ export async function POST(request: NextRequest) {
     const userId = request.headers.get('x-user-id') || 'guest';
     const tier = (request.headers.get('x-user-tier') as UserTier) || 'free';
 
-    // Check rate limits
-    const rateLimitKey = `ai-assistant:${userId}`;
-    const limit = AI_ASSISTANT_RATE_LIMITS[tier];
-    const rateLimitResult = evaluateRateLimit(rateLimitKey, limit.requests, limit.window);
+    // Check rate limits using the standard rate limit function
+    const rateLimitBucket = {
+      limit: tier === 'free' ? 5 : tier === 'premium' ? 30 : 100,
+      windowMs: tier === 'free' ? 24 * 60 * 60 * 1000 : 60 * 1000,
+    };
+    
+    const rateLimitResult = evaluateRateLimit(request, rateLimitBucket, {
+      bucketId: 'ai-assistant',
+    });
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
@@ -85,8 +81,8 @@ export async function POST(request: NextRequest) {
               ? 'Превышен лимит запросов. Попробуйте позже.'
               : 'Rate limit exceeded. Please try again later.',
             userMessage: validatedData.locale === 'ru'
-              ? `Вы использовали ${rateLimitResult.current}/${limit.requests} запросов. Попробуйте через ${Math.ceil(rateLimitResult.resetIn / 1000 / 60)} минут.`
-              : `You've used ${rateLimitResult.current}/${limit.requests} requests. Try again in ${Math.ceil(rateLimitResult.resetIn / 1000 / 60)} minutes.`,
+              ? `Вы использовали ${rateLimitResult.limit - rateLimitResult.remaining}/${rateLimitResult.limit} запросов. Попробуйте через ${rateLimitResult.retryAfterSeconds} секунд.`
+              : `You've used ${rateLimitResult.limit - rateLimitResult.remaining}/${rateLimitResult.limit} requests. Try again in ${rateLimitResult.retryAfterSeconds} seconds.`,
             retryable: true,
             upgradePrompt: tier === 'free' ? {
               tier: 'premium',
@@ -137,7 +133,12 @@ export async function POST(request: NextRequest) {
       let session = sessionManager.getSession(validatedData.sessionId);
       
       if (!session) {
-        session = sessionManager.createSession(userId);
+        // Create new session with context from aggregated context
+        session = sessionManager.createSession(userId, {
+          day: context.currentDay || 1,
+          languageId: context.languageId || 'javascript',
+          taskId: validatedData.taskId,
+        });
       }
 
       // Add user message
@@ -173,9 +174,10 @@ export async function POST(request: NextRequest) {
         suggestions: response.suggestions,
         relatedTopics: response.relatedTopics,
         usage: {
-          requestsToday: rateLimitResult.current,
-          limit: limit.requests,
-          resetIn: rateLimitResult.resetIn,
+          requestsUsed: rateLimitResult.limit - rateLimitResult.remaining,
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          retryAfterSeconds: rateLimitResult.retryAfterSeconds,
         },
       },
       {

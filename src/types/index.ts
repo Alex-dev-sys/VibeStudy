@@ -1,5 +1,7 @@
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'advanced' | 'challenge';
 
+export type UserTier = 'free' | 'premium' | 'pro_plus';
+
 export interface ProgrammingLanguage {
   id: string;
   label: string;

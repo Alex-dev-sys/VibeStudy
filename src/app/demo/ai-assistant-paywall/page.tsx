@@ -6,6 +6,9 @@
  */
 
 import React, { useState } from 'react';
+
+// Disable static generation for this demo page
+export const dynamic = 'force-dynamic';
 import { Button } from '@/components/ui/button';
 import { PaywallModal, UpgradePrompt, LimitReachedNotification } from '@/components/ai-assistant';
 import { ArrowLeft } from 'lucide-react';
