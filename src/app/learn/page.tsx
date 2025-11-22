@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { Suspense } from 'react';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 
@@ -8,7 +8,10 @@ import { FirstDayCompletionPrompt } from '@/components/auth/FirstDayCompletionPr
 import { AIAssistantContainer } from '@/components/ai-assistant';
 import type { Metadata } from 'next';
 
-const LearningDashboard = dynamic(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
+const LearningDashboard = dynamicImport(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
+
+// Disable static generation for this page (AI Assistant requires client-side rendering)
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   ...generatePageMetadata('learn'),
