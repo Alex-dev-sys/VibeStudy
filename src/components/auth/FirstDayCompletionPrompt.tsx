@@ -21,6 +21,10 @@ export function FirstDayCompletionPrompt() {
   // Check if we should show the first day completion prompt
   useEffect(() => {
     const checkPrompt = () => {
+      // Temporarily disabled - modal blocks interface
+      // TODO: Fix Google Sign In button and re-enable
+      return;
+      
       // Don't show if already showing
       if (showPrompt) return;
 
