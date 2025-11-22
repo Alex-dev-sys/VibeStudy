@@ -5,10 +5,10 @@ import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
 import { RegistrationSuccessNotification } from '@/components/auth/RegistrationSuccessNotification';
 import { FirstDayCompletionPrompt } from '@/components/auth/FirstDayCompletionPrompt';
-import { AIAssistantContainer } from '@/components/ai-assistant';
 import type { Metadata } from 'next';
 
 const LearningDashboard = dynamicImport(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
+const AIAssistantContainer = dynamicImport(() => import('@/components/ai-assistant').then(mod => ({ default: mod.AIAssistantContainer })), { ssr: false });
 
 // Disable static generation for this page (AI Assistant requires client-side rendering)
 export const dynamic = 'force-dynamic';
