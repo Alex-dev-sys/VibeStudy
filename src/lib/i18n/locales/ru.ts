@@ -453,6 +453,56 @@ export const ru = {
     dataDeleted: 'Данные удалены',
     dataDeletedDescription: 'Все локальные данные были удалены. Страница будет перезагружена.'
   },
+  aiAssistant: {
+    chat: {
+      clearHistory: 'Очистить историю',
+      clearHistoryConfirm: 'Нажмите еще раз для подтверждения',
+      saveConversation: 'Сохранить разговор',
+      privacyNotice: 'История чата хранится только в текущей сессии.',
+      privacyNoticeSaved: 'Разговор будет сохранен в базе данных.',
+      privacyNoticeDefault: 'При закрытии вкладки история удаляется.',
+      historyCleared: 'История чата очищена'
+    },
+    paywall: {
+      title: 'AI Ассистент доступен в Premium',
+      subtitle: 'Разблокируй безлимитный доступ к AI-помощнику',
+      unlimitedRequests: 'Безлимитные запросы',
+      unlimitedRequestsDesc: 'Задавай вопросы без ограничений',
+      bestModels: 'Лучшие AI модели',
+      bestModelsDesc: 'GPT-4o и Claude 3.5 Sonnet',
+      personalHelp: 'Персональная помощь',
+      personalHelpDesc: 'Индивидуальные рекомендации и советы',
+      freeTier: 'Бесплатный план: 5 запросов в день',
+      upgradeButton: 'Перейти на Premium',
+      closeButton: 'Закрыть'
+    },
+    upgrade: {
+      title: 'Подписка истекла',
+      subtitle: 'Продли подписку, чтобы продолжить использовать AI-ассистента',
+      expiredOn: 'Истекла',
+      whatYouGet: 'Что вы получите:',
+      unlimitedRequests: 'Безлимитные AI-запросы',
+      bestModels: 'Доступ к лучшим моделям',
+      personalRecommendations: 'Персональные рекомендации',
+      prioritySupport: 'Приоритетная поддержка',
+      renewButton: 'Продлить подписку',
+      closeButton: 'Закрыть',
+      note: 'Ваш прогресс и достижения сохранены'
+    },
+    limitReached: {
+      title: 'Лимит запросов исчерпан',
+      subtitle: 'Вы использовали все доступные запросы на сегодня',
+      usageInfo: 'Использовано',
+      resetInfo: 'Лимит обновится завтра',
+      upgradeTitle: 'Хотите больше?',
+      upgradeDescription: 'Обновитесь до Premium для безлимитного доступа',
+      unlimitedRequests: 'Безлимитные AI-запросы',
+      advancedModels: 'Продвинутые AI модели',
+      priorityGeneration: 'Приоритетная генерация',
+      upgradeButton: 'Перейти на Premium',
+      closeButton: 'Понятно'
+    }
+  },
   pricing: {
     title: 'Выберите свой план',
     subtitle: 'Разблокируйте полный потенциал обучения с премиум-доступом',

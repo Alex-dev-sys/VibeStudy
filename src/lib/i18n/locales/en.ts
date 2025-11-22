@@ -455,6 +455,56 @@ export const en: Translations = {
     dataDeleted: 'Data deleted',
     dataDeletedDescription: 'All local data has been deleted. The page will be reloaded.'
   },
+  aiAssistant: {
+    chat: {
+      clearHistory: 'Clear History',
+      clearHistoryConfirm: 'Click again to confirm',
+      saveConversation: 'Save conversation',
+      privacyNotice: 'Chat history is stored only in the current session.',
+      privacyNoticeSaved: 'Conversation will be saved to database.',
+      privacyNoticeDefault: 'History is deleted when you close the tab.',
+      historyCleared: 'Chat history cleared'
+    },
+    paywall: {
+      title: 'AI Assistant Available in Premium',
+      subtitle: 'Unlock unlimited access to AI assistant',
+      unlimitedRequests: 'Unlimited Requests',
+      unlimitedRequestsDesc: 'Ask questions without limits',
+      bestModels: 'Best AI Models',
+      bestModelsDesc: 'GPT-4o and Claude 3.5 Sonnet',
+      personalHelp: 'Personal Help',
+      personalHelpDesc: 'Individual recommendations and advice',
+      freeTier: 'Free plan: 5 requests per day',
+      upgradeButton: 'Upgrade to Premium',
+      closeButton: 'Close'
+    },
+    upgrade: {
+      title: 'Subscription Expired',
+      subtitle: 'Renew your subscription to continue using AI assistant',
+      expiredOn: 'Expired on',
+      whatYouGet: 'What you get:',
+      unlimitedRequests: 'Unlimited AI requests',
+      bestModels: 'Access to best models',
+      personalRecommendations: 'Personal recommendations',
+      prioritySupport: 'Priority support',
+      renewButton: 'Renew Subscription',
+      closeButton: 'Close',
+      note: 'Your progress and achievements are saved'
+    },
+    limitReached: {
+      title: 'Request Limit Reached',
+      subtitle: "You've used all available requests for today",
+      usageInfo: 'Used',
+      resetInfo: 'Limit resets tomorrow',
+      upgradeTitle: 'Want more?',
+      upgradeDescription: 'Upgrade to Premium for unlimited access',
+      unlimitedRequests: 'Unlimited AI requests',
+      advancedModels: 'Advanced AI models',
+      priorityGeneration: 'Priority generation',
+      upgradeButton: 'Upgrade to Premium',
+      closeButton: 'Got it'
+    }
+  },
   pricing: {
     title: 'Choose Your Plan',
     subtitle: 'Unlock the full potential of learning with premium access',
