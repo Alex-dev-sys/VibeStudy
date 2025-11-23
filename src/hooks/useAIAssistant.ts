@@ -5,7 +5,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getSessionManager } from '@/lib/ai-assistant/session-manager';
-import { getAIAssistantService } from '@/lib/ai-assistant/service';
 import type { Message, ChatResponse, ErrorResponse } from '@/lib/ai-assistant/types';
 import { useProgressStore } from '@/store/progress-store';
 import { useProfileStore } from '@/store/profile-store';
@@ -49,6 +48,22 @@ interface UseAIAssistantState {
 }
 
 /**
+ * Get human-readable language name
+ */
+function getLanguageName(languageId: string): string {
+  const names: Record<string, string> = {
+    python: 'Python',
+    javascript: 'JavaScript',
+    typescript: 'TypeScript',
+    java: 'Java',
+    cpp: 'C++',
+    csharp: 'C#',
+    go: 'Go',
+  };
+  return names[languageId] || languageId;
+}
+
+/**
  * Custom hook for AI Assistant functionality
  */
 export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
@@ -75,7 +90,6 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
   
   // Get service instances
   const sessionManager = getSessionManager();
-  const aiService = getAIAssistantService(locale);
   
   // Use external isOpen if provided, otherwise use internal
   const effectiveIsOpen = externalIsOpen !== undefined ? externalIsOpen : isOpen;
@@ -93,33 +107,21 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
       
       setSessionId(session.id);
       
-      // Generate welcome message
+      // Generate simple welcome message (no AI service needed on client)
       const welcomeMessage: Message = {
         id: `msg_${Date.now()}_welcome`,
         sessionId: session.id,
         role: 'system',
-        content: '', // Will be set below
+        content: locale === 'ru' 
+          ? `Привет! 👋 Я твой AI-помощник по изучению программирования.\n\nСегодня у тебя День ${activeDay} изучения ${getLanguageName(languageId)}. Чем могу помочь? 😊`
+          : `Hi! 👋 I'm your AI programming learning assistant.\n\nToday is Day ${activeDay} of learning ${getLanguageName(languageId)}. How can I help? 😊`,
         timestamp: Date.now(),
       };
       
-      // Get context for welcome message
-      // Default to 'free' tier for welcome message generation
-      // Actual tier will be checked on API requests
-      aiService.aggregateContext(profile.id, 'free' as UserTier).then((context) => {
-        welcomeMessage.content = aiService.generateWelcomeMessage(context);
-        sessionManager.addMessage(session.id, welcomeMessage);
-        setMessages([welcomeMessage]);
-      }).catch((err) => {
-        console.error('Failed to generate welcome message:', err);
-        // Fallback welcome message
-        welcomeMessage.content = locale === 'ru' 
-          ? 'Привет! 👋 Я твой AI-помощник по изучению программирования. Чем могу помочь?'
-          : 'Hi! 👋 I\'m your AI programming learning assistant. How can I help?';
-        sessionManager.addMessage(session.id, welcomeMessage);
-        setMessages([welcomeMessage]);
-      });
+      sessionManager.addMessage(session.id, welcomeMessage);
+      setMessages([welcomeMessage]);
     }
-  }, [effectiveIsOpen, sessionId, profile.id, activeDay, languageId, locale, sessionManager, aiService]);
+  }, [effectiveIsOpen, sessionId, profile.id, activeDay, languageId, locale, sessionManager]);
   
   /**
    * Load existing session messages when session ID changes
