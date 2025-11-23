@@ -139,14 +139,26 @@ export class AIAssistantService {
       );
 
       modelUsed = aiResponse.model || 'unknown';
+      
+      console.log('[AIService] AI response received, length:', aiResponse.raw?.length || 0);
+      console.log('[AIService] First 200 chars:', aiResponse.raw?.substring(0, 200));
+
+      // Check if response is empty
+      if (!aiResponse.raw || aiResponse.raw.trim().length === 0) {
+        console.error('[AIService] Empty response from AI');
+        throw new Error('AI returned empty response');
+      }
 
       // Parse response
       const parsedResponse = this.responseParser.parseResponse(aiResponse.raw);
 
       // Validate response
       if (!this.responseParser.validateResponse(parsedResponse)) {
+        console.error('[AIService] Invalid response format:', parsedResponse);
         throw new Error('Invalid AI response format');
       }
+      
+      console.log('[AIService] Response validated successfully');
 
       // Cache the response (5 minute TTL for AI assistant responses)
       apiCache.set(cacheKey, parsedResponse, CACHE_TTL.DEFAULT);

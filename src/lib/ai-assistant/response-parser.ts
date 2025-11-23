@@ -39,6 +39,15 @@ export class ResponseParser {
    */
   parseResponse(rawResponse: string): AssistantResponse {
     try {
+      console.log('[ResponseParser] Parsing response, length:', rawResponse?.length || 0);
+      console.log('[ResponseParser] First 200 chars:', rawResponse?.substring(0, 200));
+      
+      // Check if response is empty or invalid
+      if (!rawResponse || typeof rawResponse !== 'string' || rawResponse.trim().length === 0) {
+        console.error('[ResponseParser] Empty or invalid response');
+        return this.createFallbackResponse('');
+      }
+
       // Extract code blocks
       const codeBlocks = this.config.extractCodeBlocks
         ? this.extractCodeBlocks(rawResponse)
@@ -57,12 +66,20 @@ export class ResponseParser {
       // Clean message (remove extracted elements if needed)
       const message = this.cleanMessage(rawResponse);
 
+      console.log('[ResponseParser] Parsed:', {
+        messageLength: message?.length || 0,
+        codeBlocks: codeBlocks?.length || 0,
+        suggestions: suggestions?.length || 0,
+        relatedTopics: relatedTopics?.length || 0
+      });
+
       // If message is empty after cleaning but we have code blocks or other content, that's OK
       // Only use fallback if there's truly no content at all
       if ((!message || message.trim().length === 0) && 
           !codeBlocks && 
           !suggestions && 
           !relatedTopics) {
+        console.warn('[ResponseParser] No content found, using fallback');
         return this.createFallbackResponse(rawResponse);
       }
 
@@ -74,7 +91,7 @@ export class ResponseParser {
       };
     } catch (error) {
       // Fallback: return raw response if parsing fails
-      console.error('Error parsing AI response:', error);
+      console.error('[ResponseParser] Error parsing AI response:', error);
       return this.createFallbackResponse(rawResponse);
     }
   }
