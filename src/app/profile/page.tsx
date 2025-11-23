@@ -18,51 +18,65 @@ export default function ProfilePage() {
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-3 py-6 sm:gap-8 sm:px-4 sm:py-8 md:gap-10 md:px-8 md:py-12 lg:px-14">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-white/95 sm:text-4xl">
-              <AnimatedGradientText className="px-1">Профиль</AnimatedGradientText>
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                Профиль
+              </span>
             </h1>
-            <p className="mt-2 text-sm text-white/75 sm:text-base">
-              Управляй данными, подключай Telegram-бота, отслеживай достижения и аналитику.
+            <p className="mt-2 text-sm text-white/60">
+              Управляйте своим прогрессом и настройками аккаунта
             </p>
           </div>
-          <nav aria-label="Навигация профиля" className="flex gap-2">
+          <div className="flex gap-3">
             <Link href="/analytics">
-              <Button variant="primary" size="md" aria-label="Перейти к аналитике">
+              <Button variant="secondary" size="sm" className="h-9 border-white/10 bg-white/5 text-xs hover:bg-white/10">
                 📊 Аналитика
               </Button>
             </Link>
             <Link href="/learn">
-              <Button variant="secondary" size="md" className="border-white/15 text-white/90" aria-label="Вернуться к обучению">
-                ← К обучению
+              <Button variant="primary" size="sm" className="h-9 text-xs">
+                Продолжить обучение
               </Button>
             </Link>
-          </nav>
+          </div>
         </header>
 
-        <section aria-label="Информация профиля">
-          <ProfileCard />
-        </section>
-        <section aria-label="Настройки Telegram">
-          <TelegramSettings />
-        </section>
-        <section aria-label="Настройки">
-          <SettingsSection />
-        </section>
-        <section aria-label="Реферальная программа">
-          <ReferralWidget />
-        </section>
-        <section aria-label="Достижения">
-          <AchievementsPanel />
-        </section>
-        <section aria-label="Статистика">
-          <StatisticsPanel />
-        </section>
-        <section aria-label="Аналитика">
-          <AnalyticsPanel />
-        </section>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Left Column: Profile & Settings */}
+          <div className="space-y-6 lg:col-span-4 xl:col-span-3">
+            <section aria-label="Информация профиля">
+              <ProfileCard />
+            </section>
+            <section aria-label="Настройки Telegram">
+              <TelegramSettings />
+            </section>
+            <section aria-label="Реферальная программа">
+              <ReferralWidget />
+            </section>
+            <section aria-label="Настройки">
+              <SettingsSection />
+            </section>
+          </div>
+
+          {/* Right Column: Stats & Achievements */}
+          <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+            <section aria-label="Статистика">
+              <StatisticsPanel />
+            </section>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <section aria-label="Достижения">
+                <AchievementsPanel />
+              </section>
+              <section aria-label="Аналитика">
+                <AnalyticsPanel />
+              </section>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );

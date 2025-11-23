@@ -8,6 +8,8 @@ import { ProgressChart } from './ProgressChart';
 import { EmptyStatistics } from '@/components/profile/EmptyStatistics';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
+import { BookOpen, CheckCircle2, Flame, Star, Clock, BarChart3, Trophy } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function StatisticsPanel() {
   const router = useRouter();
@@ -51,188 +53,135 @@ export function StatisticsPanel() {
     return <EmptyStatistics onStartLearning={() => router.push('/learn')} />;
   }
 
+  const StatCard = ({ icon: Icon, label, value, subtext, color }: any) => (
+    <div className="relative overflow-hidden rounded-xl bg-[#1e1e1e] p-4 shadow-lg ring-1 ring-white/5 transition-all hover:ring-white/10">
+      <div className={cn("absolute right-2 top-2 opacity-10", color)}>
+        <Icon className="h-16 w-16" />
+      </div>
+      <div className="relative z-10">
+        <div className={cn("mb-3 inline-flex rounded-lg bg-white/5 p-2", color)}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-xs font-medium text-white/50">{label}</div>
+        {subtext && <div className="mt-1 text-[10px] text-white/30">{subtext}</div>}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="border-accent/20">
-        <CardHeader>
-          <CardTitle className="text-2xl">📊 Статистика обучения</CardTitle>
-          <CardDescription>
-            Детальная аналитика вашего прогресса и активности
-          </CardDescription>
-        </CardHeader>
-      </Card>
-
-      {/* Overview Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl">📚</span>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-accent">
-                  {statistics.totalDays}
-                </div>
-                <div className="text-xs text-white/60">Дней завершено</div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl">✅</span>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-accent">
-                  {statistics.totalTasks}
-                </div>
-                <div className="text-xs text-white/60">Задач решено</div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl">🔥</span>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-accent">
-                  {statistics.currentStreak}
-                </div>
-                <div className="text-xs text-white/60">Текущая серия</div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl">⭐</span>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-accent">
-                  {statistics.perfectDays}
-                </div>
-                <div className="text-xs text-white/60">Идеальных дней</div>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+      {/* Overview Grid */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          icon={BookOpen}
+          label="Дней завершено"
+          value={statistics.totalDays}
+          color="text-blue-400"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="Задач решено"
+          value={statistics.totalTasks}
+          color="text-green-400"
+        />
+        <StatCard
+          icon={Flame}
+          label="Текущая серия"
+          value={statistics.currentStreak}
+          color="text-orange-400"
+        />
+        <StatCard
+          icon={Star}
+          label="Идеальных дней"
+          value={statistics.perfectDays}
+          color="text-yellow-400"
+        />
       </div>
 
-      {/* Detailed Stats */}
+      {/* Detailed Stats Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Time & Progress */}
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <CardTitle className="text-lg">Время и прогресс</CardTitle>
-          </CardHeader>
-          <div className="space-y-4 px-6 pb-6">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Общее время обучения</span>
-              <span className="font-semibold text-white">
+        <div className="rounded-xl bg-[#1e1e1e] p-6 shadow-lg ring-1 ring-white/5">
+          <div className="mb-6 flex items-center gap-2 text-white/80">
+            <Clock className="h-5 w-5" />
+            <h3 className="font-semibold">Время и прогресс</h3>
+          </div>
+          
+          <div className="space-y-5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <span className="text-sm text-white/60">Общее время</span>
+              <span className="font-mono font-semibold text-white">
                 {statistics.hoursSpent}ч {statistics.minutesSpent}м
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Процент завершения</span>
-              <span className="font-semibold text-accent">{statistics.completionRate}%</span>
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <span className="text-sm text-white/60">Процент курса</span>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-20 rounded-full bg-white/10">
+                  <div 
+                    className="h-full rounded-full bg-accent" 
+                    style={{ width: `${Math.min(parseFloat(statistics.completionRate), 100)}%` }} 
+                  />
+                </div>
+                <span className="font-mono font-semibold text-accent">{statistics.completionRate}%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <span className="text-sm text-white/60">Средняя задач/день</span>
+              <span className="font-mono font-semibold text-white">{statistics.avgTasksPerDay}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Средняя задач/день</span>
-              <span className="font-semibold text-white">{statistics.avgTasksPerDay}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/70">Лучшая серия</span>
-              <span className="font-semibold text-white">{statistics.longestStreak} дней</span>
+              <span className="text-sm text-white/60">Лучшая серия</span>
+              <span className="font-mono font-semibold text-white">{statistics.longestStreak} дней</span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        {/* Tasks by Difficulty */}
-        <Card className="border-white/10 bg-black/40">
-          <CardHeader>
-            <CardTitle className="text-lg">Задачи по сложности</CardTitle>
-          </CardHeader>
-          <div className="space-y-4 px-6 pb-6">
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-emerald-400">Easy</span>
-                <span className="font-semibold text-white">{statistics.easyTasks}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full bg-emerald-400"
-                  style={{
-                    width: `${(statistics.easyTasks / statistics.totalTasks) * 100 || 0}%`
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-yellow-400">Medium</span>
-                <span className="font-semibold text-white">{statistics.mediumTasks}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full bg-yellow-400"
-                  style={{
-                    width: `${(statistics.mediumTasks / statistics.totalTasks) * 100 || 0}%`
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-orange-400">Hard</span>
-                <span className="font-semibold text-white">{statistics.hardTasks}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full bg-orange-400"
-                  style={{
-                    width: `${(statistics.hardTasks / statistics.totalTasks) * 100 || 0}%`
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-red-400">Challenge</span>
-                <span className="font-semibold text-white">{statistics.challengeTasks}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full bg-red-400"
-                  style={{
-                    width: `${(statistics.challengeTasks / statistics.totalTasks) * 100 || 0}%`
-                  }}
-                />
-              </div>
-            </div>
+        {/* Tasks Distribution */}
+        <div className="rounded-xl bg-[#1e1e1e] p-6 shadow-lg ring-1 ring-white/5">
+          <div className="mb-6 flex items-center gap-2 text-white/80">
+            <BarChart3 className="h-5 w-5" />
+            <h3 className="font-semibold">Задачи по сложности</h3>
           </div>
-        </Card>
+          
+          <div className="space-y-4">
+            {[
+              { label: 'Easy', value: statistics.easyTasks, color: 'bg-emerald-400', text: 'text-emerald-400' },
+              { label: 'Medium', value: statistics.mediumTasks, color: 'bg-yellow-400', text: 'text-yellow-400' },
+              { label: 'Hard', value: statistics.hardTasks, color: 'bg-orange-400', text: 'text-orange-400' },
+              { label: 'Challenge', value: statistics.challengeTasks, color: 'bg-red-400', text: 'text-red-400' }
+            ].map((item) => (
+              <div key={item.label} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className={item.text}>{item.label}</span>
+                  <span className="font-mono text-white/60">{item.value}</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-500", item.color)}
+                    style={{
+                      width: `${(item.value / Math.max(statistics.totalTasks, 1)) * 100}%`
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Charts */}
-      <Card className="border-white/10 bg-black/40">
-        <CardHeader>
+      {/* Activity & Progress Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl bg-[#1e1e1e] p-6 shadow-lg ring-1 ring-white/5">
+          <h3 className="mb-4 font-semibold text-white/80">Динамика обучения</h3>
           <ProgressChart />
-        </CardHeader>
-      </Card>
-
-      <Card className="border-white/10 bg-black/40">
-        <CardHeader>
+        </div>
+        <div className="rounded-xl bg-[#1e1e1e] p-6 shadow-lg ring-1 ring-white/5">
+          <h3 className="mb-4 font-semibold text-white/80">Активность</h3>
           <ActivityCalendar />
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
-
