@@ -6,19 +6,20 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import Prism from 'prismjs';
+// Temporarily disabled Prism.js due to build issues
+// import Prism from 'prismjs';
 import { Copy, Check } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
 // Import Prism themes and languages
-import 'prismjs/themes/prism-tomorrow.css';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-cpp';
-import 'prismjs/components/prism-csharp';
-import 'prismjs/components/prism-go';
+// import 'prismjs/themes/prism-tomorrow.css';
+// import 'prismjs/components/prism-python';
+// import 'prismjs/components/prism-javascript';
+// import 'prismjs/components/prism-typescript';
+// import 'prismjs/components/prism-java';
+// import 'prismjs/components/prism-cpp';
+// import 'prismjs/components/prism-csharp';
+// import 'prismjs/components/prism-go';
 
 /**
  * Props for CodeBlock component
@@ -100,14 +101,15 @@ export function CodeBlock({ code, language, locale = 'ru' }: CodeBlockProps) {
 
   // Apply syntax highlighting
   useEffect(() => {
-    if (codeRef.current && typeof window !== 'undefined') {
-      try {
-        Prism.highlightElement(codeRef.current);
-      } catch (error) {
-        // Silently fail if Prism highlighting fails (e.g., in test environment)
-        console.debug('Prism highlighting failed:', error);
-      }
-    }
+    // Temporarily disabled Prism.js highlighting due to build issues
+    // if (codeRef.current && typeof window !== 'undefined') {
+    //   try {
+    //     Prism.highlightElement(codeRef.current);
+    //   } catch (error) {
+    //     // Silently fail if Prism highlighting fails (e.g., in test environment)
+    //     console.debug('Prism highlighting failed:', error);
+    //   }
+    // }
   }, [code, normalizedLanguage]);
 
   // Handle copy to clipboard
