@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getReferralStats, generateReferralLink } from '@/lib/supabase/referrals';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { useTranslations } from '@/store/locale-store';
+import { Gift, Copy, Check, Users, Trophy } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -73,59 +74,47 @@ export function ReferralWidget() {
 
   if (loading) {
     return (
-      <Card className="border-accent/20">
-        <CardHeader>
-          <CardTitle>
-            {t.referral?.title || 'Реферальная программа'}
-          </CardTitle>
-        </CardHeader>
-        <div className="mt-4">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-white/60">
-              {t.common?.loading || 'Загрузка...'}
-            </div>
-          </div>
+      <div className="rounded-xl bg-[#1e1e1e] p-5 shadow-lg ring-1 ring-white/5">
+        <div className="flex items-center justify-center py-8 text-white/60 text-sm">
+          {t.common?.loading || 'Загрузка...'}
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (!user) {
     return (
-      <Card className="border-accent/20">
-        <CardHeader>
-          <CardTitle>
-            {t.referral?.title || 'Реферальная программа'}
-          </CardTitle>
-        </CardHeader>
-        <div className="mt-4 px-6 pb-6 text-center">
-          <p className="text-white/70 mb-4">
+      <div className="rounded-xl bg-[#1e1e1e] p-5 shadow-lg ring-1 ring-white/5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
+            <Gift className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Реферальная программа</h3>
+            <p className="text-xs text-white/60">Приглашай друзей</p>
+          </div>
+        </div>
+        <div className="text-center py-4">
+          <p className="text-sm text-white/70 mb-4">
             Войдите в аккаунт, чтобы приглашать друзей и получать награды.
           </p>
           <Link href="/login">
-            <Button variant="primary">
+            <Button variant="primary" size="sm" className="w-full">
               Войти
             </Button>
           </Link>
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="border-accent/20">
-        <CardHeader>
-          <CardTitle>
-            {t.referral?.title || 'Реферальная программа'}
-          </CardTitle>
-        </CardHeader>
-        <div className="mt-4">
-          <div className="text-center text-white/60 py-4">
-            {error}
-          </div>
+      <div className="rounded-xl bg-[#1e1e1e] p-5 shadow-lg ring-1 ring-white/5">
+        <div className="text-center text-sm text-red-400 py-4">
+          {error}
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -134,143 +123,99 @@ export function ReferralWidget() {
   const totalRewards = stats ? Math.floor(stats.completedReferrals / 5) : 0;
 
   return (
-    <Card className="border-accent/20">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <span>🎁</span>
-            <span>{t.referral?.title || 'Реферальная программа'}</span>
-          </CardTitle>
-          {totalRewards > 0 && (
-            <div className="rounded-full bg-accent/20 px-3 py-1 text-sm text-accent">
-              {totalRewards} {t.referral?.rewardsEarned || 'наград получено'}
-            </div>
-          )}
+    <div className="rounded-xl bg-[#1e1e1e] p-5 shadow-lg ring-1 ring-white/5">
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
+            <Gift className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Рефералы</h3>
+            <p className="text-xs text-white/60">Бонусы за друзей</p>
+          </div>
         </div>
-        <p className="mt-2 text-sm text-white/70">
-          {t.referral?.description || 
-            'Приглашай друзей и получай 1 месяц Premium за каждые 5 завершенных регистраций'}
-        </p>
-      </CardHeader>
+        {totalRewards > 0 && (
+          <div className="rounded-full bg-purple-500/10 px-2.5 py-1 text-[10px] font-medium text-purple-300 border border-purple-500/20">
+            {totalRewards} {t.referral?.rewardsEarned || 'наград'}
+          </div>
+        )}
+      </div>
 
-      <div className="mt-6 space-y-6">
+      <div className="space-y-5">
         {/* Progress Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-white/70">
-              {t.referral?.progress || 'Прогресс до следующей награды'}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-white/60">
+              До следующей награды
             </span>
-            <span className="font-semibold text-accent">
+            <span className="font-medium text-purple-400">
               {stats?.completedReferrals || 0} / {Math.ceil((stats?.completedReferrals || 0) / 5) * 5}
             </span>
           </div>
 
-          {/* Progress Bar */}
-          <div className="relative h-3 overflow-hidden rounded-full bg-white/10">
+          <div className="relative h-2 overflow-hidden rounded-full bg-white/5">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-accent to-accent-soft"
+              className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
             />
           </div>
 
-          <div className="text-center text-sm text-white/60">
+          <p className="text-[10px] text-white/40 text-center">
             {nextReward === 5 ? (
-              <span>
-                {t.referral?.startInviting || 'Пригласите 5 друзей, чтобы получить 1 месяц Premium'}
-              </span>
+              'Пригласите 5 друзей для получения 1 месяца Premium'
             ) : (
-              <span>
-                {t.referral?.friendsLeft?.replace('{count}', nextReward.toString()) || 
-                  `Осталось пригласить ${nextReward} ${nextReward === 1 ? 'друга' : 'друзей'}`}
-              </span>
+              `Осталось пригласить ${nextReward} ${nextReward === 1 ? 'друга' : 'друзей'}`
             )}
-          </div>
+          </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 rounded-lg border border-white/10 bg-white/5 p-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-accent">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg bg-white/5 p-2 text-center">
+            <div className="text-lg font-bold text-purple-400">
               {stats?.completedReferrals || 0}
             </div>
-            <div className="text-xs text-white/60">
-              {t.referral?.completed || 'Завершено'}
-            </div>
+            <div className="text-[10px] text-white/40">Завершено</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-400">
+          <div className="rounded-lg bg-white/5 p-2 text-center">
+            <div className="text-lg font-bold text-yellow-400">
               {stats?.pendingReferrals || 0}
             </div>
-            <div className="text-xs text-white/60">
-              {t.referral?.pending || 'Ожидают'}
-            </div>
+            <div className="text-[10px] text-white/40">Ожидают</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">
+          <div className="rounded-lg bg-white/5 p-2 text-center">
+            <div className="text-lg font-bold text-white">
               {stats?.totalReferrals || 0}
             </div>
-            <div className="text-xs text-white/60">
-              {t.referral?.total || 'Всего'}
-            </div>
+            <div className="text-[10px] text-white/40">Всего</div>
           </div>
         </div>
 
-        {/* Referral Link Section */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white/90">
-            {t.referral?.yourLink || 'Ваша реферальная ссылка'}
+        {/* Link */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-white/70">
+            Ваша ссылка
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               value={referralLink}
               readOnly
-              className="flex-1 rounded-lg border border-white/20 bg-black/60 px-4 py-2 text-sm text-white focus:border-accent focus:outline-none"
+              className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
             />
             <Button
               variant={copied ? 'primary' : 'secondary'}
-              size="md"
+              size="sm"
               onClick={copyToClipboard}
-              className="min-w-[100px]"
+              className="h-auto min-w-[40px] px-3 py-2"
             >
-              {copied ? (
-                <>
-                  <span>✓</span>
-                  <span className="ml-2">{t.referral?.copied || 'Скопировано'}</span>
-                </>
-              ) : (
-                <>
-                  <span>📋</span>
-                  <span className="ml-2">{t.referral?.copy || 'Копировать'}</span>
-                </>
-              )}
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
         </div>
-
-        {/* How It Works */}
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
-          <div className="text-sm font-medium text-white/90">
-            {t.referral?.howItWorks || 'Как это работает:'}
-          </div>
-          <ol className="space-y-1 text-sm text-white/70">
-            <li>
-              1. {t.referral?.step1 || 'Поделитесь ссылкой с друзьями'}
-            </li>
-            <li>
-              2. {t.referral?.step2 || 'Друг регистрируется по вашей ссылке'}
-            </li>
-            <li>
-              3. {t.referral?.step3 || 'После первого входа друга реферал засчитывается'}
-            </li>
-            <li>
-              4. {t.referral?.step4 || 'За каждые 5 рефералов вы получаете 1 месяц Premium'}
-            </li>
-          </ol>
-        </div>
       </div>
-    </Card>
+    </div>
   );
 }

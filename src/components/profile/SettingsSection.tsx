@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useHelpStore } from '@/store/help-store';
-import { HelpCircle, Trash2 } from 'lucide-react';
+import { HelpCircle, Trash2, Settings, AlertTriangle } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { Modal } from '@/components/ui/modal';
+import { motion } from 'framer-motion';
 
 export function SettingsSection() {
   const { getMostAccessedTopics } = useHelpStore();
@@ -45,46 +46,56 @@ export function SettingsSection() {
   };
 
   return (
-    <>
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-        <h2 className="text-2xl font-bold mb-4 text-white">Настройки</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl bg-[#1e1e1e] shadow-lg ring-1 ring-white/5"
+    >
+      <div className="p-5">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-white">
+            <Settings className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Настройки</h3>
+            <p className="text-xs text-white/60">Управление данными</p>
+          </div>
+        </div>
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           {/* Help Statistics */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/8 transition-colors">
+          <button
+            onClick={handleViewHelpStats}
+            className="flex w-full items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3 transition-colors hover:bg-white/10"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
-                <HelpCircle className="w-5 h-5 text-green-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400">
+                <HelpCircle className="h-4 w-4" />
               </div>
-              <div>
-                <h3 className="font-semibold text-white">Статистика помощи</h3>
-                <p className="text-sm text-white/60">
-                  Посмотри, какие темы ты просматривал чаще всего
-                </p>
+              <div className="text-left">
+                <p className="text-sm font-medium text-white">Статистика помощи</p>
+                <p className="text-xs text-white/50">Часто просматриваемые темы</p>
               </div>
             </div>
-            <Button variant="secondary" size="sm" onClick={handleViewHelpStats}>
-              Показать
-            </Button>
-          </div>
+            <span className="text-xs text-white/40">Показать</span>
+          </button>
 
           {/* Delete All Data */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/15 transition-colors">
+          <button
+            onClick={handleDeleteAllData}
+            className="flex w-full items-center justify-between rounded-lg border border-red-500/10 bg-red-500/5 p-3 transition-colors hover:bg-red-500/10"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/10 text-red-400">
+                <Trash2 className="h-4 w-4" />
               </div>
-              <div>
-                <h3 className="font-semibold text-white">Удалить все данные</h3>
-                <p className="text-sm text-white/60">
-                  Удалить весь прогресс и начать с нуля
-                </p>
+              <div className="text-left">
+                <p className="text-sm font-medium text-red-200">Сбросить прогресс</p>
+                <p className="text-xs text-red-200/50">Удалить все данные и начать заново</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleDeleteAllData} className="text-red-400 hover:text-red-300">
-              Удалить
-            </Button>
-          </div>
+            <AlertTriangle className="h-4 w-4 text-red-400/50" />
+          </button>
         </div>
       </div>
 
@@ -94,16 +105,14 @@ export function SettingsSection() {
         onClose={() => setShowDeleteModal(false)}
         size="sm"
       >
-        <div className="p-6 space-y-4">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-              <Trash2 className="w-8 h-8 text-red-400" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Удалить все данные?</h2>
-            <p className="text-white/70">
-              Это действие нельзя отменить. Весь твой прогресс, достижения и настройки будут удалены.
-            </p>
+        <div className="p-6 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500">
+            <AlertTriangle className="h-6 w-6" />
           </div>
+          <h2 className="mb-2 text-lg font-bold text-white">Удалить все данные?</h2>
+          <p className="mb-6 text-sm text-white/60">
+            Это действие необратимо. Весь ваш прогресс, достижения и настройки будут полностью удалены.
+          </p>
 
           <div className="flex gap-3">
             <Button
@@ -115,7 +124,7 @@ export function SettingsSection() {
             </Button>
             <Button
               variant="primary"
-              className="flex-1 bg-red-500 hover:bg-red-600"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
               onClick={confirmDeleteAllData}
             >
               Удалить
@@ -123,6 +132,7 @@ export function SettingsSection() {
           </div>
         </div>
       </Modal>
-    </>
+    </motion.div>
   );
 }
+

@@ -3,13 +3,12 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { AchievementCard } from './AchievementCard';
 import { EmptyAchievements } from '@/components/profile/EmptyAchievements';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { ACHIEVEMENTS } from '@/lib/achievements';
 import type { AchievementCategory } from '@/types/achievements';
-import { Trophy, Medal, Star, Zap, Target, Crown, Grid, Filter } from 'lucide-react';
+import { Trophy, Star, Target, Crown, Grid, Flame, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CATEGORY_ICONS: Record<AchievementCategory | 'all', any> = {
@@ -19,8 +18,6 @@ const CATEGORY_ICONS: Record<AchievementCategory | 'all', any> = {
   tasks: CheckCircle2,
   special: Star
 };
-
-import { Flame, CheckCircle2 } from 'lucide-react'; // Additional icons
 
 const CATEGORY_LABELS: Record<AchievementCategory, string> = {
   progress: 'Прогресс',
@@ -147,7 +144,7 @@ export function AchievementsPanel() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5"
         >
           {filteredAchievements.map((achievement) => {
             const isUnlocked = unlockedIds.includes(achievement.id);
