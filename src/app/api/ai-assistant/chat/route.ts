@@ -120,44 +120,8 @@ const postHandler = async (request: NextRequest, tierInfo: any) => {
       console.error('Failed to log to database:', logError);
     }
 
-    // Add message to session if sessionId provided
-    if (validatedData.sessionId) {
-      const sessionManager = service.getSessionManager();
-      let session = sessionManager.getSession(validatedData.sessionId);
-      
-      if (!session) {
-        // Create new session with context from aggregated context
-        session = sessionManager.createSession(userId, {
-          day: context.currentDay || 1,
-          languageId: context.languageId || 'javascript',
-          taskId: validatedData.taskId,
-        });
-      }
-
-      // Add user message
-      sessionManager.addMessage(session.id, {
-        id: `msg_${Date.now()}_user`,
-        sessionId: session.id,
-        role: 'user',
-        content: validatedData.message,
-        timestamp: Date.now(),
-      });
-
-      // Add assistant response
-      sessionManager.addMessage(session.id, {
-        id: `msg_${Date.now()}_assistant`,
-        sessionId: session.id,
-        role: 'assistant',
-        content: response.message,
-        timestamp: Date.now(),
-        metadata: {
-          codeBlocks: response.codeExamples,
-          suggestions: response.suggestions,
-          relatedTopics: response.relatedTopics,
-          requestType: validatedData.requestType,
-        },
-      });
-    }
+    // Note: Messages are managed on the client side via useAIAssistant hook
+    // We don't add them to session here to avoid duplication
 
     // Return response with usage info
     return NextResponse.json(
