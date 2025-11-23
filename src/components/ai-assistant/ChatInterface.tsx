@@ -247,11 +247,11 @@ export function ChatInterface({
   if (!isOpen) return null;
 
   // Mobile: Full screen overlay
-  // Desktop: Floating panel
+  // Desktop: Full height from top to bottom (below header)
   const containerClasses = isMobile
     ? `fixed inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] flex flex-col z-[1000] animate-slide-up`
-    : `fixed right-4 bottom-4 w-[380px] bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] rounded-3xl shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ${
-        isMinimized ? 'h-16' : 'h-[950px]'
+    : `fixed top-4 right-4 bottom-4 w-[380px] bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] rounded-3xl shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ${
+        isMinimized ? 'h-16 top-auto' : ''
       } z-[1000] animate-slide-in-right`;
 
   return (
