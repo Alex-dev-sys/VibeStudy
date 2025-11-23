@@ -301,8 +301,8 @@ export function ChatInterface({
               )}
             </div>
           </div>
-        
-        <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-2">
           {!isMinimized && (
             <button
               onClick={handleClearHistory}
@@ -350,6 +350,7 @@ export function ChatInterface({
               <X className="w-4 h-4 text-gray-400" />
             </button>
           )}
+        </div>
         </div>
       </div>
 
