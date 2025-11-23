@@ -177,7 +177,8 @@ export function ChatInterface({
   
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
-  const [saveConversation, setSaveConversation] = useState(false);
+  // Conversation is always saved
+  const saveConversation = true;
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -249,38 +250,57 @@ export function ChatInterface({
   // Desktop: Floating panel
   const containerClasses = isMobile
     ? `fixed inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] flex flex-col z-[1000] animate-slide-up`
-    : `fixed right-4 bottom-4 w-[420px] bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] rounded-3xl shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ${
-        isMinimized ? 'h-16' : 'h-[650px]'
+    : `fixed right-4 bottom-4 w-[380px] bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] rounded-3xl shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ${
+        isMinimized ? 'h-16' : 'h-[950px]'
       } z-[1000] animate-slide-in-right`;
 
   return (
     <div className={containerClasses}>
       {/* Header */}
-      <div className="flex items-center justify-between p-5 border-b border-white/10 min-h-[70px] bg-gradient-to-r from-[#1a1a1a] to-[#1f1f1f]">
-        <div className="flex items-center gap-3">
-          {isMobile && (
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2"
-              aria-label="Back"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-300" />
-            </button>
-          )}
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#ff4bc1] to-[#ffd34f] flex items-center justify-center shadow-lg">
-            <span className="text-2xl">💬</span>
+      <div className="relative p-5 border-b border-white/10 min-h-[90px] bg-gradient-to-br from-[#0a1628] via-[#1a2332] to-[#0f1a2e] overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,75,193,0.1),_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(255,211,79,0.08),_transparent_50%)]" />
+        
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {isMobile && (
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-300" />
+              </button>
+            )}
+            
+            {/* Brain Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#2a4a6f] flex items-center justify-center shadow-xl border border-white/10">
+              <svg className="w-9 h-9 text-[#4a9eff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9.5 2C7.5 2 6 3.5 6 5.5c0 1-.5 2-1 2.5C4 9 3 10 3 12s1 3 2 4c.5.5 1 1.5 1 2.5 0 2 1.5 3.5 3.5 3.5 1 0 2-.5 2.5-1 1-.5 2-1 4-1s3 .5 4 1c.5.5 1.5 1 2.5 1 2 0 3.5-1.5 3.5-3.5 0-1 .5-2 1-2.5 1-1 2-2 2-4s-1-3-2-4c-.5-.5-1-1.5-1-2.5C20 3.5 18.5 2 16.5 2c-1 0-2 .5-2.5 1-.5.5-1.5 1-2.5 1s-2-.5-2.5-1C8 2.5 7 2 6 2h-.5z" />
+                <circle cx="9" cy="10" r="1" fill="currentColor" />
+                <circle cx="15" cy="10" r="1" fill="currentColor" />
+                <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" strokeLinecap="round" />
+              </svg>
+            </div>
+            
+            <div>
+              <h3 className="font-bold text-white text-xl mb-1">
+                AI {locale === 'ru' ? 'Ассистент' : 'Assistant'}
+              </h3>
+              {/* Premium Badge */}
+              {userTier === 'premium' || userTier === 'pro_plus' ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#d4a574] via-[#f4d03f] to-[#d4a574] shadow-lg">
+                  <span className="text-sm font-bold text-[#1a1a1a]">Premium</span>
+                  <span className="text-sm">✨</span>
+                </div>
+              ) : (
+                <span className="text-xs font-medium text-gray-400">
+                  {locale === 'ru' ? 'Бесплатная версия' : 'Free version'}
+                </span>
+              )}
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-white text-lg">
-              AI {locale === 'ru' ? 'Ассистент' : 'Assistant'}
-            </h3>
-            <p className="text-xs font-medium bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] bg-clip-text text-transparent">
-              {userTier === 'free' && (locale === 'ru' ? 'Бесплатный' : 'Free')}
-              {userTier === 'premium' && 'Premium ✨'}
-              {userTier === 'pro_plus' && 'Pro+ 🚀'}
-            </p>
-          </div>
-        </div>
         
         <div className="flex items-center gap-2">
           {!isMinimized && (
@@ -378,41 +398,7 @@ export function ChatInterface({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Actions */}
-          <QuickActions onActionClick={handleQuickAction} locale={locale} />
 
-          {/* Privacy Controls */}
-          <div className="px-4 py-3 border-t border-gray-800 bg-[#1a1a1a]">
-            <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={saveConversation}
-                  onChange={(e) => setSaveConversation(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-600 bg-[#2a2a2a] text-[#ff4bc1] focus:ring-2 focus:ring-[#ff4bc1] focus:ring-offset-0 cursor-pointer"
-                />
-                <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                  {locale === 'ru' ? 'Сохранить разговор' : 'Save conversation'}
-                </span>
-              </label>
-            </div>
-            
-            {/* Privacy Notice */}
-            <div className="flex items-start gap-2 text-xs text-gray-500">
-              <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
-              <p>
-                {locale === 'ru' ? (
-                  <>
-                    История чата хранится только в текущей сессии. {saveConversation ? 'Разговор будет сохранен в базе данных.' : 'При закрытии вкладки история удаляется.'}
-                  </>
-                ) : (
-                  <>
-                    Chat history is stored only in the current session. {saveConversation ? 'Conversation will be saved to database.' : 'History is deleted when you close the tab.'}
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
 
           {/* Input */}
           <div className="p-5 border-t border-white/10 bg-gradient-to-r from-[#1a1a1a] to-[#1f1f1f]">
@@ -439,6 +425,11 @@ export function ChatInterface({
               >
                 <Send className="w-5 h-5 text-white" />
               </button>
+            </div>
+            
+            {/* Quick Actions - moved below input */}
+            <div className="mt-3">
+              <QuickActions onActionClick={handleQuickAction} locale={locale} />
             </div>
             
             {/* Usage counter */}
