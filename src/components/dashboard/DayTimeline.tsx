@@ -140,7 +140,7 @@ export function DayTimeline() {
               className={clsx(
                 "mt-6 gap-2 pb-2",
                 isExpanded 
-                  ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 max-h-[60vh] overflow-y-auto pr-2" 
+                  ? "grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 max-h-[60vh] overflow-y-auto pr-2" 
                   : "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3"
               )}
             >
@@ -178,7 +178,8 @@ export function DayTimeline() {
 
             {/* Day number */}
             <div className={clsx(
-              'text-xl sm:text-2xl font-bold mb-1',
+              'font-bold mb-1 transition-all',
+              isExpanded ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl',
               dayData.isCurrent ? 'text-white' :
               dayData.isCompleted ? 'text-green-400' :
               dayData.isLocked ? 'text-white/20' : 'text-white/70'
@@ -189,7 +190,8 @@ export function DayTimeline() {
             {/* Topic name below - Only show on hover or if current/completed */}
             {(dayData.isCurrent || dayData.isCompleted || !dayData.isLocked) && (
               <div className={clsx(
-                "text-[10px] text-center leading-tight line-clamp-2 w-full px-1",
+                "text-center leading-tight line-clamp-2 w-full px-1 transition-all",
+                isExpanded ? 'text-[8px]' : 'text-[10px]',
                 dayData.isCurrent ? 'text-primary-foreground/80' : 'text-white/40'
               )}>
                 {dayData.topic}
@@ -199,7 +201,10 @@ export function DayTimeline() {
             {/* Lock Icon Overlay */}
             {dayData.isLocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-[1px]">
-                <span className="text-lg opacity-50">🔒</span>
+                <span className={clsx(
+                  "opacity-50 transition-all",
+                  isExpanded ? 'text-base' : 'text-lg'
+                )}>🔒</span>
               </div>
             )}
 
