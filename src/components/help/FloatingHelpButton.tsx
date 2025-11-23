@@ -131,7 +131,7 @@ export function FloatingHelpButton() {
         onClick={handleOpen}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-20 md:bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+        className="fixed bottom-[88px] md:bottom-[88px] right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
         aria-label="Открыть помощь"
       >
         <HelpCircle className="w-6 h-6 text-white" />

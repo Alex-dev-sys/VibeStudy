@@ -26,7 +26,7 @@ export function FloatingChatButton({
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-[88px] md:bottom-[88px] right-6 z-50 group"
+      className="fixed bottom-6 md:bottom-6 right-6 z-50 group"
       aria-label={locale === 'ru' ? 'Открыть AI ассистента' : 'Open AI assistant'}
     >
       {/* Main button */}
