@@ -170,7 +170,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 секунд таймаут
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут (было 90)
 
     let response: Response;
     try {
@@ -179,7 +179,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
-          'Connection': 'keep-alive'
+          'Connection': 'close' // Изменено с keep-alive на close
         },
         body: JSON.stringify(body),
         signal: controller.signal
@@ -190,9 +190,11 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
       // Обработка ошибок сети
       if (fetchError instanceof Error) {
         if (fetchError.name === 'AbortError') {
+          console.error('[AI Client] Request timeout after 30s');
           throw new Error('Request timeout - server took too long to respond');
         }
-        if (fetchError.message.includes('ECONNRESET') || fetchError.message.includes('socket hang up') || fetchError.message.includes('other side closed')) {
+        if (fetchError.message.includes('ECONNRESET') || fetchError.message.includes('socket hang up') || fetchError.message.includes('other side closed') || fetchError.message.includes('terminated')) {
+          console.error('[AI Client] Connection error:', fetchError.message);
           throw new Error('Connection reset by server - please try again');
         }
       }
@@ -255,7 +257,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
         };
 
         const fallbackController = new AbortController();
-        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 90000);
+        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 30000); // 30 секунд
 
         let fallbackResponse: Response;
         try {
@@ -264,7 +266,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${apiKey}`,
-              'Connection': 'keep-alive'
+              'Connection': 'close'
             },
             body: JSON.stringify(fallbackBody),
             signal: fallbackController.signal
@@ -274,9 +276,11 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
           clearTimeout(fallbackTimeoutId);
           if (fallbackFetchError instanceof Error) {
             if (fallbackFetchError.name === 'AbortError') {
+              console.error('[AI Client] Fallback timeout after 30s');
               throw new Error('Fallback request timeout');
             }
-            if (fallbackFetchError.message.includes('ECONNRESET') || fallbackFetchError.message.includes('socket hang up') || fallbackFetchError.message.includes('other side closed')) {
+            if (fallbackFetchError.message.includes('ECONNRESET') || fallbackFetchError.message.includes('socket hang up') || fallbackFetchError.message.includes('other side closed') || fallbackFetchError.message.includes('terminated')) {
+              console.error('[AI Client] Fallback connection error:', fallbackFetchError.message);
               throw new Error('Fallback connection reset by server');
             }
           }

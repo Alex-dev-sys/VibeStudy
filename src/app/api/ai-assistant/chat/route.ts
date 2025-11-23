@@ -159,22 +159,23 @@ const postHandler = async (request: NextRequest, tierInfo: any) => {
     // Handle AI service errors
     if (error instanceof Error) {
       const isTimeout = error.message.includes('timeout');
-      const isNetworkError = error.message.includes('network') || error.message.includes('ECONNRESET');
+      const isNetworkError = error.message.includes('network') || error.message.includes('ECONNRESET') || error.message.includes('Connection reset') || error.message.includes('terminated');
+      const isConnectionError = error.message.includes('closed') || error.message.includes('socket');
 
       return NextResponse.json(
         {
           error: {
-            code: isTimeout ? 'TIMEOUT' : isNetworkError ? 'NETWORK_ERROR' : 'AI_SERVICE_ERROR',
+            code: isTimeout ? 'TIMEOUT' : (isNetworkError || isConnectionError) ? 'NETWORK_ERROR' : 'AI_SERVICE_ERROR',
             message: error.message,
             userMessage: isTimeout
-              ? 'Превышено время ожидания. Попробуйте ещё раз.'
-              : isNetworkError
-              ? 'Ошибка сети. Проверьте подключение и попробуйте снова.'
+              ? 'AI сервис не отвечает. Попробуйте ещё раз через несколько секунд.'
+              : (isNetworkError || isConnectionError)
+              ? 'Проблема с подключением к AI сервису. Попробуйте снова.'
               : 'Не удалось получить ответ от AI. Попробуйте позже.',
             retryable: true,
           },
         },
-        { status: isTimeout ? 504 : isNetworkError ? 503 : 500 }
+        { status: isTimeout ? 504 : (isNetworkError || isConnectionError) ? 503 : 500 }
       );
     }
 
