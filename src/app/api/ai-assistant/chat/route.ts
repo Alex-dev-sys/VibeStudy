@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { getAIAssistantService } from '@/lib/ai-assistant/service';
 import { filterContent } from '@/lib/ai-assistant/content-filter';
 import { withTierCheck } from '@/middleware/with-tier-check';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import type { UserTier } from '@/types';
 import type { AssistantRequest } from '@/lib/ai-assistant/types';
 
@@ -28,7 +27,7 @@ const chatRequestSchema = z.object({
  * POST /api/ai-assistant/chat
  * Send message to AI assistant
  */
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest, tierInfo: any) => {
   try {
     // Parse and validate request body
     const body = await request.json();
@@ -56,46 +55,18 @@ export async function POST(request: NextRequest) {
     // Use sanitized message
     validatedData.message = filterResult.sanitized;
 
-    // Get user info from tier check middleware
-    // Note: withTierCheck middleware should be applied at a higher level
-    // For now, we'll extract user info from headers or session
-    const userId = request.headers.get('x-user-id') || 'guest';
-    const tier = (request.headers.get('x-user-tier') as UserTier) || 'free';
-
-    // Check rate limits using the standard rate limit function
-    const rateLimitBucket = {
-      limit: tier === 'free' ? 5 : tier === 'premium' ? 30 : 100,
-      windowMs: tier === 'free' ? 24 * 60 * 60 * 1000 : 60 * 1000,
-    };
+    // Get user info from Supabase
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    const rateLimitResult = evaluateRateLimit(request, rateLimitBucket, {
-      bucketId: 'ai-assistant',
-    });
+    const userId = user?.id || 'guest';
+    const tier = tierInfo.tier as UserTier;
 
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'RATE_LIMIT_EXCEEDED',
-            message: validatedData.locale === 'ru'
-              ? 'Превышен лимит запросов. Попробуйте позже.'
-              : 'Rate limit exceeded. Please try again later.',
-            userMessage: validatedData.locale === 'ru'
-              ? `Вы использовали ${rateLimitResult.limit - rateLimitResult.remaining}/${rateLimitResult.limit} запросов. Попробуйте через ${rateLimitResult.retryAfterSeconds} секунд.`
-              : `You've used ${rateLimitResult.limit - rateLimitResult.remaining}/${rateLimitResult.limit} requests. Try again in ${rateLimitResult.retryAfterSeconds} seconds.`,
-            retryable: true,
-            upgradePrompt: tier === 'free' ? {
-              tier: 'premium',
-              url: '/pricing',
-            } : undefined,
-          },
-        },
-        {
-          status: 429,
-          headers: buildRateLimitHeaders(rateLimitResult),
-        }
-      );
-    }
+    // Rate limiting is already handled by withTierCheck middleware
+    // We just need to track usage from tierInfo
+    const requestsUsed = tierInfo.requestsToday || 0;
+    const requestLimit = tierInfo.limit || 5;
 
     // Get AI assistant service
     const service = getAIAssistantService(validatedData.locale);
@@ -174,14 +145,10 @@ export async function POST(request: NextRequest) {
         suggestions: response.suggestions,
         relatedTopics: response.relatedTopics,
         usage: {
-          requestsUsed: rateLimitResult.limit - rateLimitResult.remaining,
-          limit: rateLimitResult.limit,
-          remaining: rateLimitResult.remaining,
-          retryAfterSeconds: rateLimitResult.retryAfterSeconds,
+          requestsToday: requestsUsed,
+          limit: requestLimit,
+          remaining: requestLimit - requestsUsed,
         },
-      },
-      {
-        headers: buildRateLimitHeaders(rateLimitResult),
       }
     );
   } catch (error) {
@@ -238,7 +205,10 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+};
+
+// Wrap with tier check middleware
+export const POST = withTierCheck(postHandler);
 
 /**
  * GET /api/ai-assistant/chat

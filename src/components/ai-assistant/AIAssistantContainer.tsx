@@ -16,18 +16,33 @@ import {
 import type { UserTier } from '@/types';
 import { useLocaleStore } from '@/store/locale-store';
 
-export function AIAssistantContainer() {
+interface AIAssistantContainerProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AIAssistantContainer({ isOpen: externalIsOpen, onOpenChange }: AIAssistantContainerProps = {}) {
   // State
   const [showPaywall, setShowPaywall] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showLimit, setShowLimit] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
 
-  // User data - for now, default to free tier
+  // Use external control if provided, otherwise use internal state
+  const isChatOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsChatOpen = (open: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(open);
+    } else {
+      setInternalIsOpen(open);
+    }
+  };
+
+  // User data - for now, default to premium tier for testing
   // TODO: Integrate with actual user tier from Supabase
-  const [userTier] = useState<UserTier>('free');
+  const [userTier] = useState<UserTier>('premium');
   const [requestsUsed, setRequestsUsed] = useState(0);
-  const [requestsLimit] = useState(5);
+  const [requestsLimit] = useState(30);
 
   // Get locale
   const { locale } = useLocaleStore();
@@ -47,7 +62,7 @@ export function AIAssistantContainer() {
   return (
     <>
       {/* Floating button to open chat */}
-      <FloatingChatButton onClick={handleOpenChat} />
+      <FloatingChatButton onClick={handleOpenChat} locale={locale} />
 
       {/* Chat interface */}
       <ChatInterface

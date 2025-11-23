@@ -12,7 +12,7 @@ import type { UserTier } from '@/types';
 import { CodeBlock } from './CodeBlock';
 import { QuickActions } from './QuickActions';
 import { useBreakpoint } from '@/hooks/useMobileResponsive';
-import { getSessionManager } from '@/lib/ai-assistant/session-manager';
+import { useAIAssistant } from '@/hooks/useAIAssistant';
 
 /**
  * Props for ChatInterface
@@ -155,15 +155,24 @@ export function ChatInterface({
   userTier,
   locale = 'ru',
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Use AI Assistant hook for state management
+  const {
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    clearHistory,
+    clearError,
+    requestsToday,
+    requestLimit,
+  } = useAIAssistant();
+  
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [saveConversation, setSaveConversation] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const sessionIdRef = useRef<string>('default');
   const { isMobile } = useBreakpoint();
 
   // Auto-scroll to bottom when new messages arrive
@@ -180,61 +189,21 @@ export function ChatInterface({
     }
   }, [isOpen, isMinimized]);
 
-  // Add welcome message on mount
+  // Clear error when user starts typing
   useEffect(() => {
-    if (messages.length === 0) {
-      const welcomeMessage: Message = {
-        id: 'welcome',
-        sessionId: 'default',
-        role: 'system',
-        content:
-          locale === 'ru'
-            ? 'Привет! 👋 Я твой AI-помощник по изучению программирования. Чем могу помочь?'
-            : 'Hi! 👋 I\'m your AI programming learning assistant. How can I help you?',
-        timestamp: Date.now(),
-      };
-      setMessages([welcomeMessage]);
+    if (error && input.trim()) {
+      clearError();
     }
-  }, []);
+  }, [input, error, clearError]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: `msg_${Date.now()}_user`,
-      sessionId: 'default',
-      role: 'user',
-      content: input.trim(),
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      // TODO: Call API endpoint
-      // For now, simulate response
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const assistantMessage: Message = {
-        id: `msg_${Date.now()}_assistant`,
-        sessionId: 'default',
-        role: 'assistant',
-        content:
-          locale === 'ru'
-            ? 'Это тестовый ответ. API интеграция будет добавлена позже.'
-            : 'This is a test response. API integration will be added later.',
-        timestamp: Date.now(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // TODO: Show error message
-    } finally {
-      setIsLoading(false);
-    }
+    const messageContent = input.trim();
+    setInput(''); // Clear input immediately for better UX
+    
+    // Send message using the hook
+    await sendMessage(messageContent, 'general');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -254,26 +223,8 @@ export function ChatInterface({
 
   const handleClearHistory = () => {
     if (showClearConfirm) {
-      // Clear messages from UI
-      setMessages([]);
-      
-      // Clear session from SessionManager
-      const sessionManager = getSessionManager();
-      sessionManager.clearSession(sessionIdRef.current);
-      
-      // Add welcome message back
-      const welcomeMessage: Message = {
-        id: 'welcome',
-        sessionId: sessionIdRef.current,
-        role: 'system',
-        content:
-          locale === 'ru'
-            ? 'Привет! 👋 Я твой AI-помощник по изучению программирования. Чем могу помочь?'
-            : 'Hi! 👋 I\'m your AI programming learning assistant. How can I help you?',
-        timestamp: Date.now(),
-      };
-      setMessages([welcomeMessage]);
-      
+      // Clear history using the hook
+      clearHistory();
       setShowClearConfirm(false);
     } else {
       setShowClearConfirm(true);
@@ -386,6 +337,32 @@ export function ChatInterface({
             
             {isLoading && <TypingIndicator locale={locale} />}
             
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 animate-fade-in">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div className="flex-1">
+                    <p className="text-red-400 font-medium mb-1">
+                      {locale === 'ru' ? 'Ошибка' : 'Error'}
+                    </p>
+                    <p className="text-sm text-gray-300">{error.userMessage}</p>
+                    {error.retryable && (
+                      <button
+                        onClick={() => {
+                          clearError();
+                          // Retry will happen automatically if user sends message again
+                        }}
+                        className="mt-2 text-sm text-[#ff4bc1] hover:text-[#ffd34f] transition-colors"
+                      >
+                        {locale === 'ru' ? '✕ Закрыть' : '✕ Dismiss'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div ref={messagesEndRef} />
           </div>
 
@@ -451,6 +428,16 @@ export function ChatInterface({
                 <Send className="w-5 h-5 text-white" />
               </button>
             </div>
+            
+            {/* Usage counter */}
+            {userTier === 'free' && (
+              <div className="mt-2 text-xs text-gray-500 text-right">
+                {locale === 'ru' 
+                  ? `${requestsToday}/${requestLimit} запросов сегодня`
+                  : `${requestsToday}/${requestLimit} requests today`
+                }
+              </div>
+            )}
           </div>
         </>
       )}
