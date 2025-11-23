@@ -227,7 +227,7 @@ export default function PlaygroundPage() {
       <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 py-16 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-white/70">
               <span>🎨</span>
               <span>{t.playground.subtitle}</span>
             </div>
@@ -245,7 +245,7 @@ export default function PlaygroundPage() {
           </Link>
         </div>
 
-        <MagicCard innerClassName="rounded-[26px] p-6">
+        <MagicCard className="border-0 bg-white/5" innerClassName="rounded-[26px] p-6">
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold text-white">{t.playground.selectLanguage}</h2>
             <div className="flex flex-wrap gap-2">
@@ -264,7 +264,7 @@ export default function PlaygroundPage() {
         </MagicCard>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <MagicCard innerClassName="rounded-[28px] p-6 space-y-4">
+          <MagicCard className="border-0 bg-white/5" innerClassName="rounded-[28px] p-6 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-lg font-semibold text-white">
                 {t.playground.codeEditor} ({currentLanguage?.label})
@@ -314,7 +314,7 @@ export default function PlaygroundPage() {
                 </Button>
               </div>
             </div>
-            <div className="overflow-hidden rounded-2xl border border-white/10">
+            <div className="overflow-hidden rounded-2xl bg-black/20">
               {editorError ? (
                 <div className="flex h-[500px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
                   <span className="text-4xl">⚠️</span>
@@ -327,7 +327,7 @@ export default function PlaygroundPage() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder={`${t.editor.placeholder} ${currentLanguage?.label}...`}
-                    className="h-80 w-full resize-none rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none"
+                    className="h-80 w-full resize-none rounded-lg bg-black/40 p-3 font-mono text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
                   />
                 </div>
               ) : (
@@ -373,7 +373,7 @@ export default function PlaygroundPage() {
             </div>
           </MagicCard>
 
-          <MagicCard innerClassName="rounded-[28px] p-6 space-y-4">
+          <MagicCard className="border-0 bg-white/5" innerClassName="rounded-[28px] p-6 space-y-4">
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-white">{t.playground.output}</h2>
               <p className="text-sm text-white/60">
@@ -387,7 +387,7 @@ export default function PlaygroundPage() {
         </div>
 
         {showSnippets && (
-          <MagicCard innerClassName="rounded-[28px] p-6">
+          <MagicCard className="border-0 bg-white/5" innerClassName="rounded-[28px] p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">📂 {t.playground.savedSnippets}</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowSnippets(false)}>
@@ -400,7 +400,7 @@ export default function PlaygroundPage() {
           </MagicCard>
         )}
 
-        <MagicCard innerClassName="rounded-[28px] p-6">
+        <MagicCard className="border-0 bg-white/5" innerClassName="rounded-[28px] p-6">
           <h2 className="text-lg font-semibold text-white">{t.playground.tips.title}</h2>
           <div className="mt-4 space-y-2 text-sm text-white/70">
             <p>• {t.playground.tips.experiment}</p>

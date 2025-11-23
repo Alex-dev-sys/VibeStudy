@@ -1,11 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useTranslations } from '@/store/locale-store';
 import type { ConsoleMessage } from '@/store/playground-store';
+import { Terminal, Trash2, Copy, AlertCircle, AlertTriangle, Info, CheckCircle2, Filter } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ConsoleProps {
   messages: ConsoleMessage[];
@@ -17,6 +19,14 @@ type MessageFilter = 'all' | 'log' | 'error' | 'warn' | 'info';
 export function Console({ messages, onClear }: ConsoleProps) {
   const t = useTranslations();
   const [filter, setFilter] = useState<MessageFilter>('all');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
   
   const filteredMessages = useMemo(() => {
     if (filter === 'all') return messages;
@@ -35,26 +45,26 @@ export function Console({ messages, onClear }: ConsoleProps) {
   const getMessageIcon = (type: ConsoleMessage['type']) => {
     switch (type) {
       case 'error':
-        return '❌';
+        return <AlertCircle className="h-3.5 w-3.5 text-red-400" />;
       case 'warn':
-        return '⚠️';
+        return <AlertTriangle className="h-3.5 w-3.5 text-yellow-400" />;
       case 'info':
-        return 'ℹ️';
+        return <Info className="h-3.5 w-3.5 text-blue-400" />;
       default:
-        return '📝';
+        return <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />;
     }
   };
   
   const getMessageColor = (type: ConsoleMessage['type']) => {
     switch (type) {
       case 'error':
-        return 'text-red-400 bg-red-500/10 border-red-500/30';
+        return 'text-red-300 bg-red-500/5 border-l-2 border-red-500/50';
       case 'warn':
-        return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+        return 'text-yellow-200 bg-yellow-500/5 border-l-2 border-yellow-500/50';
       case 'info':
-        return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+        return 'text-blue-300 bg-blue-500/5 border-l-2 border-blue-500/50';
       default:
-        return 'text-white/80 bg-white/5 border-white/10';
+        return 'text-gray-300 hover:bg-white/5 border-l-2 border-transparent';
     }
   };
   
@@ -73,133 +83,121 @@ export function Console({ messages, onClear }: ConsoleProps) {
   };
   
   return (
-    <div className="flex h-full flex-col rounded-lg border border-white/10 bg-black/60">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 p-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white/90">{t.playground.output}</span>
-          <Badge tone="neutral" className="text-xs">
-            {filteredMessages.length}
-          </Badge>
+    <div className="flex h-full flex-col rounded-xl bg-[#1e1e1e] shadow-2xl overflow-hidden font-mono text-sm ring-1 ring-white/5">
+      {/* Terminal Header */}
+      <div className="flex items-center justify-between bg-[#252526] px-4 py-2 border-b border-white/5">
+        <div className="flex items-center gap-4">
+          {/* Traffic Lights */}
+          <div className="flex gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
+            <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
+            <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
+          </div>
+          
+          <div className="flex items-center gap-2 text-gray-400 ml-2">
+            <Terminal className="h-4 w-4" />
+            <span className="text-xs font-medium">Console Output</span>
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Filter buttons */}
-          <div className="flex gap-1">
-            <button
-              onClick={() => setFilter('all')}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                filter === 'all'
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-              }`}
-            >
-              {t.achievements.categories.all}
-            </button>
-            <button
-              onClick={() => setFilter('log')}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                filter === 'log'
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-              }`}
-            >
-              {t.console.log} ({messageCounts.log})
-            </button>
-            <button
-              onClick={() => setFilter('error')}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                filter === 'error'
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-              }`}
-            >
-              {t.console.error} ({messageCounts.error})
-            </button>
-            <button
-              onClick={() => setFilter('warn')}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                filter === 'warn'
-                  ? 'bg-yellow-500/20 text-yellow-400'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-              }`}
-            >
-              {t.console.warn} ({messageCounts.warn})
-            </button>
-            <button
-              onClick={() => setFilter('info')}
-              className={`rounded px-2 py-1 text-xs transition-colors ${
-                filter === 'info'
-                  ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-              }`}
-            >
-              {t.console.info} ({messageCounts.info})
-            </button>
+          <div className="flex bg-black/20 rounded-lg p-0.5">
+            {(['all', 'log', 'error'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f as MessageFilter)}
+                className={cn(
+                  "px-2.5 py-1 text-[10px] rounded-md transition-all",
+                  filter === f 
+                    ? "bg-white/10 text-white shadow-sm" 
+                    : "text-gray-500 hover:text-gray-300"
+                )}
+              >
+                {f === 'all' ? 'ALL' : f.toUpperCase()}
+                {f !== 'all' && messageCounts[f] > 0 && (
+                  <span className="ml-1 opacity-70">({messageCounts[f]})</span>
+                )}
+              </button>
+            ))}
           </div>
+          
+          <div className="h-4 w-px bg-white/10 mx-1" />
           
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onClear}
-            className="text-xs"
+            className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10 rounded-md"
+            title={t.editor.clearCode}
             disabled={messages.length === 0}
           >
-            {t.editor.clearCode}
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
       
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-2">
+      {/* Messages Area */}
+      <div 
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+      >
         {filteredMessages.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-white/40">
-            <p className="text-sm">{t.playground.outputPlaceholder}</p>
+          <div className="flex h-full flex-col items-center justify-center text-gray-600 gap-3">
+            <Terminal className="h-12 w-12 opacity-20" />
+            <p className="text-xs font-mono">
+              {messages.length === 0 ? '> Ready to run code...' : '> No messages match filter'}
+            </p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
             {filteredMessages.map((message, index) => (
               <motion.div
                 key={`${message.timestamp}-${index}`}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                className={`group mb-1 rounded border p-2 font-mono text-xs ${getMessageColor(message.type)}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className={cn(
+                  "group relative flex gap-3 p-2 rounded-md transition-colors",
+                  getMessageColor(message.type)
+                )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-1 items-start gap-2">
-                    <span className="flex-shrink-0">{getMessageIcon(message.type)}</span>
-                    <div className="flex-1">
-                      <pre className="whitespace-pre-wrap break-words">{message.message}</pre>
-                      {message.stack && (
-                        <details className="mt-1">
-                          <summary className="cursor-pointer text-white/60 hover:text-white/80">
-                            {t.console.stackTrace}
-                          </summary>
-                          <pre className="mt-1 whitespace-pre-wrap break-words text-white/60">
-                            {message.stack}
-                          </pre>
-                        </details>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-shrink-0 items-center gap-2">
-                    <span className="text-[10px] text-white/40">
+                <span className="mt-0.5 flex-shrink-0 opacity-70">
+                  {getMessageIcon(message.type)}
+                </span>
+                
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">
+                      {message.message}
+                    </pre>
+                    <span className="text-[10px] text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 select-none">
                       {formatTimestamp(message.timestamp)}
                     </span>
-                    <button
-                      onClick={() => copyToClipboard(message.message)}
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                      title={t.console.copy}
-                    >
-                      📋
-                    </button>
                   </div>
+                  
+                  {message.stack && (
+                    <div className="mt-2 pl-2 border-l border-white/10">
+                      <pre className="whitespace-pre-wrap break-words text-[10px] text-red-300/70 font-mono">
+                        {message.stack}
+                      </pre>
+                    </div>
+                  )}
                 </div>
+                
+                <button
+                  onClick={() => copyToClipboard(message.message)}
+                  className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded"
+                  title="Copy"
+                >
+                  <Copy className="h-3 w-3 text-gray-400" />
+                </button>
               </motion.div>
             ))}
           </AnimatePresence>
+        )}
+        
+        {/* Cursor blinking effect when idle/empty */}
+        {messages.length === 0 && (
+          <div className="mt-2 h-4 w-2 bg-gray-500/50 animate-pulse" />
         )}
       </div>
     </div>
