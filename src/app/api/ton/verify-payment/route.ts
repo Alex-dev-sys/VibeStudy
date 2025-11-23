@@ -71,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication required',
+          error: 'Требуется авторизация',
         },
         { status: 401 }
       );

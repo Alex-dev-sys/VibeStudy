@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSupabaseClient } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/supabase/auth';
+import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { logError, logInfo } from '@/lib/logger';
 
 interface SubmitChallengeRequest {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Требуется авторизация' },
         { status: 401 }
       );
     }
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Требуется авторизация' },
         { status: 401 }
       );
     }

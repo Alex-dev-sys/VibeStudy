@@ -89,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreatePay
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication required',
+          error: 'Требуется авторизация. Пожалуйста, войдите в аккаунт.',
         },
         { status: 401 }
       );

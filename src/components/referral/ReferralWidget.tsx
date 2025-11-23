@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getReferralStats, generateReferralLink } from '@/lib/supabase/referrals';
@@ -33,7 +34,7 @@ export function ReferralWidget() {
 
       const user = await getCurrentUser();
       if (!user) {
-        setError(t.referral?.authRequired || 'Authentication required');
+        // Silent return or show simplified view for guests
         setLoading(false);
         return;
       }
@@ -67,7 +68,7 @@ export function ReferralWidget() {
     }
   };
 
-  if (loading) {
+  if (!user) {
     return (
       <Card className="border-accent/20">
         <CardHeader>
@@ -75,12 +76,15 @@ export function ReferralWidget() {
             {t.referral?.title || 'Реферальная программа'}
           </CardTitle>
         </CardHeader>
-        <div className="mt-4">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-white/60">
-              {t.common?.loading || 'Загрузка...'}
-            </div>
-          </div>
+        <div className="mt-4 px-6 pb-6 text-center">
+          <p className="text-white/70 mb-4">
+            Войдите в аккаунт, чтобы приглашать друзей и получать награды.
+          </p>
+          <Link href="/login">
+            <Button variant="primary">
+              Войти
+            </Button>
+          </Link>
         </div>
       </Card>
     );
