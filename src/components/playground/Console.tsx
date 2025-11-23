@@ -123,16 +123,14 @@ export function Console({ messages, onClear }: ConsoleProps) {
           
           <div className="h-4 w-px bg-white/10 mx-1" />
           
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={onClear}
-            className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10 rounded-md"
+            className="flex items-center justify-center h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title={t.editor.clearCode}
             disabled={messages.length === 0}
           >
             <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          </button>
         </div>
       </div>
       
