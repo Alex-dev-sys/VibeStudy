@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { User, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { getCurrentUser, signOut } from '@/lib/supabase/auth';
+import { getCurrentUser, signOut, onAuthStateChange } from '@/lib/supabase/auth';
 import { GuestModeManager } from '@/lib/auth/guest-mode';
 import { Button } from '@/components/ui/button';
 
@@ -12,6 +12,7 @@ export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isGuest, setIsGuest] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -19,15 +20,39 @@ export function UserMenu() {
       setUser(currentUser);
       // User is guest only if no authenticated user AND guest mode is active
       setIsGuest(!currentUser && GuestModeManager.isGuestMode());
+      setLoading(false);
     };
     
     checkUser();
+
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChange(async (event, session) => {
+      console.log('[UserMenu] Auth state changed:', event, !!session);
+      if (session?.user) {
+        setUser(session.user);
+        setIsGuest(false);
+      } else {
+        setUser(null);
+        setIsGuest(GuestModeManager.isGuestMode());
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleSignOut = async () => {
     await signOut();
     window.location.href = '/';
   };
+
+  // Show loading state briefly
+  if (loading) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+    );
+  }
 
   if (isGuest) {
     return (
@@ -40,7 +65,13 @@ export function UserMenu() {
   }
 
   if (!user) {
-    return null;
+    return (
+      <Link href="/login">
+        <Button variant="primary" size="sm">
+          Войти
+        </Button>
+      </Link>
+    );
   }
 
   const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;

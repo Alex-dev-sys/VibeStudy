@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -11,7 +11,51 @@ export async function GET(request: NextRequest) {
   console.log('[Auth Callback] Code present:', !!code);
 
   if (code) {
-    const supabase = createClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[Auth Callback] Supabase not configured');
+      return NextResponse.redirect(`${origin}/login?error=config_missing`);
+    }
+
+    // Create response first so we can set cookies on it
+    let response = NextResponse.redirect(`${origin}/learn`);
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // Set cookie on both request and response
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: CookieOptions) {
+          // Remove cookie from both request and response
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+        },
+      },
+    });
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
     console.log('[Auth Callback] Exchange result:', { 
@@ -30,6 +74,7 @@ export async function GET(request: NextRequest) {
       
       console.log('[Auth Callback] User info:', {
         userId: user.id,
+        email: user.email,
         createdAt: user.created_at,
         lastSignIn: user.last_sign_in_at,
         isNewUser,
@@ -45,11 +90,16 @@ export async function GET(request: NextRequest) {
       redirectUrl.searchParams.set('migrate_guest', 'true');
       
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
-      return NextResponse.redirect(redirectUrl);
+      response = NextResponse.redirect(redirectUrl);
+      
+      return response;
+    } else {
+      console.error('[Auth Callback] Failed to exchange code:', error?.message);
+      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
     }
   }
 
   // Fallback to /learn on error or missing code
-  console.log('[Auth Callback] Fallback redirect to /learn');
-  return NextResponse.redirect(`${origin}/learn`);
+  console.log('[Auth Callback] Fallback redirect to /learn - no code');
+  return NextResponse.redirect(`${origin}/login?error=no_code`);
 }

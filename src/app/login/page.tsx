@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { signInWithEmail, signInWithGoogle, getCurrentUser } from '@/lib/supabase/auth';
+import { signInWithEmail, signInWithGoogle, getCurrentUser, onAuthStateChange } from '@/lib/supabase/auth';
 import { useTranslations } from '@/store/locale-store';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
@@ -39,7 +39,9 @@ export default function LoginPage() {
   useEffect(() => {
     const checkUser = async () => {
       const user = await getCurrentUser();
+      console.log('[Login Page] Current user:', !!user);
       if (user) {
+        console.log('[Login Page] User authenticated, redirecting to /learn');
         router.push('/learn');
       }
     };
@@ -56,6 +58,19 @@ export default function LoginPage() {
       sessionStorage.setItem('referral_code', refParam);
       console.log('[Referral] Stored referral code:', refParam);
     }
+
+    // Also listen to auth state changes
+    const unsubscribe = onAuthStateChange(async (event, session) => {
+      console.log('[Login Page] Auth state changed:', event, !!session);
+      if (session?.user) {
+        console.log('[Login Page] User signed in, redirecting to /learn');
+        router.push('/learn');
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [router, checkUrlErrors]);
 
   async function handleEmailSignIn(e: React.FormEvent) {
