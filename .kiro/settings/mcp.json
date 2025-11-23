@@ -37,7 +37,10 @@
         "@playwright/mcp@latest"
       ],
       "disabled": false,
-      "autoApprove": []
+      "autoApprove": [
+        "browser_navigate",
+        "browser_install"
+      ]
     },
     "context7": {
       "command": "C:\\Program Files\\Volta\\npx.cmd",

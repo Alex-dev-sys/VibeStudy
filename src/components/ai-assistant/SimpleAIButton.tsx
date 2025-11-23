@@ -64,7 +64,7 @@ export function SimpleAIButton() {
         onClick={handleClick}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-[140px] md:bottom-[88px] right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+        className="fixed bottom-[88px] md:bottom-[88px] right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
         aria-label="AI Ассистент"
         title="AI Ассистент"
       >
