@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { buildCurriculum } from '@/lib/curriculum';
 import { useProgressStore } from '@/store/progress-store';
@@ -9,7 +9,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { DayTimeline } from './DayTimeline';
 import { SimplifiedDayCard } from './SimplifiedDayCard';
 import { AdaptiveRecommendationsPanel } from './AdaptiveRecommendationsPanel';
-import { AIAssistantContainer } from '@/components/ai-assistant';
+import { useAIAssistant } from '@/components/ai-assistant/AIAssistantContext';
 
 export default function LearningDashboard() {
   const { activeDay, languageId } = useProgressStore((state) => ({
@@ -21,8 +21,8 @@ export default function LearningDashboard() {
   const currentDay = curriculum.find((day) => day.day === activeDay) ?? curriculum[0];
   const previousDay = curriculum.find((day) => day.day === activeDay - 1);
 
-  // State for AI Assistant
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  // AI Assistant context
+  const { isOpen: isAIAssistantOpen, setIsOpen: setIsAIAssistantOpen, onOpenClick } = useAIAssistant();
 
   // Keyboard shortcut: Ctrl+K or Cmd+K to open AI Assistant
   useEffect(() => {
@@ -30,7 +30,11 @@ export default function LearningDashboard() {
       // Check for Ctrl+K (Windows/Linux) or Cmd+K (Mac)
       if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
         event.preventDefault();
-        setIsAIAssistantOpen((prev) => !prev);
+        if (isAIAssistantOpen) {
+          setIsAIAssistantOpen(false);
+        } else {
+          onOpenClick();
+        }
       }
       
       // ESC to close
@@ -41,7 +45,7 @@ export default function LearningDashboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAIAssistantOpen]);
+  }, [isAIAssistantOpen, setIsAIAssistantOpen, onOpenClick]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 overflow-hidden px-4 sm:gap-8 sm:px-6 md:gap-10 lg:gap-12 lg:px-8">
@@ -53,9 +57,6 @@ export default function LearningDashboard() {
       
       {/* Панель адаптивных рекомендаций */}
       <AdaptiveRecommendationsPanel currentDay={activeDay} languageId={languageId} />
-      
-      {/* AI Assistant - Floating panel with keyboard shortcut support */}
-      <AIAssistantContainer />
     </div>
   );
 }

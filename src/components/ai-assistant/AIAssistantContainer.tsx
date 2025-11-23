@@ -5,14 +5,14 @@
  * Manages AI assistant state and integrates with user tier system
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  FloatingChatButton,
   ChatInterface,
   PaywallModal,
   UpgradePrompt,
   LimitReachedNotification,
 } from '@/components/ai-assistant';
+import { useAIAssistant } from './AIAssistantContext';
 import type { UserTier } from '@/types';
 import { useLocaleStore } from '@/store/locale-store';
 
@@ -26,15 +26,15 @@ export function AIAssistantContainer({ isOpen: externalIsOpen, onOpenChange }: A
   const [showPaywall, setShowPaywall] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showLimit, setShowLimit] = useState(false);
-  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const { isOpen: contextIsOpen, setIsOpen: setContextIsOpen } = useAIAssistant();
 
-  // Use external control if provided, otherwise use internal state
-  const isChatOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  // Use external control if provided, otherwise use context
+  const isChatOpen = externalIsOpen !== undefined ? externalIsOpen : contextIsOpen;
   const setIsChatOpen = (open: boolean) => {
     if (onOpenChange) {
       onOpenChange(open);
     } else {
-      setInternalIsOpen(open);
+      setContextIsOpen(open);
     }
   };
 
@@ -46,9 +46,10 @@ export function AIAssistantContainer({ isOpen: externalIsOpen, onOpenChange }: A
 
   // Get locale
   const { locale } = useLocaleStore();
+  const { setOpenHandler } = useAIAssistant();
 
   // Handle opening chat
-  const handleOpenChat = () => {
+  const handleOpenChat = useCallback(() => {
     // For free users, show paywall
     if (userTier === 'free') {
       setShowPaywall(true);
@@ -56,14 +57,20 @@ export function AIAssistantContainer({ isOpen: externalIsOpen, onOpenChange }: A
     }
 
     // Open chat for premium users
-    setIsChatOpen(true);
-  };
+    if (onOpenChange) {
+      onOpenChange(true);
+    } else {
+      setContextIsOpen(true);
+    }
+  }, [userTier, onOpenChange, setContextIsOpen]);
+
+  // Register open handler in context
+  useEffect(() => {
+    setOpenHandler(handleOpenChat);
+  }, [setOpenHandler, handleOpenChat]);
 
   return (
     <>
-      {/* Floating button to open chat */}
-      <FloatingChatButton onClick={handleOpenChat} locale={locale} />
-
       {/* Chat interface */}
       <ChatInterface
         isOpen={isChatOpen}
