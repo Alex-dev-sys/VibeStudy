@@ -156,6 +156,7 @@ export function ChatInterface({
   locale = 'ru',
 }: ChatInterfaceProps) {
   // Use AI Assistant hook for state management
+  // Pass isOpen to sync with external state
   const {
     messages,
     isLoading,
@@ -165,7 +166,7 @@ export function ChatInterface({
     clearError,
     requestsToday,
     requestLimit,
-  } = useAIAssistant();
+  } = useAIAssistant(isOpen);
   
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
@@ -200,6 +201,7 @@ export function ChatInterface({
     if (!input.trim() || isLoading) return;
 
     const messageContent = input.trim();
+    console.log('[ChatInterface] Sending message:', messageContent);
     setInput(''); // Clear input immediately for better UX
     
     // Send message using the hook

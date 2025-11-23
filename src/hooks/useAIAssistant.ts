@@ -51,7 +51,7 @@ interface UseAIAssistantState {
 /**
  * Custom hook for AI Assistant functionality
  */
-export function useAIAssistant(): UseAIAssistantState {
+export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
   // UI State
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,11 +77,14 @@ export function useAIAssistant(): UseAIAssistantState {
   const sessionManager = getSessionManager();
   const aiService = getAIAssistantService(locale);
   
+  // Use external isOpen if provided, otherwise use internal
+  const effectiveIsOpen = externalIsOpen !== undefined ? externalIsOpen : isOpen;
+  
   /**
    * Initialize session when chat opens
    */
   useEffect(() => {
-    if (isOpen && !sessionId) {
+    if (effectiveIsOpen && !sessionId) {
       // Create new session
       const session = sessionManager.createSession(profile.id, {
         day: activeDay,
@@ -116,7 +119,7 @@ export function useAIAssistant(): UseAIAssistantState {
         setMessages([welcomeMessage]);
       });
     }
-  }, [isOpen, sessionId, profile.id, activeDay, languageId, locale, sessionManager, aiService]);
+  }, [effectiveIsOpen, sessionId, profile.id, activeDay, languageId, locale, sessionManager, aiService]);
   
   /**
    * Load existing session messages when session ID changes
@@ -158,12 +161,15 @@ export function useAIAssistant(): UseAIAssistantState {
     content: string,
     requestType: 'question' | 'code-help' | 'advice' | 'general' = 'general'
   ) => {
+    console.log('[useAIAssistant] sendMessage called:', { content, requestType, sessionId });
+    
     if (!sessionId) {
-      console.error('No active session');
+      console.error('[useAIAssistant] No active session');
       return;
     }
     
     if (!content.trim()) {
+      console.log('[useAIAssistant] Empty content, skipping');
       return;
     }
     
@@ -194,6 +200,7 @@ export function useAIAssistant(): UseAIAssistantState {
     
     try {
       // Call API endpoint
+      console.log('[useAIAssistant] Calling API:', '/api/ai-assistant/chat');
       const response = await fetch('/api/ai-assistant/chat', {
         method: 'POST',
         headers: {
@@ -206,6 +213,8 @@ export function useAIAssistant(): UseAIAssistantState {
           locale,
         }),
       });
+      
+      console.log('[useAIAssistant] API response status:', response.status);
       
       // Update usage info from headers
       const tierHeader = response.headers.get('X-User-Tier');
