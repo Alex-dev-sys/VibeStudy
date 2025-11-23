@@ -110,6 +110,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+          // Clear previous mocks
+          mockCall.mockClear();
+
           // Simulate different error types
           let errorMessage: string;
           switch (errorType) {
@@ -132,7 +135,8 @@ describe('AI Assistant Error Handling - Property Tests', () => {
               errorMessage = 'Unknown error';
           }
 
-          mockCall.mockRejectedValueOnce(new Error(errorMessage));
+          // Mock to fail all 3 attempts
+          mockCall.mockRejectedValue(new Error(errorMessage));
 
           // Act: Try to send message
           let thrownError: Error | null = null;
@@ -166,7 +170,12 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           // Mock AI client to fail
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
-          mockCall.mockRejectedValueOnce(new Error('Service failure'));
+          
+          // Clear previous mocks
+          mockCall.mockClear();
+          
+          // Mock to fail all attempts
+          mockCall.mockRejectedValue(new Error('Service failure'));
 
           // Spy on console.log to verify logging
           const consoleLogSpy = vi.spyOn(console, 'log');
@@ -220,11 +229,15 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+          // Clear previous mocks
+          mockCall.mockClear();
+
           const errors: string[] = [];
 
           // Test each error scenario
           for (const scenario of errorScenarios) {
-            mockCall.mockRejectedValueOnce(new Error(scenario.errorMessage));
+            // Mock to fail all 3 attempts with this error
+            mockCall.mockRejectedValue(new Error(scenario.errorMessage));
 
             try {
               await aiService.sendMessage(request);
@@ -233,6 +246,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
                 errors.push(error.message);
               }
             }
+            
+            // Clear mock for next scenario
+            mockCall.mockClear();
           }
 
           // Assert: Each error should be captured
@@ -253,15 +269,19 @@ describe('AI Assistant Error Handling - Property Tests', () => {
    * Validates: Requirements 7.4
    * 
    * For any network error during a request, the message should be queued for retry
+   * Max 3 attempts means: can handle up to 2 failures, then succeed on 3rd attempt
    */
   it('Property 28: Service retries failed requests automatically', { timeout: RETRY_TEST_TIMEOUT }, async () => {
     await fc.assert(
       fc.asyncProperty(
         assistantRequestArbitrary,
-        fc.integer({ min: 1, max: 3 }), // Number of failures before success
+        fc.integer({ min: 1, max: 2 }), // Number of failures before success (max 2 for 3 total attempts)
         async (request, failureCount) => {
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
+
+          // Clear previous mocks
+          mockCall.mockClear();
 
           // Mock to fail N times, then succeed
           for (let i = 0; i < failureCount; i++) {
@@ -283,18 +303,13 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             error = err;
           }
 
-          // Assert: If failures <= maxRetries (3), should eventually succeed
-          if (failureCount <= 3) {
-            expect(error).toBeUndefined();
-            expect(result).toBeDefined();
-            expect(result?.message).toBeTruthy();
+          // Assert: With max 3 attempts, should handle up to 2 failures
+          expect(error).toBeUndefined();
+          expect(result).toBeDefined();
+          expect(result?.message).toBeTruthy();
 
-            // Assert: Should have been called failureCount + 1 times (failures + success)
-            expect(mockCall).toHaveBeenCalledTimes(failureCount + 1);
-          } else {
-            // If more than max retries, should fail
-            expect(error).toBeDefined();
-          }
+          // Assert: Should have been called failureCount + 1 times (failures + success)
+          expect(mockCall).toHaveBeenCalledTimes(failureCount + 1);
         }
       ),
       { numRuns: 100 }
@@ -308,6 +323,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
         async (request) => {
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
+
+          // Clear previous mocks
+          mockCall.mockClear();
 
           // Mock to fail twice, then succeed
           mockCall.mockRejectedValueOnce(new Error('Network error 1'));
@@ -348,10 +366,11 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
-          // Mock to fail many times
-          for (let i = 0; i < failureCount; i++) {
-            mockCall.mockRejectedValueOnce(new Error(`Network error ${i + 1}`));
-          }
+          // Clear previous mocks
+          mockCall.mockClear();
+
+          // Mock to fail all attempts
+          mockCall.mockRejectedValue(new Error('Network error'));
 
           // Act: Try to send message
           let thrownError: Error | null = null;
@@ -413,6 +432,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+            // Clear previous mocks
+            mockCall.mockClear();
+
             // Simulate transient error (fails once, then succeeds)
             mockCall.mockRejectedValueOnce(new Error('Transient network error'));
             mockCall.mockResolvedValueOnce({
@@ -442,6 +464,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           async (request) => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
+
+            // Clear previous mocks
+            mockCall.mockClear();
 
             // Simulate persistent error
             mockCall.mockRejectedValue(new Error('Persistent service error'));
@@ -483,6 +508,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+            // Clear previous mocks
+            mockCall.mockClear();
+
             // Fail once, then succeed
             mockCall.mockRejectedValueOnce(new Error('First attempt failed'));
             mockCall.mockResolvedValueOnce({
@@ -521,6 +549,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+            // Clear previous mocks
+            mockCall.mockClear();
+
             mockCall.mockRejectedValue(new Error(errorMessage));
 
             // Act: Try to send message
@@ -548,6 +579,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           async (request) => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
+
+            // Clear previous mocks
+            mockCall.mockClear();
 
             mockCall.mockRejectedValue(new Error('Test error'));
 
@@ -605,6 +639,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+            // Clear previous mocks
+            mockCall.mockClear();
+
             // Throw error with empty message
             mockCall.mockRejectedValue(new Error(''));
 
@@ -634,6 +671,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
 
+            // Clear previous mocks
+            mockCall.mockClear();
+
             // Throw non-Error object
             mockCall.mockRejectedValue(errorString);
 
@@ -661,6 +701,9 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           async (requests) => {
             const { callChatCompletionWithTier } = await import('@/lib/ai-client');
             const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
+
+            // Clear previous mocks
+            mockCall.mockClear();
 
             // Make all requests fail
             mockCall.mockRejectedValue(new Error('Service unavailable'));

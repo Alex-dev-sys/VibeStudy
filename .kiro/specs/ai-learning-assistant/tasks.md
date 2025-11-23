@@ -374,36 +374,84 @@
   - **Property 38: History can be deleted**
   - **Validates: Requirements 9.3, 9.5**
 
-- [ ] 19. Integrate with learning dashboard
+- [x] 19. Integrate with learning dashboard
+
+
+
+
+
+
+
+
+
+
+
   - Add AI Assistant button to `src/components/dashboard/LearningDashboard.tsx`
   - Position ChatInterface as floating panel (fixed position, right side)
   - Implement open/close animations (slide-in from right)
   - Add keyboard shortcut (Ctrl+K or Cmd+K) to open assistant
-  - Show "New" badge for first-time users (check localStorage flag)
+  - _Requirements: 1.1, 5.1_
+t-time users (check localStorage flag)
   - _Requirements: 1.1, 5.1_
 
-- [ ] 20. Add localization support
+- [x] 20. Add localization support
+
+
+
+
+
   - Add Russian translations to `src/lib/i18n/locales/ru.ts` for AI assistant
   - Add English translations to `src/lib/i18n/locales/en.ts` for AI assistant
   - Translate UI labels, error messages, quick actions, welcome message
   - Implement locale-aware prompt building in PromptBuilder
   - Use useLocaleStore() to get current locale
+
+
   - _Requirements: All (localization is cross-cutting)_
 
-- [ ] 21. Checkpoint - Ensure all tests pass
+
+- [x] 21. Checkpoint - Ensure all tests pass
+
+
+
+
+
+
+
+
+
+
+
+
   - Run all unit tests: `npm run test:unit`
   - Fix any failing tests
-  - Ensure all property tests pass with 100 iterations
-  - Ask the user if questions arise
 
-- [ ]* 22. End-to-end testing
+
+  - Ensure all property tests pass with 100 iterations
+
+  - Ask the user if questions arise
+-
+
+- [x] 22. End-to-end testing
+
+
+
+
+
   - Create `tests/e2e/ai-assistant.spec.ts` for complete chat flow
   - Test tier verification and paywall display
   - Test code sharing and analysis
+
+
   - Test mobile responsive behavior
   - Test error handling and recovery
   - _Requirements: All_
+-
 
 - [ ] 23. Final checkpoint - Ensure all tests pass
+
+
+
+
   - Run all tests: `npm run test:unit && npm run test:e2e`
   - Ensure all tests pass, ask the user if questions arise
