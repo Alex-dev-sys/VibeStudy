@@ -138,8 +138,10 @@ export function DayTimeline() {
             <div 
               ref={scrollContainerRef}
               className={clsx(
-                "mt-6 grid gap-2",
-                isExpanded ? "grid-cols-12 sm:grid-cols-15" : "grid-cols-7 sm:grid-cols-10"
+                "mt-6 gap-2 pb-2",
+                isExpanded 
+                  ? "grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] max-h-[400px] overflow-y-auto" 
+                  : "grid grid-cols-7 sm:grid-cols-10"
               )}
             >
               {displayedDays.map((dayData) => (
