@@ -230,7 +230,9 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
       
       if (!response.ok) {
         // Handle error response
+        console.error('[useAIAssistant] API error, status:', response.status);
         const errorData: ErrorResponse = await response.json();
+        console.error('[useAIAssistant] Error data:', errorData);
         
         setError({
           code: errorData.error.code,
@@ -255,10 +257,13 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
       }
       
       // Parse successful response
+      console.log('[useAIAssistant] Parsing response...');
       const data: ChatResponse = await response.json();
+      console.log('[useAIAssistant] Response data:', data);
       
       // Update usage info if provided
       if (data.usage) {
+        console.log('[useAIAssistant] Updating usage:', data.usage);
         setRequestsToday(data.usage.requestsToday);
         setRequestLimit(data.usage.limit);
       }
@@ -277,9 +282,18 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
         },
       };
       
+      console.log('[useAIAssistant] Adding assistant message:', assistantMessage);
+      
       // Add assistant message
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => {
+        console.log('[useAIAssistant] Previous messages:', prev.length);
+        const newMessages = [...prev, assistantMessage];
+        console.log('[useAIAssistant] New messages:', newMessages.length);
+        return newMessages;
+      });
       sessionManager.addMessage(sessionId, assistantMessage);
+      
+      console.log('[useAIAssistant] Message added successfully');
       
     } catch (err) {
       console.error('Failed to send message:', err);

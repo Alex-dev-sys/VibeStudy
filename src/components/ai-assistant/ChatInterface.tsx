@@ -333,6 +333,7 @@ export function ChatInterface({
               maxHeight: isMobile ? 'calc(100vh - 60px - 120px - 80px)' : undefined,
             }}
           >
+            {console.log('[ChatInterface] Rendering messages:', messages.length)}
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} locale={locale} />
             ))}

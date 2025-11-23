@@ -6,6 +6,7 @@
 import { AssistantContext } from './types';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
+import { useLocaleStore } from '@/store/locale-store';
 import { buildCurriculum, getDayTopic } from '@/lib/curriculum';
 import type { DayContent, UserTier } from '@/types';
 
@@ -49,10 +50,14 @@ export class ContextAggregator {
   /**
    * Get complete user context for AI assistant
    */
-  async getUserContext(userId: string, tier: UserTier): Promise<AssistantContext> {
+  async getUserContext(userId: string, tier: UserTier, locale?: 'ru' | 'en'): Promise<AssistantContext> {
     // Check cache first
     const cached = this.contextCache.get(userId);
     if (cached && !this.isCacheExpired(cached)) {
+      // Update locale if provided (locale can change without invalidating other context)
+      if (locale) {
+        cached.data.locale = locale;
+      }
       return cached.data;
     }
 
@@ -73,6 +78,7 @@ export class ContextAggregator {
     const context: AssistantContext = {
       userId,
       tier,
+      locale: locale || 'ru', // Default to Russian if not provided
       currentDay,
       languageId,
       dayState,

@@ -456,6 +456,32 @@ export const en: Translations = {
     dataDeletedDescription: 'All local data has been deleted. The page will be reloaded.'
   },
   aiAssistant: {
+    title: 'AI Assistant',
+    assistant: 'Assistant',
+    typing: 'Typing...',
+    messagePlaceholder: 'Type a message...',
+    send: 'Send',
+    openAssistant: 'Open AI assistant',
+    free: 'Free',
+    suggestions: 'Suggestions:',
+    relatedTopics: 'Related topics:',
+    quickActions: '⚡ Quick actions:',
+    explainConcept: 'Explain this concept',
+    helpWithCode: 'Help with code',
+    helpWithMyCode: 'Help with my code',
+    giveHint: 'Give me a hint',
+    studyAdvice: 'Study advice',
+    welcomeMessage: 'Hi! 👋 I\'m your AI programming learning assistant. How can I help you?',
+    testResponse: 'This is a test response. API integration will be added later.',
+    codeBlock: {
+      copy: 'Copy',
+      copied: 'Copied',
+      copyCode: 'Copy code',
+      codeCopied: 'Code copied!',
+      codeAddedToClipboard: 'Code added to clipboard',
+      copyFailed: 'Copy failed',
+      failedToCopy: 'Failed to copy code'
+    },
     chat: {
       clearHistory: 'Clear History',
       clearHistoryConfirm: 'Click again to confirm',
@@ -503,6 +529,11 @@ export const en: Translations = {
       priorityGeneration: 'Priority generation',
       upgradeButton: 'Upgrade to Premium',
       closeButton: 'Got it'
+    },
+    errors: {
+      sendFailed: 'Failed to send message',
+      tryAgain: 'Try again',
+      serviceUnavailable: 'Service temporarily unavailable'
     }
   },
   pricing: {
