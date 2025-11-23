@@ -178,6 +178,7 @@ export function ChatInterface({
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
+    console.log('[ChatInterface] Rendering messages:', messages.length);
     if (messagesEndRef.current && !isMinimized) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -333,7 +334,6 @@ export function ChatInterface({
               maxHeight: isMobile ? 'calc(100vh - 60px - 120px - 80px)' : undefined,
             }}
           >
-            {console.log('[ChatInterface] Rendering messages:', messages.length)}
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} locale={locale} />
             ))}
