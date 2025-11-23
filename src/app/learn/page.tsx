@@ -5,6 +5,7 @@ import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { generatePageMetadata, generateStructuredData } from '@/lib/seo/metadata';
 import { RegistrationSuccessNotification } from '@/components/auth/RegistrationSuccessNotification';
 import { FirstDayCompletionPrompt } from '@/components/auth/FirstDayCompletionPrompt';
+import { AIAssistantContainer } from '@/components/ai-assistant';
 import type { Metadata } from 'next';
 
 const LearningDashboard = dynamicImport(() => import('@/components/dashboard/LearningDashboard'), { ssr: false });
@@ -32,6 +33,9 @@ export default function LearnPage() {
       <div className="relative z-10 flex min-h-screen flex-col gap-4 px-3 py-6 sm:gap-6 sm:px-4 sm:py-8 md:gap-8 md:px-8 md:py-10 lg:px-14">
         <LearningDashboard />
       </div>
+      
+      {/* AI Assistant - only on learn page */}
+      <AIAssistantContainer />
     </main>
   );
 }

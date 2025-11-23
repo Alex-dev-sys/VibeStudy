@@ -82,7 +82,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AutoMigrationGate } from '@/components/migration/AutoMigrationGate';
 import { Navigation } from '@/components/layout/Navigation';
 import { FloatingHelpButton } from '@/components/help/FloatingHelpButton';
-import { AIAssistantContainer } from '@/components/ai-assistant';
 import { Toaster } from 'sonner';
 import { AriaAnnouncer } from '@/lib/accessibility/aria-announcer';
 import { SkipLinks } from '@/lib/accessibility/skip-links';
@@ -104,7 +103,6 @@ export default function RootLayout({
               
               <AutoMigrationGate />
               <Navigation />
-              <AIAssistantContainer />
               <FloatingHelpButton />
               
               <main id="main-content" tabIndex={-1} className="focus:outline-none">
