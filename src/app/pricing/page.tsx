@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { PricingCard, type PricingTier } from '@/components/pricing/PricingCard';
 import { PaymentModal } from '@/components/pricing/PaymentModal';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
-import { ArrowLeft, Zap, Sparkles, Crown } from 'lucide-react';
+import { ArrowLeft, Zap, Sparkles, Crown, ChevronDown } from 'lucide-react';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { requireSupabaseClient } from '@/lib/supabase/client';
 
@@ -229,158 +230,191 @@ export default function PricingPage() {
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-16 px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <header className="flex flex-col gap-6">
-          <Link href="/learn">
+        <header className="flex flex-col items-center gap-6 text-center max-w-3xl mx-auto">
+          <Link href="/learn" className="self-start md:self-center">
             <Button
               variant="ghost"
               size="sm"
-              className="inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               Назад к обучению
             </Button>
           </Link>
 
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white/95 sm:text-5xl">
-              <AnimatedGradientText>Выберите свой план</AnimatedGradientText>
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/20 backdrop-blur-sm">
+              <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_currentColor]" />
+              Доступен ранний доступ
+            </div>
+            
+            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
+              Инвестируйте в своё <br className="hidden sm:block" />
+              <span className="relative inline-block">
+                <span className="absolute -inset-1 block -skew-y-2 bg-gradient-to-r from-purple-600 to-pink-600 opacity-40 blur-lg" aria-hidden="true" />
+                <AnimatedGradientText className="relative">будущее</AnimatedGradientText>
+              </span>
             </h1>
-            <p className="mt-4 text-lg text-white/70">
-              Разблокируйте полный потенциал обучения с премиум-доступом
+            
+            <p className="mx-auto max-w-2xl text-lg text-white/70 sm:text-xl leading-relaxed">
+              Получите доступ к передовым AI-моделям, персональным рекомендациям и ускоренному обучению. Станьте разработчиком быстрее с Premium.
             </p>
           </div>
         </header>
 
-        {/* Current Tier Info */}
+        {/* Current Tier Info - Enhanced */}
         {userTier.tier !== 'free' && userTier.tierExpiresAt && (
-          <div className="mx-auto w-full max-w-2xl rounded-2xl bg-gradient-to-r from-accent/10 to-[#ffd200]/10 p-4 text-center">
-            <p className="text-sm text-white/80">
-              Ваш текущий план:{' '}
-              <span className="font-semibold text-white/95">
-                {userTier.tier === 'premium' ? 'Premium' : 'Pro+'}
-              </span>
-              {' • '}
-              Действителен до:{' '}
-              {new Date(userTier.tierExpiresAt).toLocaleDateString('ru-RU')}
-            </p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-1 backdrop-blur-xl"
+          >
+            <div className="rounded-2xl bg-gradient-to-r from-accent/10 to-[#ffd200]/10 px-6 py-4 text-center shadow-inner">
+              <p className="text-base text-white/90">
+                Ваш текущий план:{' '}
+                <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent to-[#ffd200]">
+                  {userTier.tier === 'premium' ? 'Premium' : 'Pro+'}
+                </span>
+                {' • '}
+                <span className="text-white/60 text-sm">
+                  Активен до {new Date(userTier.tierExpiresAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              </p>
+            </div>
+          </motion.div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="mx-auto w-full max-w-2xl rounded-2xl bg-red-500/10 p-4 text-center">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="mx-auto w-full max-w-md rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-center backdrop-blur-sm">
+            <p className="text-sm font-medium text-red-400">{error}</p>
           </div>
         )}
 
-        {/* Pricing Cards */}
-        <div className="grid gap-8 md:grid-cols-3">
-          {pricingTiers.map((tier) => (
-            <PricingCard
-              key={tier.id}
-              tier={tier}
-              onSelect={handleSelectTier}
-              isLoading={isLoading}
-              disabled={isLoading}
-            />
+        {/* Pricing Cards Grid */}
+        <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
+          {pricingTiers.map((tier, index) => (
+            <div key={tier.id} className={tier.highlighted ? 'lg:-mt-4 lg:mb-4' : ''}>
+              <PricingCard
+                tier={tier}
+                onSelect={handleSelectTier}
+                isLoading={isLoading}
+                disabled={isLoading}
+              />
+            </div>
           ))}
         </div>
 
-        {/* Features Comparison */}
-        <section className="mt-12">
-          <h2 className="mb-8 text-center text-2xl font-semibold text-white/95">
-            Что вы получаете с Premium
-          </h2>
+        {/* Features Comparison - Enhanced */}
+        <section className="mt-16 relative">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              Почему стоит выбрать <span className="text-accent">Premium</span>?
+            </h2>
+            <p className="mt-4 text-white/60">
+              Инструменты профессионального уровня для вашего роста
+            </p>
+          </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="glass-panel-enhanced rounded-2xl p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/20">
-                <Zap className="h-6 w-6 text-accent" />
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: Zap,
+                color: "text-accent",
+                bg: "bg-accent/10",
+                border: "border-accent/20",
+                title: "Безлимитный AI",
+                desc: "Забудьте об ограничениях. Генерируйте код, получайте объяснения и решайте задачи 24/7."
+              },
+              {
+                icon: Sparkles,
+                color: "text-[#ffd200]",
+                bg: "bg-[#ffd200]/10",
+                border: "border-[#ffd200]/20",
+                title: "Топовые модели",
+                desc: "Доступ к GPT-4o и Claude 3.5 Sonnet — самым мощным нейросетям для программирования на сегодня."
+              },
+              {
+                icon: Crown,
+                color: "text-purple-400",
+                bg: "bg-purple-500/10",
+                border: "border-purple-500/20",
+                title: "Персональный ментор",
+                desc: "AI анализирует ваш код и стиль, предлагая улучшения и материалы, которые нужны именно вам."
+              }
+            ].map((feature, i) => (
+              <div 
+                key={i}
+                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 transition-all hover:border-white/20 hover:bg-white/8 hover:shadow-2xl hover:shadow-accent/10"
+              >
+                <div className={`mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${feature.bg} ${feature.border} border shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                  <feature.icon className={`h-7 w-7 ${feature.color}`} />
+                </div>
+                <h3 className="mb-3 text-xl font-bold text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-base leading-relaxed text-white/60">
+                  {feature.desc}
+                </p>
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-white/95">
-                Безлимитный AI
-              </h3>
-              <p className="text-sm text-white/70">
-                Неограниченные запросы к AI для объяснений, подсказок и генерации задач
-              </p>
-            </div>
-
-            <div className="glass-panel-enhanced rounded-2xl p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#ffd200]/20">
-                <Sparkles className="h-6 w-6 text-[#ffd200]" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-white/95">
-                Лучшие AI модели
-              </h3>
-              <p className="text-sm text-white/70">
-                Доступ к GPT-4o и Claude 3.5 Sonnet для максимального качества обучения
-              </p>
-            </div>
-
-            <div className="glass-panel-enhanced rounded-2xl p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/20">
-                <Crown className="h-6 w-6 text-purple-400" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-white/95">
-                Персонализация
-              </h3>
-              <p className="text-sm text-white/70">
-                Индивидуальные рекомендации и адаптивный план обучения
-              </p>
-            </div>
+            ))}
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="mt-12">
-          <h2 className="mb-8 text-center text-2xl font-semibold text-white/95">
+        {/* FAQ - Enhanced */}
+        <section className="mt-16 max-w-4xl mx-auto w-full">
+          <h2 className="mb-10 text-center text-3xl font-bold text-white">
             Часто задаваемые вопросы
           </h2>
 
-          <div className="mx-auto max-w-3xl space-y-4">
-            <details className="glass-panel-enhanced rounded-2xl p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-white/95">
-                Что такое TON?
-              </summary>
-              <p className="mt-4 text-sm text-white/70">
-                TON (The Open Network) — это быстрый и безопасный блокчейн с низкими комиссиями.
-                Для оплаты вам понадобится TON Wallet (Tonkeeper, Tonhub и др.).
-              </p>
-            </details>
-
-            <details className="glass-panel-enhanced rounded-2xl p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-white/95">
-                Как происходит оплата?
-              </summary>
-              <p className="mt-4 text-sm text-white/70">
-                После выбора плана вы получите адрес кошелька и уникальный комментарий.
-                Отправьте указанную сумму TON с этим комментарием, и ваш тариф будет автоматически обновлен.
-              </p>
-            </details>
-
-            <details className="glass-panel-enhanced rounded-2xl p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-white/95">
-                Можно ли отменить подписку?
-              </summary>
-              <p className="mt-4 text-sm text-white/70">
-                Подписка действует 30 дней с момента оплаты и не продлевается автоматически.
-                После окончания срока вы вернетесь к бесплатному плану.
-              </p>
-            </details>
-
-            <details className="glass-panel-enhanced rounded-2xl p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-white/95">
-                Что если платеж не подтвердится?
-              </summary>
-              <p className="mt-4 text-sm text-white/70">
-                Проверка транзакции может занять несколько минут. Если платеж не подтвердился,
-                убедитесь, что вы указали правильный комментарий и отправили нужную сумму.
-              </p>
-            </details>
+          <div className="grid gap-4">
+            {[
+              {
+                q: "Что такое TON и зачем он нужен?",
+                a: "TON (The Open Network) — это современный блокчейн, который мы используем для быстрых и безопасных платежей. Это позволяет нам принимать оплату из любой точки мира с минимальными комиссиями."
+              },
+              {
+                q: "Как происходит процесс оплаты?",
+                a: "Всё просто: вы выбираете тариф, получаете адрес кошелька и уникальный комментарий. Переводите указанную сумму в любом TON-кошельке (например, Tonkeeper) — и доступ открывается автоматически."
+              },
+              {
+                q: "Что произойдет по окончании подписки?",
+                a: "Подписка не продлевается автоматически. По истечении 30 дней ваш аккаунт просто вернется на тариф Free. Никаких скрытых списаний с вашей карты или кошелька."
+              },
+              {
+                q: "Если платеж не прошел?",
+                a: "Не волнуйтесь. Система проверяет транзакции каждые несколько секунд. Если вы отправили средства, но доступ не открылся в течение 5 минут — напишите в поддержку, мы мгновенно всё решим."
+              }
+            ].map((faq, i) => (
+              <details key={i} className="group rounded-2xl border border-white/10 bg-white/5 transition-colors hover:bg-white/8 open:bg-white/10">
+                <summary className="flex cursor-pointer items-center justify-between p-6 text-lg font-semibold text-white/90 focus:outline-none">
+                  {faq.q}
+                  <span className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/50 transition-transform group-open:rotate-180">
+                    <ChevronDown className="h-5 w-5" />
+                  </span>
+                </summary>
+                <div className="px-6 pb-6 text-white/60 leading-relaxed border-t border-white/5 pt-4">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
           </div>
         </section>
+
+        {/* Bottom CTA */}
+        <div className="mt-12 text-center pb-12">
+          <p className="text-white/50 text-sm">
+            Есть вопросы? Пишите нам в <a href="https://t.me/vibestudy_support" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Telegram поддержку</a>
+          </p>
+        </div>
+
+      </div>
+
+      {/* Background Decorations */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] opacity-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/20 to-transparent blur-[100px]" />
       </div>
 
       {/* Payment Modal */}
