@@ -98,6 +98,28 @@ const postHandler = async (request: NextRequest, tierInfo: any) => {
     // Send message to AI
     const response = await service.sendMessage(assistantRequest);
 
+    // Log to database (server-side only)
+    try {
+      const { createClient } = await import('@/lib/supabase/server');
+      const supabase = createClient();
+      
+      await supabase.from('ai_assistant_logs').insert({
+        user_id: userId,
+        tier: tier,
+        request_type: validatedData.requestType,
+        message_length: validatedData.message.length,
+        response_length: response.message.length,
+        processing_time: 0, // Will be calculated by database
+        model_used: 'unknown', // Service doesn't expose this
+        success: true,
+        cache_hit: false,
+        created_at: new Date().toISOString(),
+      });
+    } catch (logError) {
+      // Don't fail the request if logging fails
+      console.error('Failed to log to database:', logError);
+    }
+
     // Add message to session if sessionId provided
     if (validatedData.sessionId) {
       const sessionManager = service.getSessionManager();

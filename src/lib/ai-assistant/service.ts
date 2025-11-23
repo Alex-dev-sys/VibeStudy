@@ -358,6 +358,7 @@ export class AIAssistantService {
 
   /**
    * Log analytics data
+   * Only logs to console - database logging happens in API route
    */
   private async logAnalytics(log: AnalyticsLog): Promise<void> {
     // Log to console for immediate feedback
@@ -375,42 +376,8 @@ export class AIAssistantService {
       error: log.error,
     });
 
-    // Send to Supabase (fire and forget - don't block on this)
-    this.logToDatabase(log).catch((error) => {
-      console.error('Failed to log analytics to database:', error);
-    });
-  }
-
-  /**
-   * Log analytics to Supabase database
-   */
-  private async logToDatabase(log: AnalyticsLog): Promise<void> {
-    try {
-      // Import Supabase client dynamically
-      const { createClient } = await import('@/lib/supabase/server');
-      const supabase = createClient();
-
-      const { error } = await supabase.from('ai_assistant_logs').insert({
-        user_id: log.userId,
-        tier: log.tier,
-        request_type: log.requestType,
-        message_length: log.messageLength,
-        response_length: log.responseLength,
-        processing_time: log.processingTime,
-        model_used: log.modelUsed,
-        success: log.success,
-        error: log.error,
-        cache_hit: log.cacheHit || false,
-        created_at: new Date(log.timestamp).toISOString(),
-      });
-
-      if (error) {
-        console.error('Supabase logging error:', error);
-      }
-    } catch (error) {
-      // Silently fail - analytics logging should not break the main flow
-      console.error('Database logging error:', error);
-    }
+    // Note: Database logging is handled by the API route
+    // to avoid importing server-side code in client components
   }
 
   /**
