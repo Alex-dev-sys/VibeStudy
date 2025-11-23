@@ -8,7 +8,7 @@ import { ContextAggregator } from './context-aggregator';
 import { PromptBuilder } from './prompt-builder';
 import { ResponseParser } from './response-parser';
 import { SessionManager } from './session-manager';
-import { callChatCompletionWithTier, type ChatMessage } from '@/lib/ai-client';
+import { callChatCompletion, type ChatMessage } from '@/lib/ai-client';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
 import type { UserTier } from '@/types';
 
@@ -245,17 +245,23 @@ export class AIAssistantService {
     attempt: number = 1
   ): Promise<{ raw: string; model?: string }> {
     try {
-      const result = await callChatCompletionWithTier(messages, {
-        tier,
+      console.log(`[AIService] Calling AI (attempt ${attempt}/${this.config.maxRetries})`);
+      
+      const result = await callChatCompletion({
+        messages,
         temperature: 0.7,
         maxTokens: 1000,
       });
 
+      console.log('[AIService] AI call successful');
+      
       return {
         raw: result.raw,
         model: result.model,
       };
     } catch (error) {
+      console.error(`[AIService] AI call failed (attempt ${attempt}):`, error);
+      
       if (attempt < this.config.maxRetries) {
         // Wait before retry
         await this.delay(this.config.retryDelay * attempt);
