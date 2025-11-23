@@ -49,29 +49,31 @@ function MessageBubble({ message, locale }: MessageProps) {
 
   return (
     <div
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in group`}
     >
       <div
         className={`max-w-[85%] sm:max-w-[80%] ${
           isUser
-            ? 'bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] text-white rounded-2xl px-4 py-3'
+            ? 'bg-gradient-to-br from-[#ff4bc1] via-[#ff6bd3] to-[#ffd34f] text-white rounded-3xl rounded-br-md px-5 py-3.5 shadow-lg'
             : isSystem
-            ? 'bg-[#2a2a2a] text-gray-300 border border-gray-700 rounded-2xl px-4 py-3'
+            ? 'bg-gradient-to-br from-[#2a2a2a] to-[#1f1f1f] text-gray-300 border border-gray-700/50 rounded-3xl px-5 py-3.5 shadow-md'
             : hasCodeBlocks
             ? 'bg-transparent'
-            : 'bg-[#2a2a2a] text-white rounded-2xl px-4 py-3'
+            : 'bg-gradient-to-br from-[#2a2a2a] to-[#1f1f1f] text-white rounded-3xl rounded-bl-md px-5 py-3.5 shadow-lg border border-white/5'
         }`}
       >
         {!isUser && !isSystem && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">🤖</span>
-            <span className="text-sm font-medium text-[#ff4bc1]">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff4bc1] to-[#ffd34f] flex items-center justify-center shadow-md">
+              <span className="text-lg">🤖</span>
+            </div>
+            <span className="text-sm font-semibold bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] bg-clip-text text-transparent">
               AI {locale === 'ru' ? 'Ассистент' : 'Assistant'}
             </span>
           </div>
         )}
         
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        <div className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</div>
         
         {/* Render code blocks if present */}
         {hasCodeBlocks && (
@@ -115,7 +117,10 @@ function MessageBubble({ message, locale }: MessageProps) {
           </div>
         )}
         
-        <div className={`text-xs mt-2 ${isUser ? 'text-white/70' : 'text-gray-500'}`}>
+        <div className={`text-xs mt-2.5 flex items-center gap-1.5 ${isUser ? 'text-white/60 justify-end' : 'text-gray-500'}`}>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {formatTime(message.timestamp)}
         </div>
       </div>
@@ -128,16 +133,18 @@ function MessageBubble({ message, locale }: MessageProps) {
  */
 function TypingIndicator({ locale }: { locale: 'ru' | 'en' }) {
   return (
-    <div className="flex justify-start mb-4">
-      <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🤖</span>
-          <div className="flex gap-1">
-            <span className="w-2 h-2 bg-[#ff4bc1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2 h-2 bg-[#ff4bc1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2 h-2 bg-[#ff4bc1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="flex justify-start mb-4 animate-fade-in">
+      <div className="bg-gradient-to-br from-[#2a2a2a] to-[#1f1f1f] rounded-3xl rounded-bl-md px-5 py-3.5 shadow-lg border border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff4bc1] to-[#ffd34f] flex items-center justify-center shadow-md animate-pulse">
+            <span className="text-lg">🤖</span>
           </div>
-          <span className="text-sm text-gray-400">
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] rounded-full animate-bounce shadow-sm" style={{ animationDelay: '0ms' }} />
+            <span className="w-2.5 h-2.5 bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] rounded-full animate-bounce shadow-sm" style={{ animationDelay: '150ms' }} />
+            <span className="w-2.5 h-2.5 bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] rounded-full animate-bounce shadow-sm" style={{ animationDelay: '300ms' }} />
+          </div>
+          <span className="text-sm text-gray-400 font-medium">
             {locale === 'ru' ? 'Печатает...' : 'Typing...'}
           </span>
         </div>
@@ -241,34 +248,36 @@ export function ChatInterface({
   // Mobile: Full screen overlay
   // Desktop: Floating panel
   const containerClasses = isMobile
-    ? `fixed inset-0 bg-[#1a1a1a] flex flex-col z-[1000] animate-slide-up`
-    : `fixed right-4 bottom-4 w-[400px] bg-[#1a1a1a] rounded-2xl shadow-2xl border border-gray-800 flex flex-col transition-all duration-300 ${
-        isMinimized ? 'h-16' : 'h-[600px]'
+    ? `fixed inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] flex flex-col z-[1000] animate-slide-up`
+    : `fixed right-4 bottom-4 w-[420px] bg-gradient-to-br from-[#1a1a1a] via-[#1a1a1a] to-[#0f0f0f] rounded-3xl shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col transition-all duration-300 ${
+        isMinimized ? 'h-16' : 'h-[650px]'
       } z-[1000] animate-slide-in-right`;
 
   return (
     <div className={containerClasses}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800 min-h-[60px]">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between p-5 border-b border-white/10 min-h-[70px] bg-gradient-to-r from-[#1a1a1a] to-[#1f1f1f]">
+        <div className="flex items-center gap-3">
           {isMobile && (
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2"
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2"
               aria-label="Back"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
+              <ArrowLeft className="w-5 h-5 text-gray-300" />
             </button>
           )}
-          <span className="text-2xl">💬</span>
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#ff4bc1] to-[#ffd34f] flex items-center justify-center shadow-lg">
+            <span className="text-2xl">💬</span>
+          </div>
           <div>
-            <h3 className="font-semibold text-white">
+            <h3 className="font-bold text-white text-lg">
               AI {locale === 'ru' ? 'Ассистент' : 'Assistant'}
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs font-medium bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] bg-clip-text text-transparent">
               {userTier === 'free' && (locale === 'ru' ? 'Бесплатный' : 'Free')}
-              {userTier === 'premium' && 'Premium'}
-              {userTier === 'pro_plus' && 'Pro+'}
+              {userTier === 'premium' && 'Premium ✨'}
+              {userTier === 'pro_plus' && 'Pro+ 🚀'}
             </p>
           </div>
         </div>
@@ -406,8 +415,8 @@ export function ChatInterface({
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="flex items-end gap-2">
+          <div className="p-5 border-t border-white/10 bg-gradient-to-r from-[#1a1a1a] to-[#1f1f1f]">
+            <div className="flex items-end gap-3">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -418,14 +427,14 @@ export function ChatInterface({
                     ? 'Напиши сообщение...'
                     : 'Type a message...'
                 }
-                className="flex-1 bg-[#2a2a2a] text-white rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-[#ff4bc1] max-h-32 text-base"
+                className="flex-1 bg-[#2a2a2a] text-white rounded-2xl px-5 py-3.5 resize-none focus:outline-none focus:ring-2 focus:ring-[#ff4bc1] focus:bg-[#2f2f2f] max-h-32 text-base border border-white/5 transition-all shadow-inner"
                 rows={1}
                 disabled={isLoading}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="p-3 bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="p-3.5 bg-gradient-to-br from-[#ff4bc1] via-[#ff6bd3] to-[#ffd34f] rounded-2xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
                 aria-label="Send"
               >
                 <Send className="w-5 h-5 text-white" />

@@ -123,17 +123,8 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
     }
   }, [effectiveIsOpen, sessionId, profile.id, activeDay, languageId, locale, sessionManager]);
   
-  /**
-   * Load existing session messages when session ID changes
-   */
-  useEffect(() => {
-    if (sessionId) {
-      const session = sessionManager.getSession(sessionId);
-      if (session) {
-        setMessages(session.messages);
-      }
-    }
-  }, [sessionId, sessionManager]);
+  // Note: Messages are managed in component state only
+  // SessionManager is not used for message persistence to avoid duplication
   
   /**
    * Open chat interface
@@ -195,7 +186,6 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
     
     // Optimistic update - add user message immediately
     setMessages((prev) => [...prev, userMessage]);
-    sessionManager.addMessage(sessionId, userMessage);
     
     // Set loading state
     setIsLoading(true);
@@ -253,7 +243,6 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
         };
         
         setMessages((prev) => [...prev, errorMessage]);
-        sessionManager.addMessage(sessionId, errorMessage);
         
         return;
       }
@@ -293,7 +282,6 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
         console.log('[useAIAssistant] New messages:', newMessages.length);
         return newMessages;
       });
-      sessionManager.addMessage(sessionId, assistantMessage);
       
       console.log('[useAIAssistant] Message added successfully');
       
@@ -322,7 +310,6 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
       };
       
       setMessages((prev) => [...prev, errorMessage]);
-      sessionManager.addMessage(sessionId, errorMessage);
       
     } finally {
       setIsLoading(false);
