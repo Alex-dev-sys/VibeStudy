@@ -140,8 +140,8 @@ export function DayTimeline() {
               className={clsx(
                 "mt-6 gap-2 pb-2",
                 isExpanded 
-                  ? "grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] max-h-[400px] overflow-y-auto" 
-                  : "grid grid-cols-7 sm:grid-cols-10"
+                  ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 max-h-[60vh] overflow-y-auto pr-2" 
+                  : "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3"
               )}
             >
               {displayedDays.map((dayData) => (
@@ -153,12 +153,12 @@ export function DayTimeline() {
             whileHover={!dayData.isLocked ? { scale: 1.05 } : {}}
             whileTap={!dayData.isLocked ? { scale: 0.95 } : {}}
             className={clsx(
-              'group relative w-full aspect-square rounded-lg p-2 flex flex-col items-center justify-center transition-all duration-200',
+              'group relative w-full aspect-square rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-              dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50',
-              dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/20 border border-green-500/50 hover:bg-green-500/30',
+              dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50 bg-primary/10',
+              dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/10 border border-green-500/30 hover:bg-green-500/20',
               !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'bg-white/5 border border-white/10 hover:bg-white/10',
-              dayData.isLocked && 'bg-white/5 border border-white/5 opacity-50 cursor-not-allowed'
+              dayData.isLocked && 'bg-white/5 border border-white/5 opacity-40 cursor-not-allowed'
             )}
             title={
               dayData.isCompleted && !dayData.isCurrent
@@ -168,27 +168,40 @@ export function DayTimeline() {
                   : `День ${dayData.day}: ${dayData.topic}`
             }
           >
+            {/* Status Indicator */}
+            <div className={clsx(
+              'absolute top-2 right-2 w-2 h-2 rounded-full',
+              dayData.isCompleted ? 'bg-green-500' : 
+              dayData.isCurrent ? 'bg-primary animate-pulse' : 
+              dayData.isLocked ? 'bg-white/20' : 'bg-white/40'
+            )} />
+
             {/* Day number */}
             <div className={clsx(
-              'text-sm sm:text-base font-bold transition-colors',
-              dayData.isCurrent && 'text-primary',
-              dayData.isCompleted && !dayData.isCurrent && 'text-green-400',
-              dayData.isLocked && 'text-white/30',
-              !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'text-white/80'
+              'text-xl sm:text-2xl font-bold mb-1',
+              dayData.isCurrent ? 'text-white' :
+              dayData.isCompleted ? 'text-green-400' :
+              dayData.isLocked ? 'text-white/20' : 'text-white/70'
             )}>
               {dayData.day}
             </div>
             
-            {/* Status icon */}
-            <div className="text-lg sm:text-xl">
-              {dayData.isCompleted ? '✓' : dayData.isLocked ? '🔒' : dayData.isCurrent ? '▶️' : '○'}
-            </div>
-            
-            {/* Topic name below */}
-            <div className="text-[8px] sm:text-[9px] text-white/50 text-center mt-1 line-clamp-2 leading-tight">
-              {dayData.topic}
-            </div>
-            
+            {/* Topic name below - Only show on hover or if current/completed */}
+            {(dayData.isCurrent || dayData.isCompleted || !dayData.isLocked) && (
+              <div className={clsx(
+                "text-[10px] text-center leading-tight line-clamp-2 w-full px-1",
+                dayData.isCurrent ? 'text-primary-foreground/80' : 'text-white/40'
+              )}>
+                {dayData.topic}
+              </div>
+            )}
+
+            {/* Lock Icon Overlay */}
+            {dayData.isLocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-[1px]">
+                <span className="text-lg opacity-50">🔒</span>
+              </div>
+            )}
 
           </motion.button>
         ))}

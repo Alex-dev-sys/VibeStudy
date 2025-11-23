@@ -2,26 +2,14 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useOnboardingStore } from '@/store/onboarding-store';
 import { useHelpStore } from '@/store/help-store';
-import { RotateCcw, HelpCircle, Trash2 } from 'lucide-react';
+import { HelpCircle, Trash2 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { Modal } from '@/components/ui/modal';
 
 export function SettingsSection() {
-  const { resetOnboarding, startOnboarding } = useOnboardingStore();
   const { getMostAccessedTopics } = useHelpStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleReplayTutorial = () => {
-    resetOnboarding();
-    toast.success('Обучение сброшено', 'Перейди на страницу обучения, чтобы начать заново');
-    
-    // Optionally start immediately
-    setTimeout(() => {
-      startOnboarding();
-    }, 500);
-  };
 
   const handleViewHelpStats = () => {
     const topTopics = getMostAccessedTopics(5);
@@ -62,24 +50,6 @@ export function SettingsSection() {
         <h2 className="text-2xl font-bold mb-4 text-white">Настройки</h2>
         
         <div className="space-y-4">
-          {/* Replay Tutorial */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/8 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                <RotateCcw className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Повторить обучение</h3>
-                <p className="text-sm text-white/60">
-                  Пройди интерактивное обучение заново
-                </p>
-              </div>
-            </div>
-            <Button variant="secondary" size="sm" onClick={handleReplayTutorial}>
-              Начать
-            </Button>
-          </div>
-
           {/* Help Statistics */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/8 transition-colors">
             <div className="flex items-center gap-3">
