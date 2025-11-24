@@ -1,7 +1,8 @@
 // /start Command Handler
 
-import type { BotResponse, InlineKeyboard } from '@/types/telegram';
+import type { BotResponse } from '@/types/telegram';
 import { upsertTelegramProfile, getTelegramProfileByTelegramId } from '../database';
+import { getMainMenuKeyboard } from '../keyboards';
 
 export async function handleStartCommand(
   userId: string,
@@ -10,13 +11,13 @@ export async function handleStartCommand(
   args: string[]
 ): Promise<BotResponse> {
   let isNewUser = true;
-  
+
   try {
     // Get or create telegram profile
     const { data: existingProfile } = await getTelegramProfileByTelegramId(telegramUserId);
-    
+
     isNewUser = !existingProfile;
-    
+
     // Create/update profile for new users
     // Note: userId might be empty for new users, we'll create a guest profile
     if (!existingProfile) {
@@ -34,21 +35,10 @@ export async function handleStartCommand(
     console.error('Error managing telegram profile:', error);
     // Continue anyway - bot should work even if DB fails
   }
-  
+
   // Build quick actions keyboard
-  const keyboard: InlineKeyboard = {
-    inline_keyboard: [
-      [
-        { text: '📚 Сегодняшний урок', callback_data: 'today_lesson' },
-        { text: '📊 Мой прогресс', callback_data: 'my_progress' }
-      ],
-      [
-        { text: '💡 Получить совет', callback_data: 'get_advice' },
-        { text: '⚙️ Настройки', callback_data: 'settings' }
-      ]
-    ]
-  };
-  
+  const keyboard = getMainMenuKeyboard();
+
   const welcomeText = isNewUser
     ? `👋 Привет! Я бот VibeStudy.
 
@@ -74,7 +64,7 @@ export async function handleStartCommand(
 /stats - Статистика
 /progress - Прогресс
 /help - Помощь`;
-  
+
   return {
     text: welcomeText,
     parseMode: 'Markdown',

@@ -18,6 +18,7 @@ import { handlePrivacyCommand } from './privacy';
 import { handleChallengeCommand } from './challenge';
 import { handleScheduleCommand } from './schedule';
 import { handleExportCommand } from './export';
+import { handleMenuCommand } from './menu';
 
 export type CommandHandler = (
   userId: string,
@@ -44,5 +45,6 @@ export const commandHandlers: Record<string, CommandHandler> = {
   '/challenge': handleChallengeCommand,
   '/schedule': handleScheduleCommand,
   '/export': handleExportCommand,
+  '/menu': handleMenuCommand,
 };
 
