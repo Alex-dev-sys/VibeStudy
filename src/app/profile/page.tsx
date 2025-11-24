@@ -15,9 +15,7 @@ import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 export default function ProfilePage() {
   return (
     <main id="main-content" className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-      <GradientBackdrop blur className="-z-20" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
+      {/* Backgrounds removed to show global cosmic theme */}
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -66,7 +64,7 @@ export default function ProfilePage() {
             <section aria-label="Статистика">
               <StatisticsPanel />
             </section>
-            
+
             <div className="grid gap-6 md:grid-cols-2">
               <section aria-label="Достижения">
                 <AchievementsPanel />

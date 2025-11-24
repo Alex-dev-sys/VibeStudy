@@ -28,7 +28,7 @@ export function Navigation() {
     <>
       {/* Desktop Navigation */}
       <nav
-        className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl"
+        className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/60 backdrop-blur-xl border-b border-white/5"
         aria-label="Main navigation"
       >
         <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-8 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-6 lg:gap-8">
