@@ -58,13 +58,7 @@ export async function middleware(request: NextRequest) {
   });
 
   // Refresh session if expired - required for Server Components
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  // Debug logging
-  console.log('[Middleware] Path:', request.nextUrl.pathname);
-  console.log('[Middleware] Cookies:', request.cookies.getAll().map(c => c.name).join(', '));
-  console.log('[Middleware] User found:', !!user);
-  if (error) console.log('[Middleware] Auth error:', error.message);
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Auth Redirect Logic
   const isAuthPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register';
