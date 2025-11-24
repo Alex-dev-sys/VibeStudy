@@ -61,11 +61,11 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Auth Redirect Logic
-  const isAuthPage = request.nextUrl.pathname === '/login';
+  const isAuthPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register';
   const isRootPage = request.nextUrl.pathname === '/';
   const isLearnPage = request.nextUrl.pathname.startsWith('/learn');
 
-  // If user is signed in and tries to access root or login page, redirect to /learn
+  // If user is signed in and tries to access root, login or register page, redirect to /learn
   if (user && (isRootPage || isAuthPage)) {
     return NextResponse.redirect(new URL('/learn', request.url));
   }
