@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
   fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
@@ -87,6 +87,7 @@ import { AIAssistantContainer } from '@/components/ai-assistant';
 import { Toaster } from 'sonner';
 import { AriaAnnouncer } from '@/lib/accessibility/aria-announcer';
 import { SkipLinks } from '@/lib/accessibility/skip-links';
+import { CosmicBackground } from '@/components/layout/CosmicBackground';
 
 export default function RootLayout({
   children
@@ -102,20 +103,23 @@ export default function RootLayout({
               {/* Accessibility Components */}
               <AriaAnnouncer />
               <SkipLinks />
-              
+
+              {/* Global Background */}
+              <CosmicBackground />
+
               <AutoMigrationGate />
               <Navigation />
               <AIAssistantProvider>
                 <FloatingButtonsContainer />
                 <AIAssistantContainer />
               </AIAssistantProvider>
-              
+
               <main id="main-content" tabIndex={-1} className="focus:outline-none">
                 {children}
               </main>
-              
-              <Toaster 
-                position="bottom-right" 
+
+              <Toaster
+                position="bottom-right"
                 toastOptions={{
                   style: {
                     background: 'rgba(26, 11, 46, 0.95)',
