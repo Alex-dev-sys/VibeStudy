@@ -19,23 +19,23 @@ export function Navigation() {
   const pathname = usePathname();
   const streak = useProgressStore((state) => state.record.streak);
 
-  // Don't show navigation on landing page
-  if (pathname === '/') {
+  // Don't show navigation on landing page and auth pages
+  if (pathname === '/' || pathname === '/login' || pathname === '/register') {
     return null;
   }
 
   return (
     <>
       {/* Desktop Navigation */}
-      <nav 
+      <nav
         className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl"
         aria-label="Main navigation"
       >
         <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-8 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-6 lg:gap-8">
           {/* Logo - Left */}
           <div className="flex justify-start">
-            <Link 
-              href="/learn" 
+            <Link
+              href="/learn"
               className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg"
             >
               <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
@@ -43,13 +43,13 @@ export function Navigation() {
               </span>
             </Link>
           </div>
-          
+
           {/* Nav Items - Center */}
           <div className="flex items-center justify-center gap-2">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
-              
+
               return (
                 <Link
                   key={item.href}
@@ -69,7 +69,7 @@ export function Navigation() {
               );
             })}
           </div>
-          
+
           {/* User Actions - Right */}
           <div className="flex items-center justify-end gap-2 lg:gap-3">
             {/* Premium and Challenges buttons */}
@@ -83,17 +83,17 @@ export function Navigation() {
                 🎯 Челленджи
               </Button>
             </Link>
-            
+
             {/* Streak indicator */}
             {streak > 0 && <StreakIndicator streak={streak} />}
-            
+
             <UserMenu />
           </div>
         </div>
       </nav>
-      
+
       {/* Mobile Navigation - Bottom Bar */}
-      <nav 
+      <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-navigation bg-[#0c061c]/95 backdrop-blur-xl safe-area-inset-bottom"
         aria-label="Main navigation"
       >
@@ -101,7 +101,7 @@ export function Navigation() {
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.href}
@@ -123,7 +123,7 @@ export function Navigation() {
           })}
         </div>
       </nav>
-      
+
       {/* Spacer for fixed navigation */}
       <div className="hidden md:block h-[72px]" aria-hidden="true" />
       <div className="md:hidden h-[80px]" aria-hidden="true" />
