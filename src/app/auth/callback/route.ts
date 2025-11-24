@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=config_missing`);
     }
 
-    // Create response first so we can set cookies on it
-    let response = NextResponse.redirect(`${origin}/learn`);
+    // Don't create response yet - we need to set cookies first
+    let response: NextResponse;
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
@@ -28,26 +28,16 @@ export async function GET(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Set cookie on both request and response
+          // Set cookie on request
           request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response.cookies.set({
             name,
             value,
             ...options,
           });
         },
         remove(name: string, options: CookieOptions) {
-          // Remove cookie from both request and response
+          // Remove cookie from request
           request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-          response.cookies.set({
             name,
             value: '',
             ...options,
@@ -115,7 +105,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Redirect to /learn with flags
+      // Now create response with all cookies set
       const redirectUrl = new URL('/learn', origin);
       if (isNewUser) {
         redirectUrl.searchParams.set('new_user', 'true');
@@ -124,7 +114,20 @@ export async function GET(request: NextRequest) {
       redirectUrl.searchParams.set('migrate_guest', 'true');
 
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
+
+      // Create response and copy all cookies from request
       response = NextResponse.redirect(redirectUrl);
+
+      // Copy all auth cookies to response
+      request.cookies.getAll().forEach(cookie => {
+        response.cookies.set(cookie.name, cookie.value, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7 // 7 days
+        });
+      });
 
       return response;
     } else {
