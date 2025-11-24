@@ -25,12 +25,20 @@ export async function GET(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          request.cookies.set({ name, value, ...options });
-          response.cookies.set({ name, value, ...options });
+          // Force path to / and remove domain to avoid issues with Vercel preview URLs
+          const cookieOptions = {
+            ...options,
+            path: '/',
+            domain: undefined,
+            maxAge: 60 * 60 * 24 * 7, // Force 1 week persistence
+          };
+          request.cookies.set({ name, value, ...cookieOptions });
+          response.cookies.set({ name, value, ...cookieOptions });
         },
         remove(name: string, options: any) {
-          request.cookies.set({ name, value: '', ...options });
-          response.cookies.set({ name, value: '', ...options });
+          const cookieOptions = { ...options, path: '/', domain: undefined };
+          request.cookies.set({ name, value: '', ...cookieOptions });
+          response.cookies.set({ name, value: '', ...cookieOptions });
         },
       },
     });
