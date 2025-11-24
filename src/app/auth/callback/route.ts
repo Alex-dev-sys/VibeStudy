@@ -1,27 +1,21 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get('code');
-  const error = requestUrl.searchParams.get('error');
-  const errorDescription = requestUrl.searchParams.get('error_description');
-  const origin = requestUrl.origin;
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
 
-  console.log('[Auth Callback] Request URL:', requestUrl.href);
-  console.log('[Auth Callback] Code present:', !!code);
-
+  // If there's a code, handle it server-side (magic link flow)
   if (code) {
+    const { createServerClient } = await import('@supabase/ssr');
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error('[Auth Callback] Supabase not configured');
       return NextResponse.redirect(`${origin}/login?error=config_missing`);
     }
 
-    // Create response first so we can set cookies on it
     const redirectUrl = new URL('/learn', origin);
     let response = NextResponse.redirect(redirectUrl);
 
@@ -30,61 +24,29 @@ export async function GET(request: NextRequest) {
         get(name: string) {
           return request.cookies.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          // Set cookie on both request and response
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+        set(name: string, value: string, options: any) {
+          request.cookies.set({ name, value, ...options });
+          response.cookies.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions) {
-          // Remove cookie from both request and response
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
+        remove(name: string, options: any) {
+          request.cookies.set({ name, value: '', ...options });
+          response.cookies.set({ name, value: '', ...options });
         },
       },
     });
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    console.log('[Auth Callback] Exchange result:', {
-      hasSession: !!data?.session,
-      hasUser: !!data?.user,
-      error: error?.message
-    });
-
     if (!error && data.session) {
-      // Check if this is a new user registration
       const user = data.user;
       const createdAt = new Date(user.created_at).getTime();
       const lastSignIn = new Date(user.last_sign_in_at || user.created_at).getTime();
       const isNewUser = Math.abs(createdAt - lastSignIn) < 5000;
 
-      console.log('[Auth Callback] User info:', {
-        userId: user.id,
-        email: user.email,
-        isNewUser
-      });
-
       // Create profile for new users
       if (isNewUser) {
         try {
           const provider = user.app_metadata?.provider || 'email';
-
           const { data: existingProfile } = await supabase
             .from('profiles')
             .select('id')
@@ -92,34 +54,46 @@ export async function GET(request: NextRequest) {
             .single();
 
           if (!existingProfile) {
-            await supabase
-              .from('profiles')
-              .insert({
-                id: user.id,
-                email: user.email,
-                provider,
-                created_at: new Date().toISOString(),
-              });
-
-            console.log('[Auth Callback] Created profile for new user:', user.id);
+            await supabase.from('profiles').insert({
+              id: user.id,
+              email: user.email,
+              provider,
+              created_at: new Date().toISOString(),
+            });
           }
         } catch (profileError) {
-          console.error('[Auth Callback] Error in profile creation:', profileError);
+          console.error('[Auth Callback] Profile error:', profileError);
         }
       }
 
-      console.log('[Auth Callback] Auth successful, redirecting to /learn');
-
-      // Cookies are already set on the response object, just return it
       return response;
     } else {
-      console.error('[Auth Callback] Failed to exchange code:', error?.message);
       return NextResponse.redirect(`${origin}/login?error=auth_failed`);
     }
   }
 
-  // No code parameter - could be OAuth flow with tokens in hash
-  // Redirect to /learn and let client-side Supabase handle hash tokens
-  console.log('[Auth Callback] No code found - redirecting to /learn for client-side token handling');
-  return NextResponse.redirect(`${origin}/learn`);
+  // No code - likely OAuth flow with hash tokens
+  // Return HTML that will handle hash client-side and redirect
+  return new NextResponse(
+    `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // OAuth tokens are in the hash, redirect to /learn with the hash
+    window.location.replace('/learn' + window.location.hash);
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>`,
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    }
+  );
 }
