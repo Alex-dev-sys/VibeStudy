@@ -11,14 +11,6 @@ export async function GET(request: NextRequest) {
 
   console.log('[Auth Callback] Request URL:', requestUrl.href);
   console.log('[Auth Callback] Code present:', !!code);
-  console.log('[Auth Callback] Error:', error);
-
-  // If there's an error but tokens are in hash (OAuth flow), redirect to learn
-  // The client-side Supabase will handle the hash tokens
-  if (error === 'no_code' && requestUrl.hash.includes('access_token')) {
-    console.log('[Auth Callback] OAuth flow detected, redirecting to /learn for client-side token handling');
-    return NextResponse.redirect(`${origin}/learn${requestUrl.hash}`);
-  }
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -126,6 +118,8 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.log('[Auth Callback] Fallback redirect - no code');
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
+  // No code parameter - could be OAuth flow with tokens in hash
+  // Redirect to /learn and let client-side Supabase handle hash tokens
+  console.log('[Auth Callback] No code found - redirecting to /learn for client-side token handling');
+  return NextResponse.redirect(`${origin}/learn`);
 }
