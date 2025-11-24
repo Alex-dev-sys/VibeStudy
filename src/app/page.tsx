@@ -18,7 +18,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white">
+    <main className="relative min-h-screen overflow-hidden text-white">
       {/* Header with login button */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">

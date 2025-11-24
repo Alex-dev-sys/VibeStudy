@@ -153,7 +153,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white">
+    <main className="relative min-h-screen overflow-hidden text-white">
       {/* Decorative white lines */}
       <DecorativeLines />
 
