@@ -99,7 +99,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={clsx(
             'w-full px-4 py-3 rounded-xl',
-            'bg-white/5 border border-white/10',
+            'bg-white/5',
             'text-white placeholder:text-white/40',
             'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
             'transition-all duration-200',
@@ -158,7 +158,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={textareaId}
           className={clsx(
             'w-full px-4 py-3 rounded-xl',
-            'bg-white/5 border border-white/10',
+            'bg-white/5',
             'text-white placeholder:text-white/40',
             'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
             'transition-all duration-200',
@@ -219,7 +219,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           className={clsx(
             'w-full px-4 py-3 rounded-xl',
-            'bg-white/5 border border-white/10',
+            'bg-white/5',
             'text-white',
             'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
             'transition-all duration-200',
@@ -271,7 +271,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           id={checkboxId}
           className={clsx(
             'mt-1 w-5 h-5 rounded',
-            'bg-white/5 border-2 border-white/20',
+            'bg-white/5',
             'text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#0c061c]',
             'transition-all duration-200',
             'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -357,7 +357,7 @@ export function RadioGroup({
                   onChange={(e) => onChange?.(e.target.value)}
                   className={clsx(
                     'mt-1 w-5 h-5 rounded-full',
-                    'bg-white/5 border-2 border-white/20',
+                    'bg-white/5',
                     'text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#0c061c]',
                     'transition-all duration-200',
                     'cursor-pointer'

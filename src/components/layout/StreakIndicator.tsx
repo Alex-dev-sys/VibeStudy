@@ -29,7 +29,7 @@ export function StreakIndicator({ streak }: StreakIndicatorProps) {
       className={cn(
         'flex items-center gap-2 px-3 py-1.5 rounded-full',
         isStreakAtRisk 
-          ? 'bg-orange-500/20 border border-orange-500/50' 
+          ? 'bg-orange-500/20' 
           : 'bg-white/5'
       )}
       role="status"

@@ -107,9 +107,7 @@ export function EmptyState({
 
   return (
     <Card
-      className={`text-center ${sizeClasses[size]} ${
-        dashed ? 'border-dashed border-white/15' : ''
-      } bg-[rgba(255,255,255,0.08)]`}
+      className={`text-center ${sizeClasses[size]} bg-[rgba(255,255,255,0.08)]`}
     >
       {/* Illustration */}
       {illustration ? (

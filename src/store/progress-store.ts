@@ -4,19 +4,20 @@ import type { DayStateSnapshot, ProgressRecord } from '@/types';
 import { useAchievementsStore } from './achievements-store';
 import { showAchievementToast } from '@/components/achievements/AchievementToast';
 import { logInfo, logError } from '@/lib/logger';
+import { triggerSync, syncTaskCompletion, syncCode, syncNotes, syncRecapAnswer, syncDayCompletion } from '@/lib/progress-sync';
 
 interface ProgressStore {
   activeDay: number;
   languageId: string;
   dayStates: Record<number, DayStateSnapshot>;
   record: ProgressRecord;
-  
+
   // Sync state
   isSyncing: boolean;
   lastSyncTime: number;
   syncError: Error | null;
   queuedOperations: any[];
-  
+
   // Original methods
   setLanguage: (languageId: string) => void;
   setActiveDay: (day: number) => void;
@@ -28,7 +29,7 @@ interface ProgressStore {
   replaceTask: (day: number, previousTaskId: string, newTaskId: string) => void;
   markDayComplete: (day: number) => void;
   resetProgress: () => void;
-  
+
   // Sync methods
   syncToCloud: () => Promise<void>;
   fetchFromCloud: () => Promise<void>;
@@ -59,7 +60,7 @@ export const useProgressStore = create<ProgressStore>()(
       languageId: 'python',
       dayStates: { 1: defaultDayState },
       record: defaultRecord,
-      
+
       // Sync state
       isSyncing: false,
       lastSyncTime: 0,
@@ -83,13 +84,13 @@ export const useProgressStore = create<ProgressStore>()(
           if (!alreadyCompleted) {
             const achievementsStore = useAchievementsStore.getState();
             const currentStats = achievementsStore.stats;
-            
+
             // Determine task difficulty and update stats
             const difficulty = taskId.includes('task1') || taskId.includes('task2') ? 'easy'
               : taskId.includes('task3') ? 'medium'
-              : taskId.includes('task4') ? 'hard'
-              : 'challenge';
-            
+                : taskId.includes('task4') ? 'hard'
+                  : 'challenge';
+
             const newStats = {
               totalTasksCompleted: currentStats.totalTasksCompleted + 1,
               easyTasksCompleted: difficulty === 'easy' ? currentStats.easyTasksCompleted + 1 : currentStats.easyTasksCompleted,
@@ -97,9 +98,9 @@ export const useProgressStore = create<ProgressStore>()(
               hardTasksCompleted: difficulty === 'hard' ? currentStats.hardTasksCompleted + 1 : currentStats.hardTasksCompleted,
               challengeTasksCompleted: difficulty === 'challenge' ? currentStats.challengeTasksCompleted + 1 : currentStats.challengeTasksCompleted
             };
-            
+
             achievementsStore.updateStats(newStats);
-            
+
             // Check for new achievements
             const newAchievements = achievementsStore.checkAndUnlockAchievements();
             newAchievements.forEach((achievement) => {
@@ -117,17 +118,10 @@ export const useProgressStore = create<ProgressStore>()(
               }
             }
           };
-          
-          // Trigger immediate sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
-            const user = await getCurrentUser();
-            if (user) {
-              await syncManager.syncTaskCompletion(String(day), taskId, !alreadyCompleted);
-            }
-          }, 0);
-          
+
+          // Trigger sync
+          triggerSync(() => syncTaskCompletion(day, taskId, !alreadyCompleted));
+
           return newState;
         }),
       updateCode: (day, code) =>
@@ -142,17 +136,10 @@ export const useProgressStore = create<ProgressStore>()(
               }
             }
           };
-          
-          // Trigger debounced sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
-            const user = await getCurrentUser();
-            if (user) {
-              syncManager.syncCode(String(day), 'code', code);
-            }
-          }, 0);
-          
+
+          // Trigger sync
+          triggerSync(() => syncCode(day, code));
+
           return newState;
         }),
       updateNotes: (day, notes) =>
@@ -167,17 +154,10 @@ export const useProgressStore = create<ProgressStore>()(
               }
             }
           };
-          
-          // Trigger debounced sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
-            const user = await getCurrentUser();
-            if (user) {
-              syncManager.syncNotes(String(day), notes);
-            }
-          }, 0);
-          
+
+          // Trigger sync
+          triggerSync(() => syncNotes(day, notes));
+
           return newState;
         }),
       updateRecapAnswer: (day, answer) =>
@@ -192,17 +172,10 @@ export const useProgressStore = create<ProgressStore>()(
               }
             }
           };
-          
-          // Trigger debounced sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
-            const user = await getCurrentUser();
-            if (user) {
-              syncManager.syncRecapAnswer(String(day), answer);
-            }
-          }, 0);
-          
+
+          // Trigger sync
+          triggerSync(() => syncRecapAnswer(day, answer));
+
           return newState;
         }),
       resetDayTasks: (day) =>
@@ -250,25 +223,25 @@ export const useProgressStore = create<ProgressStore>()(
           // Update achievements stats
           const achievementsStore = useAchievementsStore.getState();
           const currentStats = achievementsStore.stats;
-          
+
           // Check if all tasks completed (perfect day)
           const dayTasks = state.dayStates[day]?.completedTasks?.length || 0;
           const isPerfectDay = dayTasks >= 5; // Assuming 5 tasks per day
-          
+
           // Calculate streak
           const newStreak = completedDays.length > 0 && completedDays[completedDays.length - 1] === day - 1
             ? currentStats.currentStreak + 1
             : 1;
-          
+
           const newStats = {
             completedDays: completedDays.length,
             currentStreak: newStreak,
             longestStreak: Math.max(currentStats.longestStreak, newStreak),
             perfectDays: isPerfectDay ? currentStats.perfectDays + 1 : currentStats.perfectDays
           };
-          
+
           achievementsStore.updateStats(newStats);
-          
+
           // Check for new achievements
           const newAchievements = achievementsStore.checkAndUnlockAchievements();
           newAchievements.forEach((achievement) => {
@@ -283,17 +256,10 @@ export const useProgressStore = create<ProgressStore>()(
               history: [...state.record.history, historyEntry]
             }
           };
-          
-          // Trigger immediate sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
-            const user = await getCurrentUser();
-            if (user) {
-              await syncManager.syncDayCompletion(String(day), true);
-            }
-          }, 0);
-          
+
+          // Trigger sync
+          triggerSync(() => syncDayCompletion(day));
+
           return newState;
         }),
       resetProgress: () =>
@@ -302,21 +268,21 @@ export const useProgressStore = create<ProgressStore>()(
           dayStates: { 1: defaultDayState },
           record: defaultRecord
         }),
-      
+
       // Sync methods
       syncToCloud: async () => {
         const state = get();
         const { getCurrentUser } = await import('@/lib/supabase/auth');
         const { upsertProgress } = await import('@/lib/supabase/database');
-        
+
         const user = await getCurrentUser();
         if (!user) {
           logInfo('No user logged in, skipping sync', { component: 'progress-store', action: 'syncToCloud' });
           return;
         }
-        
+
         set({ isSyncing: true, syncError: null });
-        
+
         try {
           const result = await upsertProgress({
             userId: user.id,
@@ -325,11 +291,11 @@ export const useProgressStore = create<ProgressStore>()(
             languageId: state.languageId,
             activeDay: state.activeDay
           });
-          
+
           if (result.error) {
             throw result.error;
           }
-          
+
           set({ isSyncing: false, lastSyncTime: Date.now() });
           logInfo('Progress synced to cloud', { component: 'progress-store', action: 'syncToCloud', userId: user.id });
         } catch (error) {
@@ -337,26 +303,26 @@ export const useProgressStore = create<ProgressStore>()(
           logError('Failed to sync progress', error as Error, { component: 'progress-store', action: 'syncToCloud', userId: user.id });
         }
       },
-      
+
       fetchFromCloud: async () => {
         const { getCurrentUser } = await import('@/lib/supabase/auth');
         const { fetchProgress } = await import('@/lib/supabase/database');
-        
+
         const user = await getCurrentUser();
         if (!user) {
           logInfo('No user logged in, skipping fetch', { component: 'progress-store', action: 'fetchFromCloud' });
           return;
         }
-        
+
         set({ isSyncing: true, syncError: null });
-        
+
         try {
           const result = await fetchProgress(user.id);
-          
+
           if (result.error) {
             throw result.error;
           }
-          
+
           if (result.data) {
             set({
               dayStates: result.data.dayStates,
@@ -375,42 +341,42 @@ export const useProgressStore = create<ProgressStore>()(
           logError('Failed to fetch progress', error as Error, { component: 'progress-store', action: 'fetchFromCloud', userId: user.id });
         }
       },
-      
+
       addToQueue: (operation) => {
         set((state) => ({
           queuedOperations: [...state.queuedOperations, operation]
         }));
       },
-      
+
       processQueue: async () => {
         const state = get();
         const { getCurrentUser } = await import('@/lib/supabase/auth');
         const { syncQueue } = await import('@/lib/sync');
-        
+
         const user = await getCurrentUser();
         if (!user) {
           logInfo('No user logged in, skipping queue processing', { component: 'progress-store', action: 'processQueue' });
           return;
         }
-        
+
         set({ isSyncing: true, syncError: null });
-        
+
         try {
           // Обрабатываем очередь синхронизации
           await syncQueue.processQueue();
-          
+
           // Очищаем локальную очередь после успешной синхронизации
-          set({ 
+          set({
             queuedOperations: [],
             isSyncing: false,
             lastSyncTime: Date.now()
           });
-          
+
           logInfo('Queue processed successfully', { component: 'progress-store', action: 'processQueue', userId: user.id });
         } catch (error) {
-          set({ 
-            isSyncing: false, 
-            syncError: error as Error 
+          set({
+            isSyncing: false,
+            syncError: error as Error
           });
           logError('Failed to process queue', error as Error, { component: 'progress-store', action: 'processQueue', userId: user.id });
         }
@@ -434,4 +400,5 @@ export const getDayState = (day: number) => {
 };
 
 export const isDayCompleted = (day: number) => useProgressStore.getState().record.completedDays.includes(day);
+
 

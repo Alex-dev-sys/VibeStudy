@@ -103,7 +103,7 @@ export function Modal({
               transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
               className={`relative w-full ${sizeClasses[size]} pointer-events-auto`}
             >
-              <div className="relative bg-[#1a0b2e] border border-white/20 rounded-2xl shadow-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c061c]">
+              <div className="relative bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c061c]">
                 {/* Close button */}
                 {showCloseButton && (
                   <button
@@ -118,7 +118,7 @@ export function Modal({
 
                 {/* Title */}
                 {title && (
-                  <div className="px-6 py-5 border-b border-white/10">
+                  <div className="px-6 py-5">
                     <h2 id={titleId.current} className="text-h2 text-white">
                       {title}
                     </h2>

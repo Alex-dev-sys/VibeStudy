@@ -31,15 +31,15 @@ const resolveConfig = () => {
   // Primary: AI_API_TOKEN for GPT Llama API
   // Fallback: HF_TOKEN for Hugging Face
   const apiKey = process.env.AI_API_TOKEN ?? process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
-  
+
   // Primary: AI_API_BASE_URL (GPT Llama API)
   // Fallback: HF_API_BASE_URL (Hugging Face)
   const baseUrl = (
-    process.env.AI_API_BASE_URL ?? 
-    process.env.HF_API_BASE_URL ?? 
+    process.env.AI_API_BASE_URL ??
+    process.env.HF_API_BASE_URL ??
     DEFAULT_API_BASE_URL
   ).replace(/\/+$/, '');
-  
+
   const rawModel = process.env.HF_MODEL ?? DEFAULT_MODEL;
   const model = rawModel.trim();
 
@@ -61,7 +61,7 @@ export const isAiConfigured = () => {
 const logModelUsage = (model: string, tier: string, success: boolean, usedFallback: boolean = false) => {
   const timestamp = new Date().toISOString();
   console.log(`[AI Analytics] ${timestamp} - Model: ${model}, Tier: ${tier}, Success: ${success}, Fallback: ${usedFallback}`);
-  
+
   // TODO: Send to analytics service (e.g., Supabase analytics_events table)
   // This can be implemented when the analytics infrastructure is ready
 };
@@ -213,10 +213,10 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
           : response.statusText;
       const error = new Error(`ai_request_failed: ${message}`);
       (error as Error & { status?: number }).status = response.status;
-      
+
       // Log failed request
       logModelUsage(targetModel, 'unknown', false, false);
-      
+
       throw error;
     }
 
@@ -245,10 +245,10 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
   } catch (error) {
     // If using premium model and it fails, try fallback to Gemini
     const isPremiumModel = targetModel !== DEFAULT_MODEL && targetModel !== FALLBACK_MODEL;
-    
+
     if (isPremiumModel) {
       console.warn(`Premium model ${targetModel} failed, attempting fallback to ${DEFAULT_MODEL}`, error);
-      
+
       try {
         // Retry with Gemini (free tier model)
         const fallbackBody = {
@@ -297,10 +297,10 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
             typeof (errorPayload as any)?.error?.message === 'string'
               ? (errorPayload as any).error.message
               : fallbackResponse.statusText;
-          
+
           // Log failed fallback
           logModelUsage(DEFAULT_MODEL, 'unknown', false, true);
-          
+
           const fallbackError = new Error(`ai_fallback_failed: ${message}`);
           (fallbackError as Error & { status?: number }).status = fallbackResponse.status;
           throw fallbackError;
@@ -335,7 +335,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
         throw error;
       }
     }
-    
+
     // If not a premium model or fallback disabled, just throw the error
     throw error;
   }
@@ -416,17 +416,17 @@ export const callChatCompletionWithTier = async (
   options: TierBasedChatCompletionOptions = {}
 ): Promise<ChatCompletionResult> => {
   const { tier = 'free', ...chatOptions } = options;
-  
+
   // Import AIRouter dynamically to avoid circular dependencies
   const { createAIRouter } = await import('./ai-router');
   const router = createAIRouter(tier);
-  
+
   try {
     const result = await router.chatCompletion(messages, chatOptions);
-    
+
     // Log with tier information
     logModelUsage(result.model, tier, true, result.model !== router.getModelName());
-    
+
     return {
       data: result.data,
       raw: result.raw,
@@ -461,22 +461,22 @@ async function getCachedContent(cacheKey: string): Promise<any | null> {
     // Import server client dynamically
     const { createClient } = await import('./supabase/server');
     const supabase = createClient();
-    
+
     // Use the helper function from the migration
     const { data, error } = await supabase.rpc('get_ai_cache', {
       p_cache_key: cacheKey
     });
-    
+
     if (error) {
       console.warn(`Cache lookup failed for key ${cacheKey}:`, error);
       return null;
     }
-    
+
     if (data) {
       console.log(`✅ Cache HIT for key: ${cacheKey}`);
       return data;
     }
-    
+
     console.log(`❌ Cache MISS for key: ${cacheKey}`);
     return null;
   } catch (error) {
@@ -506,7 +506,7 @@ async function setCachedContent(
     // Import server client dynamically
     const { createClient } = await import('./supabase/server');
     const supabase = createClient();
-    
+
     // Use the helper function from the migration
     const { error } = await supabase.rpc('set_ai_cache', {
       p_cache_key: cacheKey,
@@ -517,7 +517,7 @@ async function setCachedContent(
       p_metadata: {},
       p_ttl_days: ttlDays || null
     });
-    
+
     if (error) {
       console.warn(`Failed to cache content for key ${cacheKey}:`, error);
     } else {
@@ -547,16 +547,16 @@ export async function invalidateCache(pattern: string): Promise<number> {
   try {
     const { createClient } = await import('./supabase/server');
     const supabase = createClient();
-    
+
     const { data, error } = await supabase.rpc('invalidate_ai_cache', {
       p_pattern: pattern
     });
-    
+
     if (error) {
       console.error('Cache invalidation failed:', error);
       return 0;
     }
-    
+
     console.log(`✅ Invalidated ${data} cache entries matching pattern: ${pattern}`);
     return data || 0;
   } catch (error) {
@@ -585,15 +585,15 @@ export const callChatCompletionWithCache = async (
     bypassCache = false,
     ...chatOptions
   } = options;
-  
+
   // Generate cache key if language and dayNumber provided
-  const cacheKey = providedCacheKey || 
+  const cacheKey = providedCacheKey ||
     (language && dayNumber ? generateCacheKey(language, dayNumber) : null);
-  
+
   // Check cache if key is available and not bypassing
   if (cacheKey && !bypassCache) {
     const cachedContent = await getCachedContent(cacheKey);
-    
+
     if (cachedContent) {
       // Return cached content
       return {
@@ -604,10 +604,10 @@ export const callChatCompletionWithCache = async (
       };
     }
   }
-  
+
   // Cache miss or bypass - make actual AI request
   const result = await callChatCompletionWithTier(messages, chatOptions);
-  
+
   // Save to cache if key is available
   if (cacheKey && result.raw) {
     await setCachedContent(
@@ -619,7 +619,24 @@ export const callChatCompletionWithCache = async (
       ttlDays
     );
   }
-  
+
   return result;
 };
 
+
+import { z } from 'zod';
+
+export const extractAndParseJSON = <T>(result: ChatCompletionResult, schema: z.ZodType<T>): T => {
+  const content = extractMessageContent(result);
+  if (!content) {
+    throw new Error('No content in AI response');
+  }
+
+  const sanitized = content.replace(/```json|```/g, '').trim();
+  try {
+    const parsed = JSON.parse(sanitized);
+    return schema.parse(parsed);
+  } catch (error) {
+    throw new Error(`Failed to parse AI response: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};

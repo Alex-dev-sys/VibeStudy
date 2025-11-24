@@ -28,7 +28,7 @@ export function Navigation() {
     <>
       {/* Desktop Navigation */}
       <nav 
-        className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl border-b border-white/10"
+        className="hidden md:flex fixed top-0 left-0 right-0 z-navigation bg-[#0c061c]/80 backdrop-blur-xl"
         aria-label="Main navigation"
       >
         <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-8 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-6 lg:gap-8">
@@ -94,7 +94,7 @@ export function Navigation() {
       
       {/* Mobile Navigation - Bottom Bar */}
       <nav 
-        className="md:hidden fixed bottom-0 left-0 right-0 z-navigation bg-[#0c061c]/95 backdrop-blur-xl border-t border-white/10 safe-area-inset-bottom"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-navigation bg-[#0c061c]/95 backdrop-blur-xl safe-area-inset-bottom"
         aria-label="Main navigation"
       >
         <div className="flex items-center justify-around px-2 py-2 gap-2">

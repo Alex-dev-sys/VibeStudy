@@ -18,7 +18,7 @@ function FeatureCard({ icon, title, description, delay = 0 }: FeatureCardProps) 
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.6, delay }}
       whileHover={{ y: -8, transition: { duration: 0.3 } }}
-      className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10"
+      className="group relative overflow-hidden rounded-3xl bg-white/5 p-8 backdrop-blur-sm transition-all hover:bg-white/10"
     >
       {/* Gradient overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ff4bc1]/10 to-[#ffd34f]/10 opacity-0 transition-opacity group-hover:opacity-100" />

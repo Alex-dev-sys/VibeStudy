@@ -58,7 +58,23 @@ export async function middleware(request: NextRequest) {
   });
 
   // Refresh session if expired - required for Server Components
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Auth Redirect Logic
+  const isAuthPage = request.nextUrl.pathname === '/login';
+  const isRootPage = request.nextUrl.pathname === '/';
+  const isLearnPage = request.nextUrl.pathname.startsWith('/learn');
+
+  // If user is signed in and tries to access root or login page, redirect to /learn
+  if (user && (isRootPage || isAuthPage)) {
+    return NextResponse.redirect(new URL('/learn', request.url));
+  }
+
+  // If user is NOT signed in and tries to access protected pages (like /learn), redirect to /login
+  // Note: We might want to allow some public access, but for now /learn is protected
+  if (!user && isLearnPage) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
   return response;
 }

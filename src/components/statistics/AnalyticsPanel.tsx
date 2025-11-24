@@ -65,7 +65,7 @@ export function AnalyticsPanel() {
 
   if (!analytics) {
     return (
-      <Card className="border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-black/40">
+      <Card className="bg-gradient-to-br from-blue-900/20 to-black/40">
         <div className="p-6 text-center">
           <span className="text-4xl">📊</span>
           <h3 className="mt-3 text-lg font-semibold text-white">Аналитика появится после первых попыток</h3>
@@ -109,7 +109,7 @@ export function AnalyticsPanel() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-black/40">
+      <Card className="bg-gradient-to-br from-blue-900/20 to-black/40">
         <div className="p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-3">
             <span className="text-2xl">📊</span>
@@ -121,26 +121,26 @@ export function AnalyticsPanel() {
 
           {/* Основные метрики */}
           <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <div className="rounded-xl bg-black/40 p-3">
               <p className="text-xs text-white/50">Процент успеха</p>
               <p className="text-xl font-semibold text-emerald-400">{Math.round(analytics.successRate)}%</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <div className="rounded-xl bg-black/40 p-3">
               <p className="text-xs text-white/50">Среднее время</p>
               <p className="text-xl font-semibold text-blue-400">{formatTime(analytics.avgTimePerTask)}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <div className="rounded-xl bg-black/40 p-3">
               <p className="text-xs text-white/50">Попыток до успеха</p>
               <p className="text-xl font-semibold text-amber-400">{analytics.avgAttemptsToSuccess.toFixed(1)}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+            <div className="rounded-xl bg-black/40 p-3">
               <p className="text-xs text-white/50">Подсказок на задачу</p>
               <p className="text-xl font-semibold text-purple-400">{analytics.hintsPerTask.toFixed(1)}</p>
             </div>
           </div>
 
           {/* Тренд */}
-          <div className="mb-4 rounded-xl border border-white/10 bg-black/40 p-3">
+          <div className="mb-4 rounded-xl bg-black/40 p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-white/50">Последние 10 задач</p>
@@ -163,7 +163,7 @@ export function AnalyticsPanel() {
                 {analytics.topErrors.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-black/20 p-2"
+                    className="flex items-center justify-between rounded-lg bg-black/20 p-2"
                   >
                     <span className="text-xs text-white/70 sm:text-sm">{item.error}</span>
                     <Badge tone="accent" className="bg-rose-500/20 text-rose-300">
@@ -176,7 +176,7 @@ export function AnalyticsPanel() {
           )}
 
           {/* Рекомендации */}
-          <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-3">
+          <div className="mt-4 rounded-xl bg-blue-500/10 p-3">
             <h4 className="mb-2 text-sm font-semibold text-blue-200">💡 Совет:</h4>
             <p className="text-xs text-blue-200/80 sm:text-sm">
               {analytics.successRate < 50

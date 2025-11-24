@@ -21,13 +21,13 @@ const config: Config = {
         '6xl': ['3.75rem', { lineHeight: '1.2' }]
       },
       colors: {
-        background: '#080312',
-        foreground: '#f8f6ff',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         accent: {
-          DEFAULT: '#ff4bc1',
-          soft: '#ffd34f'
+          DEFAULT: 'var(--accent)',
+          soft: 'var(--accent-soft)'
         },
-        surface: '#15072a'
+        surface: 'var(--surface)'
       },
       spacing: {
         touch: '44px',

@@ -71,7 +71,7 @@ export function SkeletonText({ lines = 3, className = '' }: { lines?: number; cl
 // Card skeleton for loading day cards
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={clsx('p-6 space-y-4 rounded-2xl bg-white/5 border border-white/10', className)}>
+    <div className={clsx('p-6 space-y-4 rounded-2xl bg-white/5', className)}>
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-32" />

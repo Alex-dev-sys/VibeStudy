@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ModernHero } from '@/components/landing/ModernHero';
 import { StatsSection } from '@/components/landing/StatsSection';
@@ -9,32 +8,14 @@ import { FeaturesGrid } from '@/components/landing/FeaturesGrid';
 import { SocialProofBanner } from '@/components/landing/SocialProofBanner';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
-import { getCurrentUser } from '@/lib/supabase/auth';
+
 import { GuestModeManager } from '@/lib/auth/guest-mode';
 
 export default function HomePage() {
-  const router = useRouter();
-
   useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (user) {
-          // If user is authenticated, redirect to /learn
-          router.push('/learn');
-        } else {
-          // Initialize guest mode for non-authenticated users
-          GuestModeManager.initGuestMode();
-        }
-      } catch (error) {
-        console.error('Error checking authentication:', error);
-        // Initialize guest mode on error
-        GuestModeManager.initGuestMode();
-      }
-    };
-
-    checkAuthAndRedirect();
-  }, [router]);
+    // Initialize guest mode for non-authenticated users
+    GuestModeManager.initGuestMode();
+  }, []);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white">
@@ -59,21 +40,21 @@ export default function HomePage() {
 
       {/* Modern Hero Section */}
       <ModernHero locale="ru" />
-      
+
       {/* Stats Section */}
       <StatsSection locale="ru" />
-      
+
       {/* Social Proof - Build trust */}
       <SocialProofBanner />
-      
+
       {/* Features Grid - Progressive disclosure */}
       <div id="benefits">
         <FeaturesGrid locale="ru" />
       </div>
-      
+
       {/* How It Works - Clear steps */}
       <HowItWorksSection />
-      
+
       {/* CTA Section - Final conversion */}
       <FinalCTASection />
     </main>

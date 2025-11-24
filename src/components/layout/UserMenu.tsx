@@ -116,10 +116,10 @@ export function UserMenu() {
           
           {/* Menu */}
           <div
-            className="absolute right-0 top-full mt-2 w-56 z-50 bg-[#1a0b2e] border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-56 z-50 bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden"
             role="menu"
           >
-            <div className="p-3 border-b border-white/10">
+            <div className="p-3">
               <div className="text-sm font-medium text-white/90 truncate">
                 {user.email}
               </div>
