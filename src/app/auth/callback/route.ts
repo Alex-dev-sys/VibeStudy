@@ -10,17 +10,19 @@ export async function GET(request: NextRequest) {
   console.log('[Auth Callback] Request URL:', requestUrl.href);
   console.log('[Auth Callback] Code present:', !!code);
 
+  // Define a default redirect URL. This will be updated later.
+  // The response object is created here so that the Supabase client can set cookies on it.
+  const response = NextResponse.redirect(`${origin}/login?error=auth_failed`);
+
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       console.error('[Auth Callback] Supabase not configured');
-      return NextResponse.redirect(`${origin}/login?error=config_missing`);
+      response.headers.set('Location', `${origin}/login?error=config_missing`);
+      return response;
     }
-
-    // Don't create response yet - we need to set cookies first
-    let response: NextResponse;
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
@@ -28,16 +30,16 @@ export async function GET(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Set cookie on request
-          request.cookies.set({
+          // Set cookie on the response object
+          response.cookies.set({
             name,
             value,
             ...options,
           });
         },
         remove(name: string, options: CookieOptions) {
-          // Remove cookie from request
-          request.cookies.set({
+          // Remove cookie from the response object
+          response.cookies.set({
             name,
             value: '',
             ...options,
@@ -56,7 +58,6 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.session) {
       // Check if this is a new user registration
-      // New users have created_at equal to last_sign_in_at (within a small time window)
       const user = data.user;
       const createdAt = new Date(user.created_at).getTime();
       const lastSignIn = new Date(user.last_sign_in_at || user.created_at).getTime();
@@ -105,7 +106,6 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Now create response with all cookies set
       const redirectUrl = new URL('/learn', origin);
       if (isNewUser) {
         redirectUrl.searchParams.set('new_user', 'true');
@@ -115,28 +115,18 @@ export async function GET(request: NextRequest) {
 
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
 
-      // Create response and copy all cookies from request
-      response = NextResponse.redirect(redirectUrl);
-
-      // Copy all auth cookies to response
-      request.cookies.getAll().forEach(cookie => {
-        response.cookies.set(cookie.name, cookie.value, {
-          path: '/',
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7 // 7 days
-        });
-      });
-
+      // Update the response's redirect location
+      response.headers.set('Location', redirectUrl.href);
       return response;
     } else {
       console.error('[Auth Callback] Failed to exchange code:', error?.message);
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+      response.headers.set('Location', `${origin}/login?error=auth_failed`);
+      return response;
     }
   }
 
-  // Fallback to /learn on error or missing code
-  console.log('[Auth Callback] Fallback redirect to /learn - no code');
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
+  // Fallback to /login?error=no_code if no code is present
+  console.log('[Auth Callback] Fallback redirect to /login?error=no_code - no code');
+  response.headers.set('Location', `${origin}/login?error=no_code`);
+  return response;
 }
