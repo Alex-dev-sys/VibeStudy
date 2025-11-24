@@ -5,10 +5,20 @@ import type { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const error = requestUrl.searchParams.get('error');
+  const errorDescription = requestUrl.searchParams.get('error_description');
   const origin = requestUrl.origin;
 
   console.log('[Auth Callback] Request URL:', requestUrl.href);
   console.log('[Auth Callback] Code present:', !!code);
+  console.log('[Auth Callback] Error:', error);
+
+  // If there's an error but tokens are in hash (OAuth flow), redirect to learn
+  // The client-side Supabase will handle the hash tokens
+  if (error === 'no_code' && requestUrl.hash.includes('access_token')) {
+    console.log('[Auth Callback] OAuth flow detected, redirecting to /learn for client-side token handling');
+    return NextResponse.redirect(`${origin}/learn${requestUrl.hash}`);
+  }
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
