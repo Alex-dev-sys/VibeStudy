@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-hidden text-white">
       {/* Header with login button */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#050505]">
+      <header className="fixed top-0 left-0 right-0 z-[100] border-b border-white/10 bg-[#050505]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <div className="text-2xl font-bold">
             <span className="bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] bg-clip-text text-transparent">
