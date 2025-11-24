@@ -1,4 +1,3 @@
-import { Quest } from '@/types/telegram'; // Assuming Quest type exists or I need to define it
 // Mock implementation for now as I don't have the full DB schema for quests
 // In a real app, this would interact with Supabase
 
