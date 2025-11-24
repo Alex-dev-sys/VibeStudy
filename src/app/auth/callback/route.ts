@@ -15,14 +15,13 @@ export async function GET(request: NextRequest) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.log('[Auth Callback] Supabase not configured');
+      console.error('[Auth Callback] Supabase not configured');
       return NextResponse.redirect(`${origin}/login?error=config_missing`);
     }
 
-    // We'll build the final redirect URL after we know if user is new
-    // For now, create a temporary response that will hold cookies
-    const tempUrl = new URL('/learn', origin);
-    let response = NextResponse.redirect(tempUrl);
+    // Create response first so we can set cookies on it
+    const redirectUrl = new URL('/learn', origin);
+    let response = NextResponse.redirect(redirectUrl);
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
@@ -76,10 +75,7 @@ export async function GET(request: NextRequest) {
       console.log('[Auth Callback] User info:', {
         userId: user.id,
         email: user.email,
-        createdAt: user.created_at,
-        lastSignIn: user.last_sign_in_at,
-        isNewUser,
-        timeDiff: Math.abs(createdAt - lastSignIn)
+        isNewUser
       });
 
       // Create profile for new users
@@ -94,7 +90,7 @@ export async function GET(request: NextRequest) {
             .single();
 
           if (!existingProfile) {
-            const { error: profileError } = await supabase
+            await supabase
               .from('profiles')
               .insert({
                 id: user.id,
@@ -103,10 +99,23 @@ export async function GET(request: NextRequest) {
                 created_at: new Date().toISOString(),
               });
 
-            if (profileError) {
-              console.error('[Auth Callback] Error creating profile:', profileError);
-            } else {
+            console.log('[Auth Callback] Created profile for new user:', user.id);
+          }
+        } catch (profileError) {
+          console.error('[Auth Callback] Error in profile creation:', profileError);
+        }
+      }
 
-              console.log('[Auth Callback] Fallback redirect - no code');
-              return NextResponse.redirect(`${origin}/login?error=no_code`);
-            }
+      console.log('[Auth Callback] Auth successful, redirecting to /learn');
+
+      // Cookies are already set on the response object, just return it
+      return response;
+    } else {
+      console.error('[Auth Callback] Failed to exchange code:', error?.message);
+      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+    }
+  }
+
+  console.log('[Auth Callback] Fallback redirect - no code');
+  return NextResponse.redirect(`${origin}/login?error=no_code`);
+}
