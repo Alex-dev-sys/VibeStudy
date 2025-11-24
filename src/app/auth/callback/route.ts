@@ -15,12 +15,14 @@ export async function GET(request: NextRequest) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error('[Auth Callback] Supabase not configured');
+      console.log('[Auth Callback] Supabase not configured');
       return NextResponse.redirect(`${origin}/login?error=config_missing`);
     }
 
-    // Create response first so we can set cookies on it
-    let response = NextResponse.redirect(`${origin}/learn`);
+    // We'll build the final redirect URL after we know if user is new
+    // For now, create a temporary response that will hold cookies
+    const tempUrl = new URL('/learn', origin);
+    let response = NextResponse.redirect(tempUrl);
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
@@ -104,33 +106,7 @@ export async function GET(request: NextRequest) {
             if (profileError) {
               console.error('[Auth Callback] Error creating profile:', profileError);
             } else {
-              console.log('[Auth Callback] Created profile for new user:', user.id);
+
+              console.log('[Auth Callback] Fallback redirect - no code');
+              return NextResponse.redirect(`${origin}/login?error=no_code`);
             }
-          }
-        } catch (profileError) {
-          console.error('[Auth Callback] Error in profile creation:', profileError);
-        }
-      }
-
-      // Build redirect URL with flags
-      const redirectUrl = new URL('/learn', origin);
-      if (isNewUser) {
-        redirectUrl.searchParams.set('new_user', 'true');
-      }
-      redirectUrl.searchParams.set('migrate_guest', 'true');
-
-      console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
-
-      // Update the Location header instead of recreating response to keep cookies
-      response.headers.set('Location', redirectUrl.href);
-
-      return response;
-    } else {
-      console.error('[Auth Callback] Failed to exchange code:', error?.message);
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
-    }
-  }
-
-  console.log('[Auth Callback] Fallback redirect - no code');
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
-}
