@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // Supabase configuration interface
 interface SupabaseConfig {
@@ -34,16 +35,9 @@ function initializeSupabase(): SupabaseClient | null {
     return null;
   }
 
-  // Create Supabase client
+  // Create Supabase client using @supabase/ssr for proper cookie handling
   try {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce'
-      }
-    });
+    supabaseInstance = createBrowserClient(supabaseUrl, supabaseAnonKey);
     isConfigured = true;
     console.log('✅ Supabase client initialized successfully');
     return supabaseInstance;
