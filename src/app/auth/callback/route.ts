@@ -3,11 +3,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get('code');
-  const origin = requestUrl.origin;
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
+  const next = searchParams.get('next') ?? '/learn';
 
-  console.log('[Auth Callback] Request URL:', requestUrl.href);
   console.log('[Auth Callback] Code present:', !!code);
 
   if (code) {
@@ -19,44 +18,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=config_missing`);
     }
 
-    // Create a response that we'll use to set cookies
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
-
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value;
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            request.cookies.set({
+              name,
+              value,
+              ...options,
+            });
+          },
+          remove(name: string, options: CookieOptions) {
+            request.cookies.set({
+              name,
+              value: '',
+              ...options,
+            });
+          },
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-        },
-      },
-    });
+      }
+    );
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -67,7 +53,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error && data.session) {
-      // Check if this is a new user registration
       const user = data.user;
       const createdAt = new Date(user.created_at).getTime();
       const lastSignIn = new Date(user.last_sign_in_at || user.created_at).getTime();
@@ -76,17 +61,13 @@ export async function GET(request: NextRequest) {
       console.log('[Auth Callback] User info:', {
         userId: user.id,
         email: user.email,
-        createdAt: user.created_at,
-        lastSignIn: user.last_sign_in_at,
-        isNewUser,
-        timeDiff: Math.abs(createdAt - lastSignIn)
+        isNewUser
       });
 
-      // Create or update profile for new users
+      // Create profile for new users
       if (isNewUser) {
         try {
           const provider = user.app_metadata?.provider || 'email';
-
           const { data: existingProfile } = await supabase
             .from('profiles')
             .select('id')
@@ -94,27 +75,23 @@ export async function GET(request: NextRequest) {
             .single();
 
           if (!existingProfile) {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .insert({
-                id: user.id,
-                email: user.email,
-                provider,
-                created_at: new Date().toISOString(),
-              });
-
-            if (profileError) {
-              console.error('[Auth Callback] Error creating profile:', profileError);
-            } else {
-              console.log('[Auth Callback] Created profile for new user:', user.id);
-            }
+            await supabase.from('profiles').insert({
+              id: user.id,
+              email: user.email,
+              provider,
+              created_at: new Date().toISOString(),
+            });
+            console.log('[Auth Callback] Created profile for new user');
           }
         } catch (profileError) {
-          console.error('[Auth Callback] Error in profile creation:', profileError);
+          console.error('[Auth Callback] Error creating profile:', profileError);
         }
       }
 
-      const redirectUrl = new URL('/learn', origin);
+      const forwardedHost = request.headers.get('x-forwarded-host');
+      const isLocalEnv = process.env.NODE_ENV === 'development';
+
+      const redirectUrl = new URL(next, origin);
       if (isNewUser) {
         redirectUrl.searchParams.set('new_user', 'true');
       }
@@ -122,21 +99,20 @@ export async function GET(request: NextRequest) {
 
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
 
-      // Create new redirect response and copy cookies from the response we built
-      const redirectResponse = NextResponse.redirect(redirectUrl);
+      // Create redirect response
+      const response = NextResponse.redirect(redirectUrl);
 
-      // Copy all cookies from our working response to the redirect response
-      response.cookies.getAll().forEach(cookie => {
-        redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+      // Set cookies on response
+      request.cookies.getAll().forEach((cookie) => {
+        response.cookies.set(cookie);
       });
 
-      return redirectResponse;
-    } else {
-      console.error('[Auth Callback] Failed to exchange code:', error?.message);
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+      return response;
     }
+
+    console.error('[Auth Callback] Failed to exchange code:', error?.message);
   }
 
-  console.log('[Auth Callback] Fallback redirect - no code');
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
+  // Return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/login?error=auth_failed`);
 }
