@@ -104,31 +104,7 @@ export async function GET(request: NextRequest) {
             if (profileError) {
               console.error('[Auth Callback] Error creating profile:', profileError);
             } else {
-              console.log('[Auth Callback] Created profile for new user:', user.id);
+
+              console.log('[Auth Callback] Fallback redirect - no code');
+              return NextResponse.redirect(`${origin}/login?error=no_code`);
             }
-          }
-        } catch (profileError) {
-          console.error('[Auth Callback] Error in profile creation:', profileError);
-        }
-      }
-
-      // Redirect to /learn with flags
-      const redirectUrl = new URL('/learn', origin);
-      if (isNewUser) {
-        redirectUrl.searchParams.set('new_user', 'true');
-      }
-      redirectUrl.searchParams.set('migrate_guest', 'true');
-
-      console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
-      response = NextResponse.redirect(redirectUrl);
-
-      return response;
-    } else {
-      console.error('[Auth Callback] Failed to exchange code:', error?.message);
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
-    }
-  }
-
-  console.log('[Auth Callback] Fallback redirect - no code');
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
-}
