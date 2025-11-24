@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import { GoogleButton } from './GoogleButton';
+import Link from 'next/link';
 
 interface LoginFormProps {
   onSubmit: (email: string) => Promise<void>;
@@ -15,7 +16,6 @@ interface LoginFormProps {
 
 export function LoginForm({ onSubmit, onGoogleSignIn, isLoading, error, emailSent }: LoginFormProps) {
   const [email, setEmail] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
 
   // Real-time email validation
@@ -24,7 +24,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, isLoading, error, emailSen
       setEmailError(null);
       return;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
       setEmailError('Введите корректный email');
@@ -41,7 +41,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, isLoading, error, emailSen
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || emailError) {
       return;
     }
@@ -56,31 +56,10 @@ export function LoginForm({ onSubmit, onGoogleSignIn, isLoading, error, emailSen
       transition={{ duration: 0.5 }}
       className="w-full max-w-md"
     >
-      {/* Toggle between Sign in / Sign up */}
-      <div className="mb-8 flex justify-center gap-4">
-        <button
-          type="button"
-          onClick={() => setIsSignUp(false)}
-          className={`text-lg font-semibold transition-all ${
-            !isSignUp
-              ? 'text-white'
-              : 'text-white/40 hover:text-white/60'
-          }`}
-        >
-          Sign in
-        </button>
-        <span className="text-white/20">/</span>
-        <button
-          type="button"
-          onClick={() => setIsSignUp(true)}
-          className={`text-lg font-semibold transition-all ${
-            isSignUp
-              ? 'text-white'
-              : 'text-white/40 hover:text-white/60'
-          }`}
-        >
-          Sign up
-        </button>
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 text-4xl font-bold text-white">Вход</h1>
+        <p className="text-white/60">Войдите в свой аккаунт</p>
       </div>
 
       {/* Email sent confirmation */}
@@ -169,13 +148,26 @@ export function LoginForm({ onSubmit, onGoogleSignIn, isLoading, error, emailSen
                 ) : (
                   <>
                     <Mail className="h-5 w-5" />
-                    <span>{isSignUp ? 'Sign up' : 'Sign in'}</span>
+                    <span>Войти</span>
                   </>
                 )}
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#ff4bc1]/80 to-[#ffd34f]/80 opacity-0 transition-opacity group-hover:opacity-100" />
             </motion.button>
           </form>
+
+          {/* Link to register */}
+          <div className="text-center">
+            <p className="text-sm text-white/60">
+              Нет аккаунта?{' '}
+              <Link
+                href="/register"
+                className="font-semibold text-white transition-colors hover:text-white/80"
+              >
+                Зарегистрироваться
+              </Link>
+            </p>
+          </div>
         </div>
       )}
     </motion.div>

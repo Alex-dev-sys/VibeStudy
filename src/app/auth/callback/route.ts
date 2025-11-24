@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
     });
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    
-    console.log('[Auth Callback] Exchange result:', { 
-      hasSession: !!data?.session, 
+
+    console.log('[Auth Callback] Exchange result:', {
+      hasSession: !!data?.session,
       hasUser: !!data?.user,
-      error: error?.message 
+      error: error?.message
     });
-    
+
     if (!error && data.session) {
       // Check if this is a new user registration
       // New users have created_at equal to last_sign_in_at (within a small time window)
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       const createdAt = new Date(user.created_at).getTime();
       const lastSignIn = new Date(user.last_sign_in_at || user.created_at).getTime();
       const isNewUser = Math.abs(createdAt - lastSignIn) < 5000; // Within 5 seconds
-      
+
       console.log('[Auth Callback] User info:', {
         userId: user.id,
         email: user.email,
@@ -80,7 +80,41 @@ export async function GET(request: NextRequest) {
         isNewUser,
         timeDiff: Math.abs(createdAt - lastSignIn)
       });
-      
+
+      // Create or update profile for new users
+      if (isNewUser) {
+        try {
+          const provider = user.app_metadata?.provider || 'email';
+
+          // Check if profile already exists
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+
+          if (!existingProfile) {
+            // Create new profile
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: user.id,
+                email: user.email,
+                provider,
+                created_at: new Date().toISOString(),
+              });
+
+            if (profileError) {
+              console.error('[Auth Callback] Error creating profile:', profileError);
+            } else {
+              console.log('[Auth Callback] Created profile for new user:', user.id);
+            }
+          }
+        } catch (profileError) {
+          console.error('[Auth Callback] Error in profile creation:', profileError);
+        }
+      }
+
       // Redirect to /learn with flags
       const redirectUrl = new URL('/learn', origin);
       if (isNewUser) {
@@ -88,10 +122,10 @@ export async function GET(request: NextRequest) {
       }
       // Always set migrate_guest flag to trigger migration check on client
       redirectUrl.searchParams.set('migrate_guest', 'true');
-      
+
       console.log('[Auth Callback] Redirecting to:', redirectUrl.href);
       response = NextResponse.redirect(redirectUrl);
-      
+
       return response;
     } else {
       console.error('[Auth Callback] Failed to exchange code:', error?.message);

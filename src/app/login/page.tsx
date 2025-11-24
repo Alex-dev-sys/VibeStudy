@@ -61,10 +61,10 @@ export default function LoginPage() {
     const unsubscribe = onAuthStateChange(async (event, session) => {
       console.log('[Login Page] Auth state changed:', event, !!session);
       if (session?.user) {
-        // Create or update profile after successful auth
+        // Create or update profile after successful auth (for both email and OAuth)
         const provider = session.user.app_metadata?.provider || 'email';
         await createOrUpdateProfile(session.user.id, session.user.email || '', provider);
-        
+
         console.log('[Login Page] User signed in, redirecting to /learn');
         router.push('/learn');
       }
@@ -78,13 +78,13 @@ export default function LoginPage() {
   async function handleEmailSignIn(email: string) {
     setLoading(true);
     setError(null);
-    
+
     const { error } = await signInWithEmail(email);
-    
+
     if (error) {
       setError('Не удалось отправить письмо. Попробуйте еще раз.');
       setLoading(false);
-      
+
       // Auto-hide error after 5 seconds
       setTimeout(() => {
         setError(null);
@@ -98,13 +98,13 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setLoading(true);
     setError(null);
-    
+
     const { error } = await signInWithGoogle();
-    
+
     if (error) {
       setError('Не удалось войти через Google. Попробуйте еще раз.');
       setLoading(false);
-      
+
       // Auto-hide error after 5 seconds
       setTimeout(() => {
         setError(null);
