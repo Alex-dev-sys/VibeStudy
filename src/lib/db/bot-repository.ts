@@ -147,11 +147,25 @@ export const questsDB = {
     },
 
     async completeQuest(telegramId: number, questId: string) {
+        // First get the quest to know the target value
+        const { data: currentQuest } = await supabase
+            .from('user_quests')
+            .select('target, xp_reward')
+            .eq('telegram_id', telegramId)
+            .eq('quest_id', questId)
+            .is('completed_at', null)
+            .single();
+
+        if (!currentQuest) {
+            return null;
+        }
+
+        // Update the quest with target progress
         const { data: quest, error } = await supabase
             .from('user_quests')
             .update({
                 completed_at: new Date(),
-                progress: supabase.raw('target'), // Set progress to target
+                progress: currentQuest.target, // Set progress to target
             })
             .eq('telegram_id', telegramId)
             .eq('quest_id', questId)
