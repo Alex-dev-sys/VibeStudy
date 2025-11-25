@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useFocusTrap } from '@/lib/accessibility/focus-management';
@@ -24,10 +25,12 @@ const sizeClasses = {
   xl: 'max-w-4xl',
 };
 
-export function Modal({ 
-  isOpen, 
-  onClose, 
-  children, 
+// ... imports
+
+export function Modal({
+  isOpen,
+  onClose,
+  children,
   size = 'md',
   title,
   showCloseButton = true,
@@ -38,6 +41,11 @@ export function Modal({
   const modalRef = useFocusTrap<HTMLDivElement>(isOpen);
   const titleId = useRef(`modal-title-${Math.random().toString(36).substr(2, 9)}`);
   const descriptionId = useRef(`modal-description-${Math.random().toString(36).substr(2, 9)}`);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock scroll when modal is open
   useEffect(() => {
@@ -72,7 +80,9 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -87,7 +97,7 @@ export function Modal({
           />
 
           {/* Modal */}
-          <div 
+          <div
             className="fixed inset-0 z-modal flex items-center justify-center p-4 pointer-events-none"
             role="dialog"
             aria-modal="true"
@@ -103,7 +113,7 @@ export function Modal({
               transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
               className={`relative w-full ${sizeClasses[size]} pointer-events-auto`}
             >
-              <div className="relative bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c061c]">
+              <div className="relative bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c061c] max-h-[90vh] flex flex-col">
                 {/* Close button */}
                 {showCloseButton && (
                   <button
@@ -118,7 +128,7 @@ export function Modal({
 
                 {/* Title */}
                 {title && (
-                  <div className="px-6 py-5">
+                  <div className="px-6 py-5 flex-shrink-0">
                     <h2 id={titleId.current} className="text-h2 text-white">
                       {title}
                     </h2>
@@ -126,9 +136,9 @@ export function Modal({
                 )}
 
                 {/* Content */}
-                <div 
+                <div
                   id={descriptionId.current}
-                  className="max-h-[80vh] overflow-y-auto"
+                  className="overflow-y-auto p-0"
                 >
                   {children}
                 </div>
@@ -137,6 +147,7 @@ export function Modal({
           </div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
