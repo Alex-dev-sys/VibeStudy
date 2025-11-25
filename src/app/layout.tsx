@@ -96,6 +96,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className="dark">
+      <head>
+        {/* Resource hints for faster external API connections */}
+        <link rel="preconnect" href="https://api.gptlama.ru" />
+        <link rel="dns-prefetch" href="https://api.gptlama.ru" />
+        <link rel="preconnect" href="https://emkc.org" />
+        <link rel="dns-prefetch" href="https://emkc.org" />
+      </head>
       <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>
         <ErrorBoundary>
           <RealtimeProvider>

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Editor from '@monaco-editor/react';
-import Confetti from 'react-confetti';
+import { LazyMonacoEditor, LazyConfetti } from '@/lib/performance/lazy-components';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
@@ -68,7 +67,7 @@ export function TaskModal({
   const [editorError, setEditorError] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-  
+
   const t = useTranslations();
   const { locale } = useLocaleStore();
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
@@ -79,11 +78,11 @@ export function TaskModal({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-      
+
       const handleResize = () => {
         setWindowSize({ width: window.innerWidth, height: window.innerHeight });
       };
-      
+
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
@@ -108,7 +107,7 @@ export function TaskModal({
     setCheckResult(null);
     setOutput(`🤖 ${t.taskModal.aiChecking}`);
     setShowSuggestions(false);
-    
+
     const newAttemptsCount = attemptsCount + 1;
     setAttemptsCount(newAttemptsCount);
 
@@ -135,20 +134,20 @@ export function TaskModal({
 
       const result: CheckResult = await response.json();
       setCheckResult(result);
-      
+
       // Формируем вывод с локализованными сообщениями
       const statusMessage = result.success ? t.taskModal.solutionCorrect : t.taskModal.solutionIncorrect;
-      let outputText = result.success 
+      let outputText = result.success
         ? `✅ ${statusMessage}\n\n${result.feedback || ''}`
         : `❌ ${statusMessage}\n\n${result.feedback || ''}`;
-      
+
       if (result.score !== undefined) {
         outputText += `\n\n📊 ${t.feedback.score}: ${result.score}/100`;
       }
-      
+
       setOutput(outputText);
       setShowSuggestions((result.suggestions?.length || 0) > 0);
-      
+
       // Announce result to screen readers
       const announcement = result.success
         ? `${t.notifications.taskCompleted} ${t.feedback.score}: ${result.score || 100}/100`
@@ -196,7 +195,7 @@ export function TaskModal({
 
   const handleGetHint = async () => {
     setIsLoadingHint(true);
-    
+
     try {
       const response = await fetch('/api/get-hint', {
         method: 'POST',
@@ -221,20 +220,20 @@ export function TaskModal({
 
       const result: HintResult = await response.json();
       setHints([...hints, result.hint]);
-      
+
       let hintOutput = `💡 ${t.taskModal.hintOutput}:\n\n${result.hint}`;
-      
+
       if (result.example) {
         hintOutput += `\n\n📝 ${t.taskModal.example}:\n${result.example}`;
       }
-      
+
       if (result.nextSteps && result.nextSteps.length > 0) {
         hintOutput += `\n\n✨ ${t.taskModal.nextSteps}:\n`;
         result.nextSteps.forEach((step, i) => {
           hintOutput += `${i + 1}. ${step}\n`;
         });
       }
-      
+
       setOutput(hintOutput);
     } catch (error) {
       setOutput(`❌ ${t.errors.hintFailed}`);
@@ -250,7 +249,7 @@ export function TaskModal({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-hidden">
         {showConfetti && (
-          <Confetti
+          <LazyConfetti
             width={windowSize.width}
             height={windowSize.height}
             recycle={false}
@@ -305,7 +304,7 @@ export function TaskModal({
                 />
               </div>
             ) : (
-              <Editor
+              <LazyMonacoEditor
                 height="250px"
                 language={monacoLanguage}
                 theme="vs-dark"
@@ -339,13 +338,12 @@ export function TaskModal({
           {/* Результат проверки */}
           {output && (
             <div
-              className={`rounded-xl border p-3 sm:rounded-2xl sm:p-4 ${
-                checkResult?.success
-                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
-                  : checkResult?.success === false
-                    ? 'border-rose-500/40 bg-rose-500/10 text-rose-200'
-                    : 'border-white/10 bg-black/40 text-white/80'
-              }`}
+              className={`rounded-xl border p-3 sm:rounded-2xl sm:p-4 ${checkResult?.success
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+                : checkResult?.success === false
+                  ? 'border-rose-500/40 bg-rose-500/10 text-rose-200'
+                  : 'border-white/10 bg-black/40 text-white/80'
+                }`}
             >
               <pre className="whitespace-pre-wrap text-xs sm:text-sm">{output}</pre>
               {checkResult && (
@@ -353,9 +351,9 @@ export function TaskModal({
                   <FeedbackButtons
                     contentType="explanation"
                     contentKey={`${languageId}-day-${day}-task-${task.id}-explanation`}
-                    metadata={{ 
-                      language: languageId, 
-                      day, 
+                    metadata={{
+                      language: languageId,
+                      day,
                       taskId: task.id,
                       success: checkResult.success,
                       difficulty: task.difficulty
@@ -404,9 +402,9 @@ export function TaskModal({
                     <FeedbackButtons
                       contentType="hint"
                       contentKey={`${languageId}-day-${day}-task-${task.id}-hint-${i}`}
-                      metadata={{ 
-                        language: languageId, 
-                        day, 
+                      metadata={{
+                        language: languageId,
+                        day,
                         taskId: task.id,
                         hintNumber: i + 1,
                         difficulty: task.difficulty
@@ -426,30 +424,30 @@ export function TaskModal({
             </Button>
             {!isViewMode && (
               <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="md" 
-                  onClick={handleGetHint} 
+                <Button
+                  variant="ghost"
+                  size="md"
+                  onClick={handleGetHint}
                   isLoading={isLoadingHint}
                   disabled={isLoadingHint || isChecking}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {isLoadingHint ? t.taskModal.thinking : `💡 ${t.taskModal.getHint}`}
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  size="md" 
-                  onClick={() => setCode('')} 
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setCode('')}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {t.taskModal.clear}
                 </Button>
-                <Button 
-                  variant="primary" 
-                  size="md" 
+                <Button
+                  variant="primary"
+                  size="md"
                   onClick={handleCheck}
                   isLoading={isChecking}
-                  disabled={isChecking || !code.trim()} 
+                  disabled={isChecking || !code.trim()}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {isChecking ? t.taskModal.checking : `✓ ${t.taskModal.checkSolution}`}

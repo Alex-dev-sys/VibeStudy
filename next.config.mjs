@@ -27,7 +27,11 @@ const nextConfig = {
       'lucide-react',
       'framer-motion',
       '@radix-ui/react-slot',
+      '@react-three/fiber',
+      '@react-three/drei',
     ],
+    // Web Vitals Attribution for better performance monitoring
+    webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB'],
   },
 
   // Production optimizations

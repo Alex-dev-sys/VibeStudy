@@ -1,6 +1,6 @@
 'use client';
 
-import Editor from '@monaco-editor/react';
+import { LazyMonacoEditor } from '@/lib/performance/lazy-components';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +81,7 @@ export function CodeWorkspace({ languageId, monacoLanguage, value, onChange }: C
         </div>
       </div>
       <div className="min-h-[280px] overflow-hidden rounded-2xl border border-white/10">
-        <Editor
+        <LazyMonacoEditor
           height="320px"
           language={monacoLanguage}
           theme="vs-dark"

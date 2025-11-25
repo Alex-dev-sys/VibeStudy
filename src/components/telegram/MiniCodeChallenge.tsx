@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
+import { LazyMonacoEditor } from '@/lib/performance/lazy-components';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { difficultyColorMap } from '@/lib/utils';
@@ -52,7 +52,7 @@ export function MiniCodeChallenge({
   const [checkResult, setCheckResult] = useState<CheckResult | null>(null);
   const [editorLoading, setEditorLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(true);
-  
+
   const t = useTranslations();
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function MiniCodeChallenge({
     // Update Telegram MainButton
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
-      
+
       if (checkResult?.success) {
         tg.MainButton.setText(hasNext ? t.common.next : t.onboarding.complete);
         tg.MainButton.show();
@@ -105,21 +105,21 @@ export function MiniCodeChallenge({
 
       const result: CheckResult = await response.json();
       setCheckResult(result);
-      
+
       const statusMessage = result.success ? t.taskModal.solutionCorrect : t.taskModal.solutionIncorrect;
-      let outputText = result.success 
+      let outputText = result.success
         ? `✅ ${statusMessage}\n\n${result.feedback || ''}`
         : `❌ ${statusMessage}\n\n${result.feedback || ''}`;
-      
+
       if (result.score !== undefined) {
         outputText += `\n\n📊 ${t.feedback.score}: ${result.score}/100`;
       }
-      
+
       setOutput(outputText);
 
       if (result.success) {
         onComplete(task.id);
-        
+
         // Haptic feedback
         if (window.Telegram?.WebApp) {
           // Telegram WebApp doesn't have haptic feedback in the type, but it exists
@@ -154,14 +154,14 @@ export function MiniCodeChallenge({
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span 
+          <span
             className="text-xs"
             style={{ color: themeColors['--tg-hint'] || '#ffffff80' }}
           >
             {taskNumber}/{totalTasks}
           </span>
-          <Badge 
-            tone="accent" 
+          <Badge
+            tone="accent"
             className={`text-xs ${difficultyColorMap[task.difficulty]}`}
           >
             {task.difficulty}
@@ -172,7 +172,7 @@ export function MiniCodeChallenge({
             </Badge>
           )}
         </div>
-        
+
         <div className="flex gap-2">
           {hasPrevious && (
             <button
@@ -202,20 +202,20 @@ export function MiniCodeChallenge({
       </div>
 
       {/* Task Prompt */}
-      <div 
+      <div
         className="mb-3 rounded-xl p-3"
         style={{
           backgroundColor: themeColors['--tg-secondary-bg'] || '#ffffff10'
         }}
       >
-        <h2 
+        <h2
           className="text-sm font-semibold"
           style={{ color: themeColors['--tg-text'] || '#ffffff' }}
         >
           {task.prompt}
         </h2>
         {task.solutionHint && (
-          <p 
+          <p
             className="mt-2 text-xs"
             style={{ color: themeColors['--tg-hint'] || '#ffffff80' }}
           >
@@ -239,7 +239,7 @@ export function MiniCodeChallenge({
       {/* Code Editor */}
       {showEditor && (
         <div className="mb-3 flex-1 overflow-hidden rounded-xl border" style={{ borderColor: '#ffffff20' }}>
-          <Editor
+          <LazyMonacoEditor
             height="250px"
             language={monacoLanguage}
             theme="vs-dark"
@@ -274,20 +274,20 @@ export function MiniCodeChallenge({
         <div
           className="mb-3 rounded-xl border p-3"
           style={{
-            borderColor: checkResult?.success 
-              ? '#10b98180' 
-              : checkResult?.success === false 
-                ? '#f4343480' 
+            borderColor: checkResult?.success
+              ? '#10b98180'
+              : checkResult?.success === false
+                ? '#f4343480'
                 : '#ffffff20',
-            backgroundColor: checkResult?.success 
-              ? '#10b98120' 
-              : checkResult?.success === false 
-                ? '#f4343420' 
+            backgroundColor: checkResult?.success
+              ? '#10b98120'
+              : checkResult?.success === false
+                ? '#f4343420'
                 : '#00000040',
-            color: checkResult?.success 
-              ? '#6ee7b7' 
-              : checkResult?.success === false 
-                ? '#fca5a5' 
+            color: checkResult?.success
+              ? '#6ee7b7'
+              : checkResult?.success === false
+                ? '#fca5a5'
                 : themeColors['--tg-text'] || '#ffffff'
           }}
         >
@@ -297,17 +297,17 @@ export function MiniCodeChallenge({
 
       {/* Action Buttons */}
       <div className="flex gap-2">
-        <Button 
-          variant="secondary" 
-          size="sm" 
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => setCode('')}
           className="flex-1 text-xs"
         >
           {t.taskModal.clear}
         </Button>
-        <Button 
-          variant="primary" 
-          size="sm" 
+        <Button
+          variant="primary"
+          size="sm"
           onClick={handleCheck}
           isLoading={isChecking}
           disabled={isChecking || !code.trim()}
