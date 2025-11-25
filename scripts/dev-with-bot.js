@@ -12,28 +12,14 @@ const nextDev = spawn('npm', ['run', 'dev:next'], {
   stdio: 'inherit',
   shell: true,
   cwd: path.join(__dirname, '..')
+    console.error('❌ Ошибка запуска бота:', error);
 });
 
-// Небольшая задержка перед запуском бота
-setTimeout(() => {
-  console.log('\n🤖 Запуск Telegram бота...\n');
-  
-  // Запуск Telegram бота
-  const bot = spawn('node', ['scripts/telegram-bot-local.js'], {
-    stdio: 'inherit',
-    shell: true,
-    cwd: path.join(__dirname, '..')
-  });
-
-  bot.on('error', (error) => {
-    console.error('❌ Ошибка запуска бота:', error);
-  });
-
-  bot.on('exit', (code) => {
-    if (code !== 0) {
-      console.log(`\n⚠️ Бот остановлен с кодом ${code}`);
-    }
-  });
+bot.on('exit', (code) => {
+  if (code !== 0) {
+    console.log(`\n⚠️ Бот остановлен с кодом ${code}`);
+  }
+});
 }, 2000);
 
 nextDev.on('error', (error) => {

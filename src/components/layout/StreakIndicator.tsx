@@ -44,7 +44,7 @@ export function StreakIndicator({ streak }: StreakIndicatorProps) {
         🔥
       </motion.span>
       <div className="flex flex-col">
-        <div className="text-sm font-medium leading-none">{streak}</div>
+        <div className="text-sm font-medium leading-none text-orange-400">{streak}</div>
         {isStreakAtRisk && (
           <div className="text-[10px] text-orange-400 leading-none mt-0.5">
             Не теряй!
