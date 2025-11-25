@@ -144,13 +144,16 @@ export function registerCommandHandlers(bot: TelegramBot) {
                 });
 
                 await bot.sendMessage(chatId, `🎯 *Твои квесты*\n\n${questLines.join('\n\n')}`, {
-                    break;
+                    parse_mode: 'Markdown',
+                    reply_markup: getMainMenuKeyboard(),
+                });
+                break;
 
-                    default:
-                        await bot.sendMessage(chatId, '⚠️ В разработке...', {
-                            reply_markup: getMainMenuKeyboard(),
-                        });
-                }
+            default:
+                await bot.sendMessage(chatId, '⚠️ В разработке...', {
+                    reply_markup: getMainMenuKeyboard(),
+                });
+        }
     });
 
     // Handle text messages (for AI Mentor)
