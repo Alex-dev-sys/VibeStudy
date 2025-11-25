@@ -63,7 +63,7 @@ export function AchievementsPanel() {
         <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-5">
           <Trophy className="h-32 w-32 text-yellow-400" />
         </div>
-        
+
         <div className="relative z-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -77,7 +77,7 @@ export function AchievementsPanel() {
                 Открыто {stats.unlocked} из {stats.total} наград
               </p>
             </div>
-            
+
             <div className="flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 ring-1 ring-white/5">
               <Crown className={cn("h-5 w-5", stats.percentage === 100 ? "text-yellow-400" : "text-white/40")} />
               <span className="font-mono font-bold text-white">{stats.percentage}%</span>
@@ -112,12 +112,12 @@ export function AchievementsPanel() {
           <Grid className="h-3.5 w-3.5" />
           Все ({ACHIEVEMENTS.length})
         </button>
-        
+
         {Object.entries(CATEGORY_LABELS).map(([category, label]) => {
           const count = ACHIEVEMENTS.filter((a) => a.category === category).length;
           const Icon = CATEGORY_ICONS[category as AchievementCategory] || Star;
           const isActive = selectedCategory === category;
-          
+
           return (
             <button
               key={category}
@@ -144,18 +144,48 @@ export function AchievementsPanel() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5"
+          className="grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8"
         >
           {filteredAchievements.map((achievement) => {
             const isUnlocked = unlockedIds.includes(achievement.id);
             const unlockedData = unlockedAchievements.find((a) => a.id === achievement.id);
+            const displayAchievement = unlockedData || achievement;
 
             return (
-              <AchievementCard
-                key={achievement.id}
-                achievement={unlockedData || achievement}
-                isUnlocked={isUnlocked}
-              />
+              <div key={achievement.id} className="group relative flex justify-center">
+                {/* Avatar / Icon */}
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-2 transition-all shadow-lg",
+                    isUnlocked
+                      ? "border-yellow-500/50 bg-yellow-500/10 shadow-yellow-500/20"
+                      : "border-white/10 bg-white/5 grayscale"
+                  )}
+                >
+                  <span className="text-2xl select-none">{displayAchievement.icon}</span>
+
+                  {/* Unlocked Indicator */}
+                  {isUnlocked && (
+                    <div className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-yellow-500 ring-2 ring-[#1e1e1e] flex items-center justify-center">
+                      <CheckCircle2 className="h-2.5 w-2.5 text-black" />
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Hover Card */}
+                <div className="absolute bottom-full left-1/2 mb-3 hidden w-64 -translate-x-1/2 group-hover:block z-50">
+                  <div className="relative rounded-xl bg-[#1e1e1e] shadow-2xl ring-1 ring-white/10">
+                    <AchievementCard
+                      achievement={displayAchievement}
+                      isUnlocked={isUnlocked}
+                    />
+                    {/* Arrow */}
+                    <div className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-[#1e1e1e] ring-1 ring-white/10 border-b border-r border-white/10" />
+                  </div>
+                </div>
+              </div>
             );
           })}
         </motion.div>

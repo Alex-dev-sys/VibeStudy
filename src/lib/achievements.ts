@@ -53,7 +53,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_3',
     title: 'Начало серии',
     description: 'Учитесь 3 дня подряд',
-    icon: '🔥',
+    icon: '3x 🔥',
     category: 'streak',
     requirement: 3,
     checkCondition: (stats) => stats.currentStreak >= 3
@@ -62,7 +62,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_7',
     title: 'Неделя без перерыва',
     description: 'Учитесь 7 дней подряд',
-    icon: '🔥🔥',
+    icon: '7x 🔥',
     category: 'streak',
     requirement: 7,
     checkCondition: (stats) => stats.longestStreak >= 7
@@ -71,7 +71,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_14',
     title: 'Две недели огня',
     description: 'Учитесь 14 дней подряд',
-    icon: '🔥🔥🔥',
+    icon: '14x 🔥',
     category: 'streak',
     requirement: 14,
     checkCondition: (stats) => stats.longestStreak >= 14
@@ -80,7 +80,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_30',
     title: 'Месяц без остановки',
     description: 'Учитесь 30 дней подряд',
-    icon: '🔥🔥🔥🔥',
+    icon: '30x 🔥',
     category: 'streak',
     requirement: 30,
     checkCondition: (stats) => stats.longestStreak >= 30
@@ -218,30 +218,30 @@ export function getAchievementProgress(
     case 'two_months':
     case 'course_complete':
       return Math.min((stats.completedDays / achievement.requirement) * 100, 100);
-    
+
     case 'streak_3':
     case 'streak_7':
     case 'streak_14':
     case 'streak_30':
       return Math.min((stats.longestStreak / achievement.requirement) * 100, 100);
-    
+
     case 'tasks_10':
     case 'tasks_50':
     case 'tasks_100':
     case 'tasks_250':
     case 'tasks_450':
       return Math.min((stats.totalTasksCompleted / achievement.requirement) * 100, 100);
-    
+
     case 'perfect_day':
     case 'perfect_week':
       return Math.min((stats.perfectDays / achievement.requirement) * 100, 100);
-    
+
     case 'challenge_master':
       return Math.min((stats.challengeTasksCompleted / achievement.requirement) * 100, 100);
-    
+
     case 'speed_learner':
       return Math.min((stats.totalTimeSpent / achievement.requirement) * 100, 100);
-    
+
     default:
       return achievement.checkCondition(stats) ? 100 : 0;
   }

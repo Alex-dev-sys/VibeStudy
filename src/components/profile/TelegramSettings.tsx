@@ -16,7 +16,7 @@ export function TelegramSettings() {
   const [reminderTime, setReminderTime] = useState(profile.reminderTime);
   const [notificationsEnabled, setNotificationsEnabled] = useState(profile.telegramNotifications);
 
-  const isConnected = profile.telegramUsername ? isTelegramConnected(profile.telegramUsername) : false;
+  const isConnected = !!profile.telegramUsername;
 
   const handleSave = () => {
     updateProfile({

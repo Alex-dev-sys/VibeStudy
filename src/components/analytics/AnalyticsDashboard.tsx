@@ -11,9 +11,13 @@ import { useAnalyticsStore } from '@/store/analytics-store';
 
 export function AnalyticsDashboard() {
   const { taskAttempts, topicMastery, learningVelocity, weakAreas, recommendations } = useAnalyticsStore();
-  
-  const hasData = taskAttempts.length > 0;
-  
+
+  // const hasData = taskAttempts.length > 0;
+
+  // Always show dashboard, components handle empty state
+  const hasData = true;
+
+  /*
   if (!hasData) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -28,7 +32,8 @@ export function AnalyticsDashboard() {
       </div>
     );
   }
-  
+  */
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -37,19 +42,19 @@ export function AnalyticsDashboard() {
     >
       {/* Weekly Summary */}
       <WeeklySummary />
-      
+
       {/* Main Charts Grid */}
       <div className="grid gap-6 md:grid-cols-2">
         <LearningVelocityChart />
         <TopicMasteryRadar />
       </div>
-      
+
       {/* Weak Areas and Predictions */}
       <div className="grid gap-6 md:grid-cols-2">
         <WeakAreasPanel />
         <ProgressPrediction />
       </div>
-      
+
       {/* Recommendations */}
       {recommendations.length > 0 && (
         <Card>

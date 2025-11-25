@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { PricingCard, type PricingTier } from '@/components/pricing/PricingCard';
 import { PaymentModal } from '@/components/pricing/PaymentModal';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
-import { ArrowLeft, Zap, Sparkles, Crown, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Zap, Sparkles, Crown, ChevronDown, Check, Star } from 'lucide-react';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { requireSupabaseClient } from '@/lib/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface PaymentData {
   id: string;
@@ -71,22 +71,24 @@ export default function PricingPage() {
     fetchUserTier();
   }, []);
 
-  const pricingTiers: PricingTier[] = [
+  const pricingTiers = [
     {
       id: 'free',
-      name: 'Free',
+      name: 'Starter',
       price: 0,
       priceUsd: 0,
       duration: 'Навсегда',
+      description: 'Идеально для начала пути',
       features: [
         '5 AI-запросов в день',
         'Базовая AI модель (Gemini 2.5)',
         'Доступ ко всем урокам',
         'Интерактивный редактор кода',
         'Отслеживание прогресса',
-        'Система достижений',
       ],
       current: userTier.tier === 'free',
+      color: 'from-blue-400 to-cyan-400',
+      icon: Star
     },
     {
       id: 'premium',
@@ -94,16 +96,19 @@ export default function PricingPage() {
       price: 5,
       priceUsd: 12,
       duration: '30 дней',
+      description: 'Для активного обучения',
       features: [
         'Безлимитные AI-запросы',
         'Продвинутая AI модель (GPT-4o)',
         'Приоритетная генерация контента',
-        'Все функции Free',
         'Расширенная аналитика',
         'Персональные рекомендации',
+        'Все функции Starter',
       ],
       highlighted: true,
       current: userTier.tier === 'premium',
+      color: 'from-[#ff0094] to-[#ff5bc8]',
+      icon: Zap
     },
     {
       id: 'pro_plus',
@@ -111,16 +116,18 @@ export default function PricingPage() {
       price: 12,
       priceUsd: 29,
       duration: '30 дней',
+      description: 'Максимальная мощность',
       features: [
-        'Безлимитные AI-запросы',
+        'Всё из Premium',
         'Лучшая AI модель (Claude 3.5 Sonnet)',
-        'Мгновенная генерация контента',
-        'Все функции Premium',
+        'Мгновенная генерация (Turbo)',
         'Детальная аналитика обучения',
         'Индивидуальный план развития',
-        'Приоритетная поддержка',
+        'Приоритетная поддержка 24/7',
       ],
       current: userTier.tier === 'pro_plus',
+      color: 'from-amber-400 to-orange-500',
+      icon: Crown
     },
   ];
 
@@ -194,7 +201,7 @@ export default function PricingPage() {
         // Payment successful!
         setShowPaymentModal(false);
         setPaymentData(null);
-        
+
         // Update user tier in state
         setUserTier({
           tier: data.tier,
@@ -203,13 +210,13 @@ export default function PricingPage() {
 
         // Show success message
         alert('🎉 Оплата успешно подтверждена! Ваш тариф обновлен.');
-        
+
         // Redirect to learn page
         router.push('/learn');
       } else {
         setError(
           data.error ||
-            'Транзакция еще не найдена. Пожалуйста, подождите несколько минут и попробуйте снова.'
+          'Транзакция еще не найдена. Пожалуйста, подождите несколько минут и попробуйте снова.'
         );
       }
     } catch (err) {
@@ -230,7 +237,7 @@ export default function PricingPage() {
       <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-16 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-12 px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="flex flex-col items-center gap-6 text-center max-w-3xl mx-auto">
           <Link href="/learn" className="self-start md:self-center">
@@ -249,7 +256,7 @@ export default function PricingPage() {
               <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_currentColor]" />
               Доступен ранний доступ
             </div>
-            
+
             <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
               Инвестируйте в своё <br className="hidden sm:block" />
               <span className="relative inline-block">
@@ -257,164 +264,155 @@ export default function PricingPage() {
                 <AnimatedGradientText className="relative">будущее</AnimatedGradientText>
               </span>
             </h1>
-            
+
             <p className="mx-auto max-w-2xl text-lg text-white/70 sm:text-xl leading-relaxed">
-              Получите доступ к передовым AI-моделям, персональным рекомендациям и ускоренному обучению. Станьте разработчиком быстрее с Premium.
+              Получите доступ к передовым AI-моделям, персональным рекомендациям и ускоренному обучению.
             </p>
           </div>
         </header>
 
-        {/* Current Tier Info - Enhanced */}
+        {/* Current Tier Info */}
         {userTier.tier !== 'free' && userTier.tierExpiresAt && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-1 backdrop-blur-xl"
+            className="mx-auto w-full max-w-2xl"
           >
-            <div className="rounded-2xl bg-gradient-to-r from-accent/10 to-[#ffd200]/10 px-6 py-4 text-center shadow-inner">
-              <p className="text-base text-white/90">
-                Ваш текущий план:{' '}
-                <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent to-[#ffd200]">
-                  {userTier.tier === 'premium' ? 'Premium' : 'Pro+'}
-                </span>
-                {' • '}
-                <span className="text-white/60 text-sm">
-                  Активен до {new Date(userTier.tierExpiresAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </span>
-              </p>
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-[#ffd200]/5" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-white/60">Ваш текущий план</p>
+                  <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent to-[#ffd200]">
+                    {userTier.tier === 'premium' ? 'Premium' : 'Pro+'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-white/60">Истекает</p>
+                  <p className="font-medium text-white">
+                    {new Date(userTier.tierExpiresAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mx-auto w-full max-w-md rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-center backdrop-blur-sm">
-            <p className="text-sm font-medium text-red-400">{error}</p>
-          </div>
-        )}
+        {/* Pricing Cards Grid - Redesigned */}
+        <div className="grid gap-8 lg:grid-cols-3 lg:gap-8 items-start">
+          {pricingTiers.map((tier, index) => {
+            const isCurrent = tier.current;
+            const isFree = tier.id === 'free';
 
-        {/* Pricing Cards Grid */}
-        <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
-          {pricingTiers.map((tier, index) => (
-            <div key={tier.id} className={tier.highlighted ? 'lg:-mt-4 lg:mb-4' : ''}>
-              <PricingCard
-                tier={tier}
-                onSelect={handleSelectTier}
-                isLoading={isLoading}
-                disabled={isLoading}
-              />
-            </div>
-          ))}
+            return (
+              <motion.div
+                key={tier.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={cn(
+                  "relative flex flex-col rounded-3xl border p-8 transition-all duration-300",
+                  tier.highlighted
+                    ? "bg-white/10 border-white/20 shadow-2xl shadow-accent/10 lg:-mt-8 lg:mb-8 z-10"
+                    : "bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20",
+                  isCurrent && "ring-2 ring-accent ring-offset-2 ring-offset-[#0c061c]"
+                )}
+              >
+                {tier.highlighted && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] px-4 py-1.5 text-xs font-bold text-white shadow-lg">
+                    РЕКОМЕНДУЕМ
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <div className={cn(
+                    "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg",
+                    tier.color
+                  )}>
+                    <tier.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{tier.name}</h3>
+                  <p className="text-sm text-white/60 mt-1">{tier.description}</p>
+                </div>
+
+                <div className="mb-6 flex items-baseline gap-2">
+                  {tier.price === 0 ? (
+                    <span className="text-4xl font-bold text-white">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-bold text-white">{tier.price} TON</span>
+                      <span className="text-sm text-white/60">≈ ${tier.priceUsd}</span>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-4 mb-8">
+                  {tier.features.map((feature, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className={cn(
+                        "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10",
+                        tier.highlighted ? "text-accent" : "text-white/60"
+                      )}>
+                        <Check className="h-3 w-3" />
+                      </div>
+                      <span className="text-sm text-white/80 leading-tight">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  variant={tier.highlighted ? 'primary' : 'secondary'}
+                  size="lg"
+                  className={cn(
+                    "w-full rounded-xl",
+                    tier.highlighted ? "shadow-lg shadow-accent/25" : "bg-white/10 hover:bg-white/20"
+                  )}
+                  onClick={() => handleSelectTier(tier.id)}
+                  disabled={isLoading || isCurrent || isFree}
+                >
+                  {isCurrent ? 'Текущий план' : isFree ? 'Ваш план' : 'Выбрать план'}
+                </Button>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Features Comparison - Enhanced */}
-        <section className="mt-16 relative">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              Почему стоит выбрать <span className="text-accent">Premium</span>?
-            </h2>
-            <p className="mt-4 text-white/60">
-              Инструменты профессионального уровня для вашего роста
-            </p>
-          </div>
+        {/* FAQ Section */}
+        <section className="mt-16 max-w-3xl mx-auto w-full">
+          <h2 className="mb-10 text-center text-2xl font-bold text-white">
+            Часто задаваемые вопросы
+          </h2>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="space-y-4">
             {[
               {
-                icon: Zap,
-                color: "text-accent",
-                bg: "bg-accent/10",
-                border: "border-accent/20",
-                title: "Безлимитный AI",
-                desc: "Забудьте об ограничениях. Генерируйте код, получайте объяснения и решайте задачи 24/7."
+                q: "Что такое TON и зачем он нужен?",
+                a: "TON (The Open Network) — это современный блокчейн для быстрых и безопасных платежей. Это позволяет нам принимать оплату из любой точки мира с минимальными комиссиями."
               },
               {
-                icon: Sparkles,
-                color: "text-[#ffd200]",
-                bg: "bg-[#ffd200]/10",
-                border: "border-[#ffd200]/20",
-                title: "Топовые модели",
-                desc: "Доступ к GPT-4o и Claude 3.5 Sonnet — самым мощным нейросетям для программирования на сегодня."
+                q: "Как происходит процесс оплаты?",
+                a: "Вы выбираете тариф, получаете адрес кошелька и уникальный комментарий. Переводите указанную сумму в любом TON-кошельке (например, Tonkeeper) — доступ открывается автоматически."
               },
               {
-                icon: Crown,
-                color: "text-purple-400",
-                bg: "bg-purple-500/10",
-                border: "border-purple-500/20",
-                title: "Персональный ментор",
-                desc: "AI анализирует ваш код и стиль, предлагая улучшения и материалы, которые нужны именно вам."
+                q: "Что если платеж не прошел?",
+                a: "Система проверяет транзакции каждые несколько секунд. Если вы отправили средства, но доступ не открылся в течение 5 минут — напишите в поддержку, мы мгновенно всё решим."
               }
-            ].map((feature, i) => (
-              <div 
-                key={i}
-                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 transition-all hover:border-white/20 hover:bg-white/8 hover:shadow-2xl hover:shadow-accent/10"
-              >
-                <div className={`mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${feature.bg} ${feature.border} border shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-                  <feature.icon className={`h-7 w-7 ${feature.color}`} />
-                </div>
-                <h3 className="mb-3 text-xl font-bold text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-base leading-relaxed text-white/60">
-                  {feature.desc}
-                </p>
+            ].map((faq, i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/8">
+                <h3 className="text-lg font-semibold text-white mb-2">{faq.q}</h3>
+                <p className="text-white/60 leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* FAQ - Enhanced */}
-        <section className="mt-16 max-w-4xl mx-auto w-full">
-          <h2 className="mb-10 text-center text-3xl font-bold text-white">
-            Часто задаваемые вопросы
-          </h2>
-
-          <div className="grid gap-4">
-            {[
-              {
-                q: "Что такое TON и зачем он нужен?",
-                a: "TON (The Open Network) — это современный блокчейн, который мы используем для быстрых и безопасных платежей. Это позволяет нам принимать оплату из любой точки мира с минимальными комиссиями."
-              },
-              {
-                q: "Как происходит процесс оплаты?",
-                a: "Всё просто: вы выбираете тариф, получаете адрес кошелька и уникальный комментарий. Переводите указанную сумму в любом TON-кошельке (например, Tonkeeper) — и доступ открывается автоматически."
-              },
-              {
-                q: "Что произойдет по окончании подписки?",
-                a: "Подписка не продлевается автоматически. По истечении 30 дней ваш аккаунт просто вернется на тариф Free. Никаких скрытых списаний с вашей карты или кошелька."
-              },
-              {
-                q: "Если платеж не прошел?",
-                a: "Не волнуйтесь. Система проверяет транзакции каждые несколько секунд. Если вы отправили средства, но доступ не открылся в течение 5 минут — напишите в поддержку, мы мгновенно всё решим."
-              }
-            ].map((faq, i) => (
-              <details key={i} className="group rounded-2xl border border-white/10 bg-white/5 transition-colors hover:bg-white/8 open:bg-white/10">
-                <summary className="flex cursor-pointer items-center justify-between p-6 text-lg font-semibold text-white/90 focus:outline-none">
-                  {faq.q}
-                  <span className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/50 transition-transform group-open:rotate-180">
-                    <ChevronDown className="h-5 w-5" />
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-white/60 leading-relaxed border-t border-white/5 pt-4">
-                  {faq.a}
-                </div>
-              </details>
-            ))}
-          </div>
-        </section>
-
         {/* Bottom CTA */}
-        <div className="mt-12 text-center pb-12">
+        <div className="mt-8 text-center pb-12">
           <p className="text-white/50 text-sm">
             Есть вопросы? Пишите нам в <a href="https://t.me/vibestudy_support" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Telegram поддержку</a>
           </p>
         </div>
 
-      </div>
-
-      {/* Background Decorations */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] opacity-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/20 to-transparent blur-[100px]" />
       </div>
 
       {/* Payment Modal */}

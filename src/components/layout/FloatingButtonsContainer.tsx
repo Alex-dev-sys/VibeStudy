@@ -133,14 +133,14 @@ export function FloatingButtonsContainer() {
 
   return (
     <>
-      <div className="fixed right-6 z-50 flex items-end gap-3" style={{ bottom: '24px' }}>
+      <div className="fixed right-6 z-50 flex flex-col items-end gap-3" style={{ bottom: '24px' }}>
         {/* Help Button - Always at same level */}
         {showHelp && (
           <motion.button
             onClick={handleHelpOpen}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-14 h-14 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow group relative"
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow group relative order-1"
             aria-label="Открыть помощь"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -148,9 +148,9 @@ export function FloatingButtonsContainer() {
           >
             <HelpCircle className="w-6 h-6 text-white" />
             {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-[#2a2a2a] text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#2a2a2a] text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
               Помощь
-              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#2a2a2a]" />
+              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-[#2a2a2a] rotate-45" />
             </div>
           </motion.button>
         )}
@@ -161,11 +161,11 @@ export function FloatingButtonsContainer() {
             onClick={onAIAssistantClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative"
-            animate={{ 
-              opacity: 1, 
+            className="group relative order-2"
+            animate={{
+              opacity: 1,
               scale: 1,
-              y: isAIAssistantOpen ? 0 : 12
+              y: isAIAssistantOpen ? 0 : 0
             }}
             initial={{ opacity: 0, scale: 0.8, y: 12 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
@@ -174,14 +174,14 @@ export function FloatingButtonsContainer() {
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 group-hover:shadow-xl">
               <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
-            
+
             {/* Ripple effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] opacity-0 group-hover:opacity-20 animate-ping" />
-            
+
             {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-[#2a2a2a] text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#2a2a2a] text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
               AI Ассистент
-              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#2a2a2a]" />
+              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-[#2a2a2a] rotate-45" />
             </div>
           </motion.button>
         )}
