@@ -6,10 +6,17 @@
 
 const path = require('path');
 
-// Set up TypeScript execution
+// Set up TypeScript execution with path mapping
 require('ts-node').register({
     project: path.join(__dirname, '..', 'tsconfig.json'),
     transpileOnly: true,
+    compilerOptions: {
+        module: 'commonjs',
+        baseUrl: path.join(__dirname, '..', 'src'),
+        paths: {
+            '@/*': ['./*']
+        }
+    }
 });
 
 // Import and initialize bot
@@ -32,12 +39,12 @@ if (bot) {
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('\n\n👋 Stopping bot...');
-    bot.stopPolling();
+    if (bot) bot.stopPolling();
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
     console.log('\n\n👋 Stopping bot...');
-    bot.stopPolling();
+    if (bot) bot.stopPolling();
     process.exit(0);
 });
