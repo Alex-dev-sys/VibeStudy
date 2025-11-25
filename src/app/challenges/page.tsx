@@ -32,7 +32,7 @@ export default function ChallengesPage() {
   const router = useRouter();
   const { languageId } = useProgressStore();
   const t = useTranslations();
-  
+
   const [todayChallenge, setTodayChallenge] = useState<Challenge | null>(null);
   const [challengeHistory, setChallengeHistory] = useState<Challenge[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
@@ -53,7 +53,7 @@ export default function ChallengesPage() {
     try {
       // Load today's challenge
       const todayResponse = await fetch(`/api/challenges?language=${languageId}`);
-      
+
       if (todayResponse.ok) {
         const todayData = await todayResponse.json();
         setTodayChallenge(todayData.challenge);
@@ -69,7 +69,7 @@ export default function ChallengesPage() {
 
       // Load challenge history
       const historyResponse = await fetch(`/api/challenges?language=${languageId}&limit=10`);
-      
+
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
         setChallengeHistory(historyData.challenges || []);
@@ -96,15 +96,15 @@ export default function ChallengesPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
   const getDifficultyColor = (difficulty: string) => {
-    switch(difficulty) {
+    switch (difficulty) {
       case 'easy': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
       case 'medium': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
       case 'hard': return 'text-red-400 bg-red-400/10 border-red-400/20';
@@ -149,7 +149,7 @@ export default function ChallengesPage() {
     <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
       <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
       <GradientBackdrop blur className="-z-20" />
-      
+
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -175,7 +175,16 @@ export default function ChallengesPage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1e1e1e] ring-1 ring-white/5">
               <span className="text-xs text-white/40">Language:</span>
-              <Badge tone="accent" style={{ backgroundColor: currentLanguage?.highlightColor }} className="text-xs">
+              <Badge
+                tone="soft"
+                style={{
+                  backgroundColor: `${currentLanguage?.highlightColor}20`,
+                  color: currentLanguage?.highlightColor,
+                  borderColor: `${currentLanguage?.highlightColor}40`,
+                  borderWidth: '1px'
+                }}
+                className="text-xs font-semibold"
+              >
                 {currentLanguage?.label}
               </Badge>
             </div>
@@ -204,7 +213,7 @@ export default function ChallengesPage() {
             </div>
 
             {todayChallenge ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="group relative overflow-hidden rounded-2xl bg-[#1e1e1e] p-8 shadow-2xl ring-1 ring-white/5 transition-all hover:ring-white/10"
@@ -227,7 +236,7 @@ export default function ChallengesPage() {
                   <h3 className="text-3xl font-bold mb-4 group-hover:text-accent transition-colors">
                     {todayChallenge.problem.title || "Daily Code Challenge"}
                   </h3>
-                  
+
                   <p className="text-white/70 mb-8 max-w-2xl text-lg leading-relaxed line-clamp-3">
                     {todayChallenge.problem.description}
                   </p>
@@ -285,7 +294,7 @@ export default function ChallengesPage() {
                     )}>
                       {challenge.difficulty[0]}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-white/40 font-mono">
