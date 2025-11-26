@@ -10,6 +10,11 @@ const meta = {
         layout: 'centered',
     },
     tags: ['autodocs'],
+    args: {
+        isOpen: false,
+        onClose: () => { },
+        children: 'Modal Content',
+    },
 } satisfies Meta<typeof Modal>;
 
 export default meta;
