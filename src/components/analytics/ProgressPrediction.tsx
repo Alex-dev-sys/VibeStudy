@@ -7,27 +7,27 @@ import { useAnalyticsStore } from '@/store/analytics-store';
 
 export function ProgressPrediction() {
   const { taskAttempts, predictCompletionDate } = useAnalyticsStore();
-  
+
   const prediction = useMemo(() => {
     const completedDays = new Set(taskAttempts.map((a) => a.day)).size;
     const totalDays = 90;
     const remainingDays = totalDays - completedDays;
     const completionPercentage = (completedDays / totalDays) * 100;
-    
+
     const estimatedDate = predictCompletionDate();
     const daysUntilCompletion = Math.ceil(
       (estimatedDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
     );
-    
+
     // Calculate velocity
     const oldestAttempt = taskAttempts[0];
     const daysSinceStart = oldestAttempt
       ? Math.ceil((Date.now() - oldestAttempt.startTime) / (24 * 60 * 60 * 1000))
       : 1;
-    
+
     const velocity = completedDays / Math.max(daysSinceStart, 1);
     const isOnTrack = velocity >= 1.0;
-    
+
     return {
       completedDays,
       remainingDays,
@@ -38,15 +38,15 @@ export function ProgressPrediction() {
       isOnTrack
     };
   }, [taskAttempts, predictCompletionDate]);
-  
+
   return (
-    <Card className={prediction.isOnTrack ? 'border-green-500/30 bg-green-500/10' : 'border-yellow-500/30 bg-yellow-500/10'}>
+    <Card className={`glass-panel-enhanced backdrop-blur-xl ${prediction.isOnTrack ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <span>{prediction.isOnTrack ? '🚀' : '⏰'}</span>
           <span>Прогноз завершения</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-white/60">
           {prediction.isOnTrack
             ? 'Ты идёшь по графику!'
             : 'Нужно немного ускориться'}
@@ -90,7 +90,7 @@ export function ProgressPrediction() {
             </div>
           </div>
         </div>
-        
+
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg border border-white/10 bg-white/5 p-3 text-center">
@@ -102,7 +102,7 @@ export function ProgressPrediction() {
             <p className="text-xs text-white/60">дней осталось</p>
           </div>
         </div>
-        
+
         {/* Prediction */}
         <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <div className="flex items-center justify-between">
@@ -122,7 +122,7 @@ export function ProgressPrediction() {
             </div>
           </div>
         </div>
-        
+
         {/* Velocity indicator */}
         <div className="rounded-lg border border-white/10 bg-white/5 p-3">
           <p className="text-xs text-white/70">

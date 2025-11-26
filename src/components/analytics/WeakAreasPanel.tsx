@@ -7,14 +7,14 @@ import { useAnalyticsStore } from '@/store/analytics-store';
 
 export function WeakAreasPanel() {
   const { topicMastery, weakAreas } = useAnalyticsStore();
-  
+
   const weakTopics = useMemo(() => {
     return weakAreas
       .map((area) => topicMastery[area])
       .filter(Boolean)
       .sort((a, b) => a.successRate - b.successRate);
   }, [weakAreas, topicMastery]);
-  
+
   if (weakTopics.length === 0) {
     return (
       <Card className="border-green-500/30 bg-green-500/10">
@@ -30,15 +30,15 @@ export function WeakAreasPanel() {
       </Card>
     );
   }
-  
+
   return (
-    <Card className="border-orange-500/30 bg-orange-500/10">
+    <Card className="glass-panel-enhanced border-orange-500/30 bg-orange-500/5 backdrop-blur-xl">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span>⚠️</span>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <span className="text-orange-400">⚠️</span>
           <span>Области для улучшения</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-white/60">
           Темы с успехом ниже 70% — стоит повторить
         </CardDescription>
       </CardHeader>
@@ -67,7 +67,7 @@ export function WeakAreasPanel() {
             </div>
           </motion.div>
         ))}
-        
+
         <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-3">
           <p className="text-xs text-white/70">
             💡 <strong>Совет:</strong> Пересмотри теорию по этим темам и попробуй решить дополнительные задачи

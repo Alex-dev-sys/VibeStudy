@@ -7,43 +7,46 @@ import { useAnalyticsStore } from '@/store/analytics-store';
 
 export function LearningVelocityChart() {
   const { taskAttempts } = useAnalyticsStore();
-  
+
   const chartData = useMemo(() => {
     // Get last 7 days
     const days = [];
     const now = new Date();
-    
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
-      
+
       const dayStart = date.getTime();
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
-      
+
       const dayAttempts = taskAttempts.filter(
         (a) => a.startTime >= dayStart && a.startTime < dayEnd
       );
-      
+
       days.push({
         label: date.toLocaleDateString('ru-RU', { weekday: 'short' }),
         count: dayAttempts.length,
         success: dayAttempts.filter((a) => a.success).length
       });
     }
-    
+
     return days;
   }, [taskAttempts]);
-  
-  const maxCount = chartData.length > 0 
+
+  const maxCount = chartData.length > 0
     ? Math.max(...chartData.map((d) => d.count), 1)
     : 1;
-  
+
   return (
-    <Card>
+    <Card className="glass-panel-enhanced border-white/10 bg-white/5 backdrop-blur-xl">
       <CardHeader>
-        <CardTitle>📈 Скорость обучения</CardTitle>
-        <CardDescription>Задач выполнено за последние 7 дней</CardDescription>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <span className="text-green-400">📈</span>
+          Скорость обучения
+        </CardTitle>
+        <CardDescription className="text-white/60">Задач выполнено за последние 7 дней</CardDescription>
       </CardHeader>
       <div className="px-6 pb-6">
         <div className="flex items-end justify-between gap-2" style={{ height: '200px' }}>
@@ -60,7 +63,7 @@ export function LearningVelocityChart() {
                     title={`Успешных: ${day.success}`}
                   />
                 )}
-                
+
                 {/* Total bar */}
                 <motion.div
                   initial={{ height: 0 }}
@@ -69,7 +72,7 @@ export function LearningVelocityChart() {
                   className="w-full rounded-t-lg bg-gradient-to-t from-blue-500/60 to-blue-400/60"
                   title={`Всего: ${day.count}`}
                 />
-                
+
                 {/* Count label */}
                 {day.count > 0 && (
                   <span className="absolute -top-6 text-xs font-semibold text-white">
@@ -77,13 +80,13 @@ export function LearningVelocityChart() {
                   </span>
                 )}
               </div>
-              
+
               {/* Day label */}
               <span className="text-xs text-white/60">{day.label}</span>
             </div>
           ))}
         </div>
-        
+
         {/* Legend */}
         <div className="mt-4 flex justify-center gap-4 text-xs">
           <div className="flex items-center gap-2">
