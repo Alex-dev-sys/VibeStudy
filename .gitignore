@@ -46,3 +46,6 @@ data/generated-content.json
 *.swp
 *.swo
 *~
+
+*storybook.log
+storybook-static
