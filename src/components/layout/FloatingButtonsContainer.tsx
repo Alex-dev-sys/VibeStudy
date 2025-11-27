@@ -189,11 +189,24 @@ export function FloatingButtonsContainer() {
 
       {/* Help Modal */}
       {contextualHelp && (
-        <Modal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} size="lg">
+        <Modal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} size="lg" showCloseButton={false}>
           <div className="flex flex-col h-full">
             {/* Header with gradient background */}
             <div className="relative overflow-hidden p-6 pb-8 bg-gradient-to-br from-[#2a1b3d] to-[#1a0b2e]">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff0094]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+              {/* Custom Close Button */}
+              <button
+                onClick={() => setIsHelpOpen(false)}
+                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all duration-200 group"
+                aria-label="Закрыть"
+              >
+                <div className="relative w-5 h-5">
+                  <div className="absolute top-1/2 left-0 w-full h-0.5 bg-current rotate-45 transform -translate-y-1/2 group-hover:rotate-180 transition-transform duration-300" />
+                  <div className="absolute top-1/2 left-0 w-full h-0.5 bg-current -rotate-45 transform -translate-y-1/2 group-hover:-rotate-180 transition-transform duration-300" />
+                </div>
+              </button>
+
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 rounded-lg bg-white/10 backdrop-blur-md">
