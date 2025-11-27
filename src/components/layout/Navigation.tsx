@@ -28,17 +28,27 @@ export function Navigation() {
     <>
       {/* Desktop Navigation */}
       <nav
-        className="hidden md:flex fixed top-0 left-0 right-0 z-[100] bg-[#050505] border-b border-white/5"
+        className="hidden md:flex fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl bg-[#0a0515]/80 border-b border-white/10 shadow-lg"
         aria-label="Main navigation"
+        style={{
+          backgroundImage: 'linear-gradient(to bottom, rgba(10, 5, 21, 0.95), rgba(10, 5, 21, 0.8))',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.1)'
+        }}
       >
+        {/* Gradient border at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ff0094]/50 to-transparent" />
+
         <div className="max-w-[1600px] mx-auto w-full px-4 lg:px-8 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-6 lg:gap-8">
           {/* Logo - Left */}
           <div className="flex justify-start">
             <Link
               href="/learn"
-              className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg"
+              className="group flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg relative"
             >
-              <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent">
+              {/* Animated glow background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#ff0094]/20 via-[#ff5bc8]/20 to-[#ffd200]/20 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+              <span className="relative text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
                 VibeStudy
               </span>
             </Link>
@@ -55,16 +65,30 @@ export function Navigation() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all text-sm',
+                    'relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 text-sm group',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
                     isActive
-                      ? 'bg-gradient-to-r from-accent/20 to-secondary/20 text-white shadow-lg shadow-accent/20'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-accent/20 to-secondary/20 text-white shadow-lg shadow-accent/30'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="w-5 h-5" aria-hidden="true" />
-                  <span className="font-medium">{item.label}</span>
+                  {/* Hover glow effect */}
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/10 to-accent/0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  )}
+
+                  {/* Active indicator glow */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent/30 to-secondary/30 rounded-full blur-md -z-10" />
+                  )}
+
+                  <Icon className={cn(
+                    "w-5 h-5 relative z-10 transition-transform duration-300",
+                    isActive && "drop-shadow-[0_0_8px_rgba(255,0,148,0.5)]",
+                    !isActive && "group-hover:scale-110"
+                  )} aria-hidden="true" />
+                  <span className="font-medium relative z-10">{item.label}</span>
                 </Link>
               );
             })}
@@ -72,14 +96,18 @@ export function Navigation() {
 
           {/* User Actions - Right */}
           <div className="flex items-center justify-end gap-2 lg:gap-3">
-            {/* Premium and Challenges buttons */}
-            <Link href="/pricing" className="hidden lg:block">
-              <Button variant="primary" size="sm" className="text-xs whitespace-nowrap">
+            {/* Premium button */}
+            <Link href="/pricing" className="hidden lg:block group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#ffd200]/30 to-[#ff0094]/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Button variant="primary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
                 ⭐ Premium
               </Button>
             </Link>
-            <Link href="/challenges" className="hidden lg:block">
-              <Button variant="secondary" size="sm" className="text-xs whitespace-nowrap">
+
+            {/* Challenges button */}
+            <Link href="/challenges" className="hidden lg:block group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#ff0094]/20 to-[#ff5bc8]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Button variant="secondary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
                 🎯 Челленджи
               </Button>
             </Link>
@@ -94,9 +122,16 @@ export function Navigation() {
 
       {/* Mobile Navigation - Bottom Bar */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-navigation bg-[#0c061c]/95 backdrop-blur-xl safe-area-inset-bottom"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-navigation backdrop-blur-2xl bg-[#0a0515]/90 safe-area-inset-bottom shadow-[0_-8px_32px_rgba(0,0,0,0.4)]"
         aria-label="Main navigation"
+        style={{
+          backgroundImage: 'linear-gradient(to top, rgba(10, 5, 21, 0.95), rgba(10, 5, 21, 0.85))',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
       >
+        {/* Gradient border at top */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ff0094]/50 to-transparent" />
+
         <div className="flex items-center justify-around px-2 py-2 gap-2">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
@@ -107,17 +142,28 @@ export function Navigation() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all',
+                  'relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-300',
                   'min-w-[64px] min-h-[56px]',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
                   isActive
-                    ? 'text-white bg-gradient-to-br from-accent/20 to-secondary/20 shadow-lg shadow-accent/10'
-                    : 'text-white/50 active:bg-white/5'
+                    ? 'text-white bg-gradient-to-br from-accent/20 to-secondary/20 shadow-lg shadow-accent/20'
+                    : 'text-white/50 active:bg-white/10 active:scale-95'
                 )}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <Icon className="w-6 h-6" aria-hidden="true" />
-                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+                {/* Active indicator glow */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/30 rounded-xl blur-lg -z-10" />
+                )}
+
+                <Icon className={cn(
+                  "w-6 h-6 transition-all duration-300",
+                  isActive && "drop-shadow-[0_0_8px_rgba(255,0,148,0.6)] scale-110"
+                )} aria-hidden="true" />
+                <span className={cn(
+                  "text-[10px] font-medium leading-tight transition-all duration-300",
+                  isActive && "font-semibold"
+                )}>{item.label}</span>
               </Link>
             );
           })}
