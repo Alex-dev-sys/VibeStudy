@@ -474,25 +474,6 @@ body {
   }
 }
 
-* {
-  scroll-behavior: smooth;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 0, 148, 0.5);
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 1px rgba(255, 218, 0, 0.25);
-}
-
-a {
-  @apply text-accent transition-colors duration-200;
-}
-
 .glass-panel {
   backdrop-filter: blur(28px);
   background: var(--surface-glass);
