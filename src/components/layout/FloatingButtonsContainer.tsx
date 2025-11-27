@@ -190,36 +190,80 @@ export function FloatingButtonsContainer() {
       {/* Help Modal */}
       {contextualHelp && (
         <Modal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} size="lg">
-          <div className="p-6 space-y-6">
-            <h2 className="text-2xl font-bold">{contextualHelp.title}</h2>
+          <div className="flex flex-col h-full">
+            {/* Header with gradient background */}
+            <div className="relative overflow-hidden p-6 pb-8 bg-gradient-to-br from-[#2a1b3d] to-[#1a0b2e]">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff0094]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-white/10 backdrop-blur-md">
+                    <HelpCircle className="w-6 h-6 text-[#ff0094]" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">{contextualHelp.title}</h2>
+                </div>
+                <p className="text-white/60 text-sm pl-[52px]">
+                  Быстрые ответы на частые вопросы в этом разделе
+                </p>
+              </div>
+            </div>
 
-            <div className="space-y-4">
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#130a21]">
               {contextualHelp.items.map((item, index) => {
                 const topicId = `${pathname}-${index}`;
                 return (
-                  <div
+                  <motion.div
                     key={index}
-                    className="p-4 rounded-xl bg-white/5 hover:bg-white/8 transition-colors cursor-pointer"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-[#ff0094]/50 hover:bg-white/10 transition-all duration-300 cursor-pointer"
                     onClick={() => handleTopicClick(topicId)}
                   >
-                    <h3 className="font-semibold mb-2 text-white">{item.q}</h3>
-                    <p className="text-sm text-white/70 leading-relaxed">{item.a}</p>
-                  </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#ff0094]/0 to-[#ff0094]/0 group-hover:from-[#ff0094]/5 group-hover:to-transparent transition-all duration-500" />
+
+                    <div className="relative p-5">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 mt-1 w-6 h-6 rounded-full bg-[#ff0094]/20 flex items-center justify-center group-hover:bg-[#ff0094] group-hover:scale-110 transition-all duration-300">
+                          <span className="text-xs font-bold text-[#ff0094] group-hover:text-white transition-colors">?</span>
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-lg text-white group-hover:text-[#ff0094] transition-colors">
+                            {item.q}
+                          </h3>
+                          <p className="text-sm text-white/70 leading-relaxed group-hover:text-white/90 transition-colors">
+                            {item.a}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                 );
               })}
             </div>
 
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-sm text-white/60 mb-3">
-                Нужна дополнительная помощь? Посмотри полный справочник или пройди обучение заново.
-              </p>
-              <div className="flex gap-3">
-                <Button variant="secondary" className="flex-1" asChild>
-                  <Link href="/help">Полный справочник</Link>
-                </Button>
-                <Button variant="ghost" className="flex-1" onClick={() => setIsHelpOpen(false)}>
-                  Закрыть
-                </Button>
+            {/* Footer */}
+            <div className="p-6 bg-[#0f081a] border-t border-white/10">
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
+                <p className="text-xs text-white/40 text-center sm:text-left">
+                  Не нашли ответ? <br className="sm:hidden" /> Спросите AI-ассистента или изучите базу знаний.
+                </p>
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <Button
+                    variant="secondary"
+                    className="flex-1 sm:flex-none bg-white/5 hover:bg-white/10 border-white/10"
+                    asChild
+                  >
+                    <Link href="/help">База знаний</Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="flex-1 sm:flex-none hover:bg-white/5"
+                    onClick={() => setIsHelpOpen(false)}
+                  >
+                    Закрыть
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
