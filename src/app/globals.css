@@ -534,186 +534,166 @@ body {
     0 0 40px rgba(255, 0, 148, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 0, 148, 0.3);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-snug);
+  font-weight: 600;
 }
 
-/* Accessibility: Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
+.text-h3 {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-normal);
+  font-weight: 600;
+}
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+.text-body-lg {
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-relaxed);
+}
+
+.text-caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-normal);
+}
+
+@media (max-width: 768px) {
+  .text-hero {
+    font-size: var(--font-size-hero-mobile);
   }
 
   .text-h1 {
-    font-size: var(--font-size-h1);
-    line-height: var(--line-height-snug);
-    font-weight: 700;
+    font-size: var(--font-size-h2);
   }
 
   .text-h2 {
-    font-size: var(--font-size-h2);
-    line-height: var(--line-height-snug);
-    font-weight: 600;
-  }
-
-  .text-h3 {
     font-size: var(--font-size-h3);
-    line-height: var(--line-height-normal);
-    font-weight: 600;
   }
+}
 
-  .text-body-lg {
-    font-size: var(--font-size-body-lg);
-    line-height: var(--line-height-relaxed);
-  }
+/* Spacing Utilities - Section Spacing */
+.section-spacing {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
 
-  .text-caption {
-    font-size: var(--font-size-caption);
-    line-height: var(--line-height-normal);
-  }
+.section-spacing-lg {
+  margin-top: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
 
-  @media (max-width: 768px) {
-    .text-hero {
-      font-size: var(--font-size-hero-mobile);
-    }
+.section-spacing-xl {
+  margin-top: var(--spacing-3xl);
+  margin-bottom: var(--spacing-3xl);
+}
 
-    .text-h1 {
-      font-size: var(--font-size-h2);
-    }
+/* Content spacing between elements */
+.content-spacing>*+* {
+  margin-top: var(--spacing-lg);
+}
 
-    .text-h2 {
-      font-size: var(--font-size-h3);
-    }
-  }
+.content-spacing-tight>*+* {
+  margin-top: var(--spacing-md);
+}
 
-  /* Spacing Utilities - Section Spacing */
-  .section-spacing {
-    margin-top: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-  }
+/* Z-Index Utilities */
+.z-base {
+  z-index: var(--z-base);
+}
 
-  .section-spacing-lg {
-    margin-top: var(--spacing-2xl);
-    margin-bottom: var(--spacing-2xl);
-  }
+.z-content {
+  z-index: var(--z-content);
+}
 
-  .section-spacing-xl {
-    margin-top: var(--spacing-3xl);
-    margin-bottom: var(--spacing-3xl);
-  }
+.z-sticky {
+  z-index: var(--z-sticky);
+}
 
-  /* Content spacing between elements */
-  .content-spacing>*+* {
-    margin-top: var(--spacing-lg);
-  }
+.z-navigation {
+  z-index: var(--z-navigation);
+}
 
-  .content-spacing-tight>*+* {
-    margin-top: var(--spacing-md);
-  }
+.z-dropdown {
+  z-index: var(--z-dropdown);
+}
 
-  /* Z-Index Utilities */
-  .z-base {
-    z-index: var(--z-base);
-  }
+.z-overlay {
+  z-index: var(--z-overlay);
+}
 
-  .z-content {
-    z-index: var(--z-content);
-  }
+.z-modal {
+  z-index: var(--z-modal);
+}
 
-  .z-sticky {
-    z-index: var(--z-sticky);
-  }
+.z-toast {
+  z-index: var(--z-toast);
+}
 
-  .z-navigation {
-    z-index: var(--z-navigation);
-  }
+.z-tooltip {
+  z-index: var(--z-tooltip);
+}
 
-  .z-dropdown {
-    z-index: var(--z-dropdown);
-  }
-
-  .z-overlay {
-    z-index: var(--z-overlay);
-  }
-
-  .z-modal {
-    z-index: var(--z-modal);
-  }
-
-  .z-toast {
-    z-index: var(--z-toast);
-  }
-
-  .z-tooltip {
-    z-index: var(--z-tooltip);
-  }
-
-  /* ============================================
+/* ============================================
    AI ASSISTANT ANIMATIONS
    ============================================ */
 
-  /* Slide in from right animation for desktop chat panel */
-  @keyframes slide-in-right {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
+/* Slide in from right animation for desktop chat panel */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
   }
 
-  .animate-slide-in-right {
-    animation: slide-in-right 0.3s ease-out forwards;
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* Slide up animation for mobile chat */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
   }
 
-  /* Slide up animation for mobile chat */
-  @keyframes slide-up {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+/* Fade in animation for messages */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out forwards;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  /* Fade in animation for messages */
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
 
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
 
+  .animate-slide-in-right,
+  .animate-slide-up,
   .animate-fade-in {
-    animation: fade-in 0.2s ease-out forwards;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
-
-  /* Respect reduced motion preferences */
-  @media (prefers-reduced-motion: reduce) {
-
-    .animate-slide-in-right,
-    .animate-slide-up,
-    .animate-fade-in {
-      animation: none !important;
-      opacity: 1 !important;
-      transform: none !important;
-    }
-  }
+}
