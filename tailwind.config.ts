@@ -43,8 +43,8 @@ const config: Config = {
         'sticky': '20',
         'navigation': '30',
         'dropdown': '40',
-        'overlay': '50',
-        'modal': '60',
+        'overlay': '100',
+        'modal': '110',
         'toast': '70',
         'tooltip': '80'
       },
