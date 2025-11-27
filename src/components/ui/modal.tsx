@@ -93,12 +93,14 @@ export function Modal({
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-overlay bg-black/60 backdrop-blur-sm"
+            style={{ zIndex: 9998 }}
             aria-hidden="true"
           />
 
           {/* Modal */}
           <div
             className="fixed inset-0 z-modal flex items-center justify-center p-4 pointer-events-none"
+            style={{ zIndex: 9999 }}
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? titleId.current : undefined}
