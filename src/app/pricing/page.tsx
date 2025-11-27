@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { PaymentModal } from '@/components/pricing/PaymentModal';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { ArrowLeft, Zap, Sparkles, Crown, ChevronDown, Check, Star } from 'lucide-react';
 import { getCurrentUser } from '@/lib/supabase/auth';
@@ -233,8 +232,6 @@ export default function PricingPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-      <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-12 px-4 py-12 sm:px-6 lg:px-8">

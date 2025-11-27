@@ -8,7 +8,6 @@ import { LANGUAGES } from '@/lib/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { usePlaygroundStore } from '@/store/playground-store';
 import { useTranslations, useLocaleStore } from '@/store/locale-store';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
 import { MagicCard } from '@/components/ui/magic-card';
 import { Console } from '@/components/playground/Console';
@@ -22,7 +21,7 @@ import { cn } from '@/lib/utils';
 const getCodeTemplates = (locale: 'ru' | 'en'): Record<string, string> => {
   const greeting = locale === 'ru' ? 'Привет из Playground!' : 'Hello from Playground!';
   const comment = locale === 'ru' ? 'Пиши свой код здесь!' : 'Write your code here!';
-  
+
   return {
     python: `# Python Playground
 # ${comment}
@@ -108,16 +107,16 @@ export default function PlaygroundPage() {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [showSnippets, setShowSnippets] = useState(false);
   const editorRef = useRef<any>(null);
-  
+
   const { consoleOutput, clearConsole, addConsoleMessage } = usePlaygroundStore();
   const currentLanguage = LANGUAGES.find((lang) => lang.id === selectedLanguage);
-  
+
   const handleLoadSnippet = (snippet: CodeSnippet) => {
     setCode(snippet.code);
     setSelectedLanguage(snippet.language);
     setShowSnippets(false);
   };
-  
+
   useEffect(() => {
     // Cleanup on unmount
     return () => {
@@ -136,7 +135,7 @@ export default function PlaygroundPage() {
   const handleRun = async () => {
     setIsRunning(true);
     setOutput(`⏳ ${t.editor.running}\n\n`);
-    
+
     // Clear console and start intercepting
     clearConsole();
     const interceptor = getConsoleInterceptor();
@@ -164,7 +163,7 @@ export default function PlaygroundPage() {
 
       if (data.success) {
         setOutput(data.output);
-        
+
         // Add output to console
         if (data.output) {
           addConsoleMessage({
@@ -174,7 +173,7 @@ export default function PlaygroundPage() {
         }
       } else {
         setOutput(`❌ ${t.feedback.error}:\n${data.error}\n\n${data.details || ''}`);
-        
+
         // Add error to console
         addConsoleMessage({
           type: 'error',
@@ -182,7 +181,7 @@ export default function PlaygroundPage() {
           stack: data.details
         });
       }
-      
+
       // Capture any console messages from interceptor
       const messages = interceptor.getMessages();
       messages.forEach((msg) => {
@@ -190,11 +189,11 @@ export default function PlaygroundPage() {
       });
     } catch (error) {
       const errorMessage = `❌ ${t.errors.codeCheckFailed}\n\n` +
-          `${t.errors.networkError}\n` +
-          `${t.feedback.error}: ${error instanceof Error ? error.message : t.errors.generic}`;
-      
+        `${t.errors.networkError}\n` +
+        `${t.feedback.error}: ${error instanceof Error ? error.message : t.errors.generic}`;
+
       setOutput(errorMessage);
-      
+
       addConsoleMessage({
         type: 'error',
         message: errorMessage
@@ -223,8 +222,6 @@ export default function PlaygroundPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-      <GradientBackdrop blur className="-z-20" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
       <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 py-16 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -290,8 +287,8 @@ export default function PlaygroundPage() {
                   disabled={isRunning || !code.trim()}
                   className={cn(
                     "h-7 px-3 text-xs font-medium gap-1.5 transition-all",
-                    isRunning 
-                      ? "text-yellow-400 bg-yellow-400/10" 
+                    isRunning
+                      ? "text-yellow-400 bg-yellow-400/10"
                       : "text-green-400 bg-green-400/10 hover:bg-green-400/20 hover:text-green-300"
                   )}
                 >
@@ -467,7 +464,7 @@ export default function PlaygroundPage() {
           </div>
         </MagicCard>
       </div>
-      
+
       <SaveSnippetModal
         isOpen={isSaveModalOpen}
         onClose={() => setIsSaveModalOpen(false)}

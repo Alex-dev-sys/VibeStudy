@@ -4,14 +4,12 @@ import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from '@/store/locale-store';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 
 export default function AnalyticsPage() {
   const t = useTranslations();
 
   return (
     <main id="main-content" className="relative min-h-screen px-4 py-8 sm:px-6 lg:px-8 pt-[72px] md:pt-8 pb-[80px] md:pb-8 overflow-hidden">
-      <GradientBackdrop />
 
       <div className="relative z-10 mx-auto max-w-7xl">
         {/* Back button */}

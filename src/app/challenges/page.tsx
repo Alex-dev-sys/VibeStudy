@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DailyChallenge } from '@/components/challenges/DailyChallenge';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProgressStore } from '@/store/progress-store';
@@ -115,8 +114,6 @@ export default function ChallengesPage() {
   if (isLoading) {
     return (
       <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-        <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-        <GradientBackdrop blur className="-z-20" />
         <div className="relative z-10 flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/10 border-t-accent"></div>
@@ -131,8 +128,6 @@ export default function ChallengesPage() {
   if (selectedChallenge && currentLanguage) {
     return (
       <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-        <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-        <GradientBackdrop blur className="-z-20" />
         <div className="relative z-10 px-4 py-8 max-w-7xl mx-auto">
           <DailyChallenge
             challenge={selectedChallenge}
@@ -147,8 +142,6 @@ export default function ChallengesPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-      <div className="absolute inset-0 -z-30 bg-[var(--hdr-gradient)]" />
-      <GradientBackdrop blur className="-z-20" />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
