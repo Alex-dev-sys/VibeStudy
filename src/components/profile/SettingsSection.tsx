@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useHelpStore } from '@/store/help-store';
+import { useCosmicTheme } from '@/store/cosmic-theme-store';
 import { HelpCircle, Trash2, Settings, AlertTriangle } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { Modal } from '@/components/ui/modal';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export function SettingsSection() {
   const { getMostAccessedTopics } = useHelpStore();
+  const { theme, setTheme } = useCosmicTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleViewHelpStats = () => {
@@ -22,7 +25,7 @@ export function SettingsSection() {
     const message = topTopics
       .map((topic, index) => `${index + 1}. ${topic.topicId}: ${topic.count} раз`)
       .join('\n');
-    
+
     toast.info('Самые просматриваемые темы', message);
   };
 
@@ -32,14 +35,14 @@ export function SettingsSection() {
 
   const confirmDeleteAllData = () => {
     // Clear all localStorage data
-    const keysToDelete = Object.keys(localStorage).filter(key => 
+    const keysToDelete = Object.keys(localStorage).filter(key =>
       key.startsWith('vibestudy-')
     );
-    
+
     keysToDelete.forEach(key => localStorage.removeItem(key));
-    
+
     toast.success('Данные удалены', 'Все локальные данные были удалены. Страница будет перезагружена.');
-    
+
     setTimeout(() => {
       window.location.href = '/';
     }, 1500);
@@ -61,8 +64,67 @@ export function SettingsSection() {
             <p className="text-xs text-white/60">Управление данными</p>
           </div>
         </div>
-        
+
         <div className="space-y-2">
+          {/* Cosmic Theme Selector */}
+          <div className="rounded-lg border border-white/5 bg-white/5 p-3">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
+                ✨
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-white">Космическая тема</p>
+                <p className="text-xs text-white/50">Выбери цвет фона</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setTheme('black')}
+                className={cn(
+                  "relative overflow-hidden rounded-lg border-2 p-3 transition-all duration-300",
+                  theme === 'black'
+                    ? "border-purple-500 ring-2 ring-purple-500/50"
+                    : "border-white/10 hover:border-white/20"
+                )}
+              >
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="h-16 w-full rounded-md bg-gradient-to-b from-purple-900/40 to-blue-900/40 backdrop-blur-sm" />
+                  <span className="text-xs font-medium text-white">Черный</span>
+                </div>
+                {theme === 'black' && (
+                  <motion.div
+                    layoutId="cosmic-theme-indicator"
+                    className="absolute inset-0 bg-purple-500/10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </button>
+
+              <button
+                onClick={() => setTheme('red')}
+                className={cn(
+                  "relative overflow-hidden rounded-lg border-2 p-3 transition-all duration-300",
+                  theme === 'red'
+                    ? "border-pink-500 ring-2 ring-pink-500/50"
+                    : "border-white/10 hover:border-white/20"
+                )}
+              >
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="h-16 w-full rounded-md bg-gradient-to-br from-pink-900/40 via-red-900/40 to-orange-900/40 backdrop-blur-sm" />
+                  <span className="text-xs font-medium text-white">Красный</span>
+                </div>
+                {theme === 'red' && (
+                  <motion.div
+                    layoutId="cosmic-theme-indicator"
+                    className="absolute inset-0 bg-pink-500/10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* Help Statistics */}
           <button
             onClick={handleViewHelpStats}

@@ -9,8 +9,8 @@ import { ReferralWidget } from '@/components/referral/ReferralWidget';
 import { AchievementsPanel } from '@/components/achievements/AchievementsPanel';
 import { StatisticsPanel } from '@/components/statistics/StatisticsPanel';
 import { AnalyticsPanel } from '@/components/statistics/AnalyticsPanel';
-import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
+
 
 export default function ProfilePage() {
   return (
