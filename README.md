@@ -63,6 +63,24 @@
 | 🎯 **C#** | Microsoft | Unity, .NET, Desktop |
 | 🐹 **Go** | Modern | Cloud, Microservices, DevOps |
 
+### ⚔️ Ежедневные Челленджи (Challenges)
+
+Прокачивайте навыки каждый день с новыми задачами:
+
+- **📅 Ежедневные задачи:** Уникальная задача каждый день для выбранного языка.
+- **🏆 История решений:** Отслеживайте свой прогресс и возвращайтесь к прошлым задачам.
+- **⚡ Уровни сложности:** Easy, Medium, Hard - задачи под любой уровень подготовки.
+- **⏱️ Тайминг:** Оценка времени на решение для планирования занятий.
+
+### 💎 Тарифные планы (Pricing)
+
+Гибкая система подписки для доступа к расширенным возможностям:
+
+- **Starter (Free):** Базовый доступ, 5 AI-запросов в день.
+- **Premium:** Безлимитный AI (GPT-4o), приоритетная генерация.
+- **Pro+:** Максимальная мощность (Claude 3.5 Sonnet), мгновенная генерация, персональный ментор.
+- **💳 Оплата TON:** Современная и быстрая оплата криптовалютой TON.
+
 ### 🎮 Геймификация, которая работает
 
 **21 достижение** в 4 категориях:
@@ -83,7 +101,7 @@
 **Начните сразу или синхронизируйте позже:**
 
 ```
-� ГостАевой режим
+👤 Гостевой режим
    └─ Все функции доступны
    └─ Прогресс в браузере
    └─ Без регистрации
@@ -207,7 +225,7 @@ npm run start        # ▶️  Production server
 
 ---
 
-## � Настсройка интеграций
+## ⚙️ Настройка интеграций
 
 ### 🤖 GPT Lama API (обязательно для AI)
 
@@ -285,11 +303,15 @@ VibeStudy/
 │   │   ├── learn/               # 📚 Главный интерфейс обучения
 │   │   ├── profile/             # 👤 Профиль пользователя
 │   │   ├── playground/          # 🎮 Песочница для кода
+│   │   ├── challenges/          # ⚔️ Ежедневные задачи
+│   │   ├── pricing/             # 💎 Тарифы и оплата
 │   │   ├── analytics/           # 📊 Статистика и графики
 │   │   └── api/                 # 🔌 API endpoints
 │   │       ├── generate-tasks/  # AI генерация
 │   │       ├── check-code/      # Проверка кода
 │   │       ├── execute-code/    # Выполнение кода
+│   │       ├── challenges/      # API задач
+│   │       ├── ton/             # API оплаты TON
 │   │       └── telegram/        # Telegram webhook
 │   │
 │   ├── components/              # ⚛️ React компоненты
@@ -299,6 +321,8 @@ VibeStudy/
 │   │   ├── statistics/          # Графики и аналитика
 │   │   ├── profile/             # Компоненты профиля
 │   │   ├── playground/          # Monaco Editor
+│   │   ├── challenges/          # Компоненты задач
+│   │   ├── pricing/             # Компоненты оплаты
 │   │   └── landing/             # Landing page
 │   │
 │   ├── lib/                     # 🛠️ Бизнес-логика
@@ -359,6 +383,7 @@ VibeStudy/
 - 🗄️ Supabase (PostgreSQL)
 - 🤖 GPT Lama API (GPT-4o-mini)
 - 📱 Telegram Bot API
+- 💎 TON Blockchain (Payments)
 - 🔐 Supabase Auth
 - 💾 Zustand + localStorage
 
@@ -523,7 +548,7 @@ npm run health-check     # Проверка здоровья сервиса
 - 📘 [**FEATURES.md**](FEATURES.md) — Полное описание всех возможностей
 - 🔐 [**AUTH_QUICK_START.md**](AUTH_QUICK_START.md) — Быстрая настройка аутентификации
 - ☁️ [**SUPABASE_SETUP.md**](SUPABASE_SETUP.md) — Настройка Supabase
-- � [**TEнLEGRAM_BOT_SETUP.md**](TELEGRAM_BOT_SETUP.md) — Настройка Telegram бота
+- 📱 [**TELEGRAM_BOT_SETUP.md**](TELEGRAM_BOT_SETUP.md) — Настройка Telegram бота
 - 🚀 [**DEPLOY_INSTRUCTIONS.md**](DEPLOY_INSTRUCTIONS.md) — Деплой на Vercel
 - 🧪 [**tests/README.md**](tests/README.md) — Тестирование
 
