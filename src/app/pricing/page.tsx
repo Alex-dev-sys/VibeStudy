@@ -7,10 +7,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { PaymentModal } from '@/components/pricing/PaymentModal';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
-import { ArrowLeft, Zap, Sparkles, Crown, ChevronDown, Check, Star } from 'lucide-react';
+import { ArrowLeft, Zap, Sparkles, Crown, Check, Star } from 'lucide-react';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { requireSupabaseClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 
 interface PaymentData {
   id: string;
@@ -232,7 +233,7 @@ export default function PricingPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden text-white pt-[72px] md:pt-0 pb-[80px] md:pb-0">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]" />
+      <GradientBackdrop />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-12 px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
@@ -241,7 +242,7 @@ export default function PricingPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white hover:bg-white/5"
             >
               <ArrowLeft className="h-4 w-4" />
               Назад к обучению
@@ -249,22 +250,36 @@ export default function PricingPage() {
           </Link>
 
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/20 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/20 backdrop-blur-md"
+            >
               <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_currentColor]" />
               Доступен ранний доступ
-            </div>
+            </motion.div>
 
-            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl"
+            >
               Инвестируйте в своё <br className="hidden sm:block" />
               <span className="relative inline-block">
                 <span className="absolute -inset-1 block -skew-y-2 bg-gradient-to-r from-purple-600 to-pink-600 opacity-40 blur-lg" aria-hidden="true" />
                 <AnimatedGradientText className="relative">будущее</AnimatedGradientText>
               </span>
-            </h1>
+            </motion.h1>
 
-            <p className="mx-auto max-w-2xl text-lg text-white/70 sm:text-xl leading-relaxed">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mx-auto max-w-2xl text-lg text-white/70 sm:text-xl leading-relaxed"
+            >
               Получите доступ к передовым AI-моделям, персональным рекомендациям и ускоренному обучению.
-            </p>
+            </motion.p>
           </div>
         </header>
 
@@ -273,10 +288,11 @@ export default function PricingPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
             className="mx-auto w-full max-w-2xl"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-              <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-[#ffd200]/5" />
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-accent/10 to-[#ffd200]/10" />
               <div className="relative flex items-center justify-between">
                 <div>
                   <p className="text-sm text-white/60">Ваш текущий план</p>
@@ -306,17 +322,17 @@ export default function PricingPage() {
                 key={tier.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.4 + index * 0.1 }}
                 className={cn(
-                  "relative flex flex-col rounded-3xl border p-8 transition-all duration-300",
+                  "relative flex flex-col rounded-3xl border p-8 transition-all duration-300 backdrop-blur-xl",
                   tier.highlighted
                     ? "bg-white/10 border-white/20 shadow-2xl shadow-accent/10 lg:-mt-8 lg:mb-8 z-10"
-                    : "bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20",
+                    : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 hover:-translate-y-1",
                   isCurrent && "ring-2 ring-accent ring-offset-2 ring-offset-[#0c061c]"
                 )}
               >
                 {tier.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] px-4 py-1.5 text-xs font-bold text-white shadow-lg">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ff5bc8] px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-accent/50">
                     РЕКОМЕНДУЕМ
                   </div>
                 )}
@@ -361,8 +377,10 @@ export default function PricingPage() {
                   variant={tier.highlighted ? 'primary' : 'secondary'}
                   size="lg"
                   className={cn(
-                    "w-full rounded-xl",
-                    tier.highlighted ? "shadow-lg shadow-accent/25" : "bg-white/10 hover:bg-white/20"
+                    "w-full rounded-xl transition-all duration-300",
+                    tier.highlighted 
+                      ? "shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-[1.02]" 
+                      : "bg-white/10 hover:bg-white/20 hover:text-white"
                   )}
                   onClick={() => handleSelectTier(tier.id)}
                   disabled={isLoading || isCurrent || isFree}
@@ -376,9 +394,14 @@ export default function PricingPage() {
 
         {/* FAQ Section */}
         <section className="mt-16 max-w-3xl mx-auto w-full">
-          <h2 className="mb-10 text-center text-2xl font-bold text-white">
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mb-10 text-center text-2xl font-bold text-white"
+          >
             Часто задаваемые вопросы
-          </h2>
+          </motion.h2>
 
           <div className="space-y-4">
             {[
@@ -395,10 +418,17 @@ export default function PricingPage() {
                 a: "Система проверяет транзакции каждые несколько секунд. Если вы отправили средства, но доступ не открылся в течение 5 минут — напишите в поддержку, мы мгновенно всё решим."
               }
             ].map((faq, i) => (
-              <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/8">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md transition-colors hover:bg-white/10"
+              >
                 <h3 className="text-lg font-semibold text-white mb-2">{faq.q}</h3>
                 <p className="text-white/60 leading-relaxed">{faq.a}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -406,7 +436,7 @@ export default function PricingPage() {
         {/* Bottom CTA */}
         <div className="mt-8 text-center pb-12">
           <p className="text-white/50 text-sm">
-            Есть вопросы? Пишите нам в <a href="https://t.me/vibestudy_support" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Telegram поддержку</a>
+            Есть вопросы? Пишите нам в <a href="https://t.me/vibestudy_support" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline hover:text-accent/80 transition-colors">Telegram поддержку</a>
           </p>
         </div>
 
