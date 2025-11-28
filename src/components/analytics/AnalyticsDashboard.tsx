@@ -1,98 +1,113 @@
 import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { LearningVelocityChart } from './LearningVelocityChart';
 import { TopicMasteryRadar } from './TopicMasteryRadar';
 import { WeakAreasPanel } from './WeakAreasPanel';
 import { ProgressPrediction } from './ProgressPrediction';
 import { WeeklySummary } from './WeeklySummary';
 import { useAnalyticsStore } from '@/store/analytics-store';
+import { cn } from '@/lib/utils';
+import { Lightbulb, Sparkles } from 'lucide-react';
+
+// Reusable Bento Card Component (Local version for dashboard)
+const BentoCard = ({
+  className,
+  children,
+  glowColor = "none",
+  delay = 0
+}: {
+  className?: string,
+  children: React.ReactNode,
+  glowColor?: "purple" | "pink" | "orange" | "blue" | "green" | "none",
+  delay?: number
+}) => {
+  const glowStyles = {
+    purple: "hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.4)] hover:border-purple-500/50",
+    pink: "hover:shadow-[0_0_30px_-5px_rgba(236,72,153,0.4)] hover:border-pink-500/50",
+    orange: "hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.4)] hover:border-orange-500/50",
+    blue: "hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.4)] hover:border-blue-500/50",
+    green: "hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.4)] hover:border-green-500/50",
+    none: "hover:border-white/20"
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay }}
+      className={cn(
+        "relative overflow-hidden rounded-3xl border border-white/5 bg-[#0a0a0a]/80 backdrop-blur-xl transition-all duration-500",
+        glowStyles[glowColor],
+        className
+      )}
+    >
+      <div className="relative z-10 h-full p-6">{children}</div>
+      {/* Inner subtle gradient */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-white/[0.03] to-transparent" />
+    </motion.div>
+  );
+};
 
 export function AnalyticsDashboard() {
   const { recommendations } = useAnalyticsStore();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-8"
-    >
-      {/* Weekly Summary - Full Width */}
-      <section>
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(180px,auto)]">
+
+      {/* Weekly Summary - Full Width Top */}
+      <BentoCard className="md:col-span-12" glowColor="blue" delay={0}>
         <WeeklySummary />
-      </section>
+      </BentoCard>
 
-      {/* Main Charts Grid */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="h-full"
-        >
-          <LearningVelocityChart />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="h-full"
-        >
-          <TopicMasteryRadar />
-        </motion.div>
-      </div>
+      {/* Learning Velocity - Large Chart */}
+      <BentoCard className="md:col-span-8 md:row-span-2 min-h-[400px]" glowColor="purple" delay={0.1}>
+        <LearningVelocityChart />
+      </BentoCard>
 
-      {/* Weak Areas and Predictions */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <WeakAreasPanel />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <ProgressPrediction />
-        </motion.div>
-      </div>
+      {/* Topic Mastery - Radar Chart */}
+      <BentoCard className="md:col-span-4 md:row-span-2 min-h-[400px]" glowColor="pink" delay={0.2}>
+        <TopicMasteryRadar />
+      </BentoCard>
+
+      {/* Weak Areas */}
+      <BentoCard className="md:col-span-6 min-h-[300px]" glowColor="orange" delay={0.3}>
+        <WeakAreasPanel />
+      </BentoCard>
+
+      {/* Progress Prediction */}
+      <BentoCard className="md:col-span-6 min-h-[300px]" glowColor="green" delay={0.4}>
+        <ProgressPrediction />
+      </BentoCard>
 
       {/* Recommendations */}
       {recommendations.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card className="glass-panel-enhanced border-white/10 bg-white/5 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <span className="text-yellow-400">💡</span>
-                Персональные рекомендации
-              </CardTitle>
-            </CardHeader>
-            <div className="grid gap-4 px-6 pb-6 sm:grid-cols-2 lg:grid-cols-3">
-              {recommendations.map((rec, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-5 transition-all hover:bg-white/10 hover:shadow-lg hover:-translate-y-1"
-                >
-                  <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-xl transition-all group-hover:scale-150" />
-                  <div className="relative flex gap-3">
-                    <span className="text-2xl">✨</span>
-                    <p className="text-sm leading-relaxed text-white/80">{rec}</p>
-                  </div>
-                </motion.div>
-              ))}
+        <BentoCard className="md:col-span-12" glowColor="none" delay={0.5}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400">
+              <Lightbulb className="h-6 w-6" />
             </div>
-          </Card>
-        </motion.section>
+            <h3 className="text-xl font-bold text-white">Персональные рекомендации</h3>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recommendations.map((rec, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/5 p-5 transition-all hover:bg-white/10 hover:border-white/10"
+              >
+                <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-xl transition-all group-hover:scale-150" />
+                <div className="relative flex gap-3">
+                  <Sparkles className="h-5 w-5 text-yellow-400 shrink-0 mt-1" />
+                  <p className="text-sm leading-relaxed text-white/80">{rec}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </BentoCard>
       )}
-    </motion.div>
+    </div>
   );
 }
