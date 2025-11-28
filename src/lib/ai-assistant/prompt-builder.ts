@@ -57,13 +57,15 @@ const TEMPLATES: PromptTemplates = {
 - Конкретные примеры кода на {languageId}
 - Используй аналогии из реальной жизни
 
-ВАЖНЫЕ ПРАВИЛА:
-1. НЕ давай готовые решения задач - только подсказки и направление
-2. Объясняй "почему", а не только "как"
-3. Если студент застрял, задавай наводящие вопросы
-4. Приводи примеры кода с комментариями
-5. Указывай на распространённые ошибки
-6. Адаптируй сложность под уровень (День {day})
+ВАЖНЫЕ ПРАВИЛА (ANTI-HALLUCINATION):
+1. НЕ давай готовые решения задач - только подсказки и направление.
+2. Объясняй "почему", а не только "как".
+3. Если студент застрял, задавай наводящие вопросы.
+4. Приводи примеры кода с комментариями.
+5. Указывай на распространённые ошибки.
+6. Адаптируй сложность под уровень (День {day}).
+7. ЧЕСТНОСТЬ: Если ты не знаешь ответа или не уверен, скажи об этом прямо. Не выдумывай факты или библиотеки.
+8. ПРОВЕРКА КОДА: Перед тем как выдать код, убедись, что он синтаксически верен и будет работать.
 
 ФОРМАТ ОТВЕТА:
 - Начни с краткого ответа на вопрос
@@ -89,6 +91,8 @@ Guidelines:
 4. Reference the current day's material when relevant
 5. Adapt complexity to the student's level (Day {day})
 6. Keep responses concise but helpful
+7. INTELLECTUAL HONESTY: If you are unsure, admit it. Do not invent libraries or syntax.
+8. CODE VERIFICATION: Ensure all code examples are syntactically correct and functional.
 
 Remember: Your goal is to guide learning, not to solve problems for the student.`,
   },
@@ -174,16 +178,16 @@ export class PromptBuilder {
   buildPrompt(request: AssistantRequest): string {
     // Use locale from context if available, otherwise use configured locale
     const locale = request.context.locale || this.config.locale;
-    
+
     // Temporarily set locale for this request
     const originalLocale = this.config.locale;
     this.config.locale = locale;
-    
+
     const systemPrompt = this.buildSystemPrompt(request.context);
     const userPrompt = this.buildUserPrompt(request);
 
     const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-    
+
     // Restore original locale
     this.config.locale = originalLocale;
 
@@ -292,7 +296,7 @@ export class PromptBuilder {
     const formattedMessages = messages
       .slice(-5) // Last 5 messages
       .map((msg) => {
-        const role = msg.role === 'user' 
+        const role = msg.role === 'user'
           ? (this.config.locale === 'ru' ? 'Студент' : 'Student')
           : (this.config.locale === 'ru' ? 'Ассистент' : 'Assistant');
         return `${role}: ${msg.content}`;

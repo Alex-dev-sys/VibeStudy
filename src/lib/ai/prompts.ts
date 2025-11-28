@@ -1,22 +1,22 @@
 export interface PromptParams {
-    day: number;
-    languageId: string;
-    dayTopic?: string;
-    dayDescription?: string;
-    previousDaySummary?: string;
+   day: number;
+   languageId: string;
+   dayTopic?: string;
+   dayDescription?: string;
+   previousDaySummary?: string;
 }
 
 export interface ExtendedRequestBody extends PromptParams {
-    theorySummary: string;
-    locale?: 'ru' | 'en';
+   theorySummary: string;
+   locale?: 'ru' | 'en';
 }
 
 export const buildPrompt = ({ day, languageId, dayTopic, dayDescription, previousDaySummary, locale = 'ru' }: ExtendedRequestBody) => {
-    const params: PromptParams = { day, languageId, dayTopic, dayDescription, previousDaySummary };
-    if (locale === 'en') {
-        return buildEnglishPrompt(params);
-    }
-    return buildRussianPrompt(params);
+   const params: PromptParams = { day, languageId, dayTopic, dayDescription, previousDaySummary };
+   if (locale === 'en') {
+      return buildEnglishPrompt(params);
+   }
+   return buildRussianPrompt(params);
 };
 
 const buildRussianPrompt = ({ day, languageId, dayTopic, dayDescription, previousDaySummary }: PromptParams) => `Ты — опытный преподаватель программирования. Создай учебный материал для дня ${day} из 90-дневного курса.
@@ -30,7 +30,13 @@ const buildRussianPrompt = ({ day, languageId, dayTopic, dayDescription, previou
 УРОВЕНЬ УЧЕНИКА: ${day <= 10 ? 'АБСОЛЮТНЫЙ НОВИЧОК (ничего не знает)' : day <= 30 ? 'НАЧИНАЮЩИЙ (знает только базу)' : day <= 60 ? 'ПРОДОЛЖАЮЩИЙ' : 'ПРОДВИНУТЫЙ'}
 ═══════════════════════════════════════
 
-⚠️ УЧИТЫВАЙ ПРОГРЕСС ОБУЧЕНИЯ:
+⚠️ КРИТИЧЕСКИ ВАЖНЫЕ ПРАВИЛА (ANTI-HALLUCINATION):
+1. НЕ выдумывай функции или методы, которых нет в стандартной библиотеке ${languageId}.
+2. НЕ используй синтаксис из других языков.
+3. ПРОВЕРЯЙ каждый пример кода: он должен быть рабочим и синтаксически верным.
+4. Если ты не уверен в существовании метода, используй более простой и проверенный способ.
+
+⚠️ УЧИТЫВАЙ ПРОГРЕСС ОБУЧЕНИЯ (СТРОГИЕ ОГРАНИЧЕНИЯ):
 ${day === 1 ? '- Это ПЕРВЫЙ день! Ученик НИЧЕГО не знает о программировании\n- НЕ используй термины, которые ещё не изучались\n- Только самые базовые концепции темы "${dayTopic}"' : ''}
 ${day <= 10 ? '- Дни 1-10: только БАЗОВЫЙ синтаксис, НЕТ сложных конструкций\n- Ученик только начинает, не знает циклов, функций, классов, списков\n- ЗАПРЕЩЕНО: циклы (for, while), функции (def), списки ([]), словари ({}), условия (if)' : ''}
 ${day <= 30 ? '- Дни 11-30: можно использовать базовые конструкции из предыдущих дней' : ''}
@@ -62,6 +68,7 @@ ${day <= 30 ? '- Дни 11-30: можно использовать базовы�
    - Примеры от простого к сложному
    - Весь код на языке ${languageId}
    - Формат: сначала описание, потом код
+   - ВАЖНО: Код должен быть рабочим!
 
 4. ВАЖНЫЕ ЗАМЕЧАНИЯ:
    - 1-2 важных момента, которые нужно запомнить
@@ -206,7 +213,13 @@ PREVIOUS TOPIC: ${previousDaySummary ?? 'First day of the course'}
 STUDENT LEVEL: ${day <= 10 ? 'ABSOLUTE BEGINNER (knows nothing)' : day <= 30 ? 'BEGINNER (knows only basics)' : day <= 60 ? 'INTERMEDIATE' : 'ADVANCED'}
 ═══════════════════════════════════════
 
-⚠️ CONSIDER LEARNING PROGRESS:
+⚠️ CRITICAL RULES (ANTI-HALLUCINATION):
+1. DO NOT invent functions or methods that do not exist in the standard ${languageId} library.
+2. DO NOT use syntax from other languages.
+3. VERIFY every code example: it must be working and syntactically correct.
+4. If you are unsure about a method's existence, use a simpler and verified approach.
+
+⚠️ CONSIDER LEARNING PROGRESS (STRICT CONSTRAINTS):
 ${day === 1 ? '- This is the FIRST day! Student knows NOTHING about programming\n- DO NOT use terms that haven\'t been studied yet\n- Only the most basic concepts of "${dayTopic}"' : ''}
 ${day <= 10 ? '- Days 1-10: only BASIC syntax, NO complex constructs\n- Student is just starting, doesn\'t know loops, functions, classes, lists\n- FORBIDDEN: loops (for, while), functions (def), lists ([]), dictionaries ({}), conditions (if)' : ''}
 ${day <= 30 ? '- Days 11-30: can use basic constructs from previous days' : ''}
@@ -238,6 +251,7 @@ THEORY FORMAT (must follow this structure):
    - Examples from simple to complex
    - All code in ${languageId}
    - Format: description first, then code
+   - IMPORTANT: Code must be working!
 
 4. IMPORTANT NOTES:
    - 1-2 important points to remember
@@ -371,3 +385,4 @@ ${day <= 8 ? '\n⚠️ DAYS 1-8: FORBIDDEN to use loops (for, while), functions 
 ${day === 2 ? '\n⚠️ DAY 2 "Variables": Tasks ONLY about creating variables, assigning values, output, input, simple calculations\n⚠️ DO NOT use: type checks (isinstance, type), comparison operators, conditions, loops, functions' : ''}
 - Return ONLY valid JSON without comments
 - ALL TEXT IN ENGLISH (theory, tasks, hints)`;
+
