@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { LearningVelocityChart } from './LearningVelocityChart';
 import { TopicMasteryRadar } from './TopicMasteryRadar';
@@ -49,7 +50,40 @@ const BentoCard = ({
 };
 
 export function AnalyticsDashboard() {
-  const { recommendations } = useAnalyticsStore();
+  const { recommendations, isLoading, error, loadFromServer } = useAnalyticsStore();
+
+  // Load analytics from server on mount
+  React.useEffect(() => {
+    loadFromServer();
+  }, [loadFromServer]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-500 border-r-transparent"></div>
+          <p className="mt-4 text-white/60">Загрузка аналитики...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center text-red-400">
+          <p>Ошибка загрузки аналитики</p>
+          <p className="text-sm text-white/60 mt-2">{error}</p>
+          <button
+            onClick={loadFromServer}
+            className="mt-4 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition"
+          >
+            Повторить
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(180px,auto)]">
