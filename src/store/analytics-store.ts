@@ -238,13 +238,22 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
         try {
           const response = await fetch('/api/analytics/insights');
 
+          console.log('[Analytics] Response status:', response.status);
+
           if (!response.ok) {
-            throw new Error('Failed to fetch analytics');
+            if (response.status === 401) {
+              throw new Error('Необходима авторизация');
+            } else if (response.status === 500) {
+              const errorText = await response.text();
+              console.error('[Analytics] Server error:', errorText);
+              throw new Error('Данные аналитики временно недоступны');
+            }
+            throw new Error(`Ошибка ${response.status}`);
           }
 
           const data = await response.json();
+          console.log('[Analytics] Data loaded');
 
-          // Update store with server data
           set({
             topicMastery: data.topicMastery || {},
             learningVelocity: data.learningVelocity || defaultVelocity,
@@ -253,10 +262,14 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
             isLoading: false
           });
         } catch (error) {
-          console.error('Error loading analytics:', error);
+          console.error('[Analytics] Error:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to load analytics',
-            isLoading: false
+            error: error instanceof Error ? error.message : 'Не удалось загрузить аналитику',
+            isLoading: false,
+            topicMastery: {},
+            learningVelocity: defaultVelocity,
+            weakAreas: [],
+            recommendations: []
           });
         }
       },
