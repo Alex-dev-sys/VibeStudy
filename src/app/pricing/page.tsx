@@ -1,4 +1,6 @@
 'use client';
+// Force rebuild: Premium page redesign
+
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -250,7 +252,7 @@ export default function PricingPage() {
           </Link>
 
           <div className="space-y-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/20 backdrop-blur-md"
@@ -259,7 +261,7 @@ export default function PricingPage() {
               Доступен ранний доступ
             </motion.div>
 
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -272,7 +274,7 @@ export default function PricingPage() {
               </span>
             </motion.h1>
 
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -378,8 +380,8 @@ export default function PricingPage() {
                   size="lg"
                   className={cn(
                     "w-full rounded-xl transition-all duration-300",
-                    tier.highlighted 
-                      ? "shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-[1.02]" 
+                    tier.highlighted
+                      ? "shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:scale-[1.02]"
                       : "bg-white/10 hover:bg-white/20 hover:text-white"
                   )}
                   onClick={() => handleSelectTier(tier.id)}
@@ -394,7 +396,7 @@ export default function PricingPage() {
 
         {/* FAQ Section */}
         <section className="mt-16 max-w-3xl mx-auto w-full">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -418,8 +420,8 @@ export default function PricingPage() {
                 a: "Система проверяет транзакции каждые несколько секунд. Если вы отправили средства, но доступ не открылся в течение 5 минут — напишите в поддержку, мы мгновенно всё решим."
               }
             ].map((faq, i) => (
-              <motion.div 
-                key={i} 
+              <motion.div
+                key={i}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
