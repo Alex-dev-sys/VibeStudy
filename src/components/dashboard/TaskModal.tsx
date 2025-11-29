@@ -9,7 +9,6 @@ import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
 import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
-import { useScrollLock } from '@/hooks/useScrollLock';
 import { useTranslations, useLocaleStore } from '@/store/locale-store';
 import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 
@@ -74,7 +73,7 @@ export function TaskModal({
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
   const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
 
-  useScrollLock(isOpen);
+  // Не блокируем скролл страницы - пользователь может скроллить весь сайт
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -101,12 +100,7 @@ export function TaskModal({
       setEditorError(false);
       setShowConfetti(false);
       
-      // Автопрокрутка к началу модального окна при открытии
-      setTimeout(() => {
-        if (modalContentRef.current) {
-          modalContentRef.current.scrollTop = 0;
-        }
-      }, 100);
+      // Не нужна автопрокрутка, так как страница может скроллиться
     }
   }, [isOpen, task.id]);
 
@@ -256,21 +250,12 @@ export function TaskModal({
   return (
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-y-auto"
-        style={{ paddingTop: '1rem', paddingBottom: '1rem' }}
+        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6"
+        style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
         onClick={(e) => {
           // Закрываем модальное окно при клике на фон
           if (e.target === e.currentTarget) {
             onClose();
-          }
-        }}
-        onTouchMove={(e) => {
-          // Разрешаем скролл внутри модального окна на мобильных устройствах
-          const target = e.target as HTMLElement;
-          const modalContent = target.closest('.modal-scroll-container');
-          if (!modalContent || modalContent === e.currentTarget) {
-            // Если событие не внутри модального контента, не блокируем
-            return;
           }
         }}
       >
@@ -289,23 +274,13 @@ export function TaskModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel-foreground modal-scroll-container relative flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col gap-3 overflow-y-auto overflow-x-hidden rounded-2xl p-4 sm:max-h-[calc(100vh-2rem)] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8 my-2"
+          className="glass-panel-foreground relative flex w-full max-w-5xl flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
           style={{ 
-            maxHeight: 'calc(100vh - 2rem)',
-            overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch', // Для плавного скролла на iOS
-            scrollBehavior: 'smooth'
+            pointerEvents: 'auto',
+            maxWidth: '90vw'
           }}
           onClick={(e) => {
             // Предотвращаем закрытие при клике внутри модального окна
-            e.stopPropagation();
-          }}
-          onWheel={(e) => {
-            // Позволяем скролл внутри модального окна
-            e.stopPropagation();
-          }}
-          onTouchStart={(e) => {
-            // Разрешаем touch-события для скролла
             e.stopPropagation();
           }}
         >

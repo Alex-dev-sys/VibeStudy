@@ -9,6 +9,11 @@ import {
   RATE_LIMIT_REQUESTS_PER_MINUTE,
   RATE_LIMIT_WINDOW_MS
 } from "@/lib/telegram/constants";
+import {
+  recordUpdate,
+  recordError,
+  recordRateLimit
+} from "../health/route";
 
 /**
  * Rate limiting implementation
@@ -115,6 +120,7 @@ export async function POST(request: NextRequest) {
     // Check rate limit
     if (!checkRateLimit(userId)) {
       logWarn(`Rate limit exceeded for user ${userId}`);
+      recordRateLimit();
 
       // Send rate limit message
       const chatId =
@@ -134,15 +140,27 @@ export async function POST(request: NextRequest) {
       update.message.text = sanitizeInput(update.message.text);
     }
 
+    // Extract command for metrics
+    const command = update.message?.text?.startsWith('/')
+      ? update.message.text.split(' ')[0]
+      : undefined;
+
     // Process update asynchronously (don't wait for completion)
-    botController.handleMessage(update).catch((error) => {
-      logError("Error processing update:", error as Error);
-    });
+    botController.handleMessage(update)
+      .then(() => {
+        recordUpdate(true, command);
+      })
+      .catch((error) => {
+        logError("Error processing update:", error as Error);
+        recordUpdate(false, command);
+        recordError(error.message || 'Unknown error');
+      });
 
     // Respond immediately to Telegram
     return NextResponse.json({ ok: true });
   } catch (error) {
     logError("Webhook error:", error as Error);
+    recordError((error as Error).message || 'Webhook error');
 
     // Still return 200 to prevent Telegram from retrying
     return NextResponse.json({ ok: true });

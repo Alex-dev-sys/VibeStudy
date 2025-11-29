@@ -1,4 +1,4 @@
-import type { InlineKeyboard } from '@/types/telegram';
+import type { InlineKeyboard, ReplyKeyboardMarkup } from '@/types/telegram';
 
 export function getMainMenuKeyboard(): InlineKeyboard {
     return {
@@ -80,4 +80,20 @@ export function getPaginationKeyboard(
     buttons.push([{ text: '🔙 Назад', callback_data: 'btn_menu' }]);
 
     return { inline_keyboard: buttons };
+}
+
+
+
+export function getPersistentMainKeyboard(): ReplyKeyboardMarkup {
+    return {
+        keyboard: [
+            [{ text: '📊 Статистика' }, { text: '📚 Уроки' }],
+            [{ text: '💻 Code Runner' }, { text: '❓ Помощь' }],
+            [{ text: '📅 Прогресс' }, { text: '🏆 Рейтинг' }],
+            [{ text: '🎓 Совет' }, { text: '⏰ Напоминания' }],
+            [{ text: '👤 Профиль' }, { text: '⚙️ Настройки' }]
+        ],
+        resize_keyboard: true,
+        is_persistent: true
+    };
 }

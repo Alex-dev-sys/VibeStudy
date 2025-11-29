@@ -3,7 +3,7 @@
  * Handles TON payment creation, verification, and transaction monitoring
  */
 
-import { Address } from '@ton/ton';
+import { Address } from '@ton/core';
 import TonWeb from 'tonweb';
 
 // Pricing configuration in TON

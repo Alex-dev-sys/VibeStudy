@@ -39,11 +39,11 @@ export interface ReminderSchedule {
   updated_at: string;
 }
 
-export type ReminderType = 
-  | 'daily_study' 
-  | 'streak_protection' 
-  | 'milestone' 
-  | 'weekly_report' 
+export type ReminderType =
+  | 'daily_study'
+  | 'streak_protection'
+  | 'milestone'
+  | 'weekly_report'
   | 'daily_digest';
 
 export interface TelegramMessage {
@@ -56,11 +56,11 @@ export interface TelegramMessage {
   created_at: string;
 }
 
-export type MessageType = 
-  | 'user_message' 
-  | 'bot_response' 
-  | 'reminder' 
-  | 'notification' 
+export type MessageType =
+  | 'user_message'
+  | 'bot_response'
+  | 'reminder'
+  | 'notification'
   | 'system';
 
 export interface MessageMetadata {
@@ -187,10 +187,27 @@ export interface InlineButton {
   url?: string;
 }
 
+export interface ReplyKeyboardMarkup {
+  keyboard: KeyboardButton[][];
+  is_persistent?: boolean;
+  resize_keyboard?: boolean;
+  one_time_keyboard?: boolean;
+  input_field_placeholder?: string;
+  selective?: boolean;
+}
+
+export interface KeyboardButton {
+  text: string;
+  request_contact?: boolean;
+  request_location?: boolean;
+  request_poll?: any;
+  web_app?: any;
+}
+
 export interface BotMessage {
   text: string;
   parseMode?: 'Markdown' | 'HTML';
-  replyMarkup?: InlineKeyboard;
+  replyMarkup?: InlineKeyboard | ReplyKeyboardMarkup;
   disableWebPagePreview?: boolean;
   disableNotification?: boolean;
 }
@@ -198,7 +215,7 @@ export interface BotMessage {
 export interface BotResponse {
   text: string;
   parseMode?: 'Markdown' | 'HTML';
-  replyMarkup?: InlineKeyboard;
+  replyMarkup?: InlineKeyboard | ReplyKeyboardMarkup;
   disableNotification?: boolean;
 }
 

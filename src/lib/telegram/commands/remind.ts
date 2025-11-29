@@ -1,6 +1,8 @@
 // /remind Command Handler
+// Smart adaptive reminder configuration
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
+import { getReminderSchedule, getTelegramProfile } from '../database';
 
 export async function handleRemindCommand(
   userId: string,
@@ -15,33 +17,65 @@ export async function handleRemindCommand(
     };
   }
 
+  // Get current reminder settings
+  const { data: profile } = await getTelegramProfile(userId);
+  const { data: reminders } = await getReminderSchedule(userId);
+
+  const hasReminders = reminders && reminders.length > 0;
+  const dailyReminder = reminders?.find(r => r.reminder_type === 'daily_study');
+  const streakReminder = reminders?.find(r => r.reminder_type === 'streak_protection');
+
+  const currentTime = dailyReminder?.scheduled_time || 'не установлено';
+  const adaptiveMode = dailyReminder?.adaptive_mode || false;
+  const dndSettings = profile?.preferences?.do_not_disturb_start
+    ? `${profile.preferences.do_not_disturb_start} - ${profile.preferences.do_not_disturb_end}`
+    : 'не установлено';
+
   const keyboard: InlineKeyboard = {
     inline_keyboard: [
       [
-        { text: '🌅 Утро (9:00)', callback_data: 'remind:morning' },
-        { text: '☀️ День (14:00)', callback_data: 'remind:afternoon' }
+        { text: '🌅 Утро (9:00)', callback_data: 'remind:time:09:00' },
+        { text: '☀️ День (14:00)', callback_data: 'remind:time:14:00' }
       ],
       [
-        { text: '🌆 Вечер (19:00)', callback_data: 'remind:evening' },
-        { text: '🌙 Ночь (22:00)', callback_data: 'remind:night' }
+        { text: '🌆 Вечер (19:00)', callback_data: 'remind:time:19:00' },
+        { text: '🌙 Ночь (22:00)', callback_data: 'remind:time:22:00' }
       ],
       [
-        { text: '⏰ Свое время', callback_data: 'remind:custom' },
-        { text: '🔕 Отключить', callback_data: 'remind:off' }
+        { text: adaptiveMode ? '🤖 Адаптивный ✓' : '🤖 Адаптивный режим',
+          callback_data: 'remind:toggle:adaptive' },
+        { text: streakReminder?.enabled ? '🔥 Защита серии ✓' : '🔥 Защита серии',
+          callback_data: 'remind:toggle:streak' }
+      ],
+      [
+        { text: '😴 DND режим', callback_data: 'remind:dnd' },
+        { text: hasReminders ? '🔕 Отключить все' : '🔔 Включить',
+          callback_data: 'remind:toggle:all' }
+      ],
+      [
+        { text: '🔙 Назад', callback_data: 'btn_menu' }
       ]
     ]
   };
 
-  const text = `⏰ *Настройка напоминаний*
+  const text = `⏰ *Умные напоминания*
 
-Выбери удобное время для напоминаний о занятиях:
+📱 *Текущие настройки:*
+• Время: ${currentTime}
+• Адаптивный режим: ${adaptiveMode ? '✅ Вкл' : '❌ Выкл'}
+• Защита серии: ${streakReminder?.enabled ? '✅ Вкл' : '❌ Выкл'}
+• DND режим: ${dndSettings}
 
-🌅 *Утро* - 9:00
-☀️ *День* - 14:00
-🌆 *Вечер* - 19:00
-🌙 *Ночь* - 22:00
+🤖 *Адаптивный режим*
+Бот автоматически подберёт лучшее время для напоминаний на основе твоей активности!
 
-Напоминания помогут не забывать о занятиях и поддерживать серию! 🔥`;
+🔥 *Защита серии*
+Дополнительное напоминание вечером, если ты еще не занимался и серия под угрозой.
+
+😴 *Do-Not-Disturb*
+Установи период, когда не хочешь получать напоминания (например, ночью).
+
+Выбери опцию ниже:`;
 
   return {
     text,

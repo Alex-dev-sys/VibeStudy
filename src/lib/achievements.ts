@@ -53,7 +53,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_3',
     title: 'Начало серии',
     description: 'Учитесь 3 дня подряд',
-    icon: '3x 🔥',
+    icon: '🔥',
     category: 'streak',
     requirement: 3,
     checkCondition: (stats) => stats.currentStreak >= 3
@@ -62,7 +62,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_7',
     title: 'Неделя без перерыва',
     description: 'Учитесь 7 дней подряд',
-    icon: '7x 🔥',
+    icon: '🔥',
     category: 'streak',
     requirement: 7,
     checkCondition: (stats) => stats.longestStreak >= 7
@@ -71,7 +71,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_14',
     title: 'Две недели огня',
     description: 'Учитесь 14 дней подряд',
-    icon: '14x 🔥',
+    icon: '🔥',
     category: 'streak',
     requirement: 14,
     checkCondition: (stats) => stats.longestStreak >= 14
@@ -80,7 +80,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     id: 'streak_30',
     title: 'Месяц без остановки',
     description: 'Учитесь 30 дней подряд',
-    icon: '30x 🔥',
+    icon: '🔥',
     category: 'streak',
     requirement: 30,
     checkCondition: (stats) => stats.longestStreak >= 30

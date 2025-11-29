@@ -30,6 +30,10 @@ yarn-error.log*
 .env.production
 .env.development
 
+# bot logs (PM2 on VPS)
+logs/
+*.log
+
 # vercel
 .vercel
 

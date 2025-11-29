@@ -2,7 +2,7 @@
 
 import type { BotResponse } from '@/types/telegram';
 import { upsertTelegramProfile, getTelegramProfileByTelegramId } from '../database';
-import { getMainMenuKeyboard } from '../keyboards';
+import { getMainMenuKeyboard, getPersistentMainKeyboard } from '../keyboards';
 
 export async function handleStartCommand(
   userId: string,
@@ -38,6 +38,7 @@ export async function handleStartCommand(
 
   // Build quick actions keyboard
   const keyboard = getMainMenuKeyboard();
+  const persistentKeyboard = getPersistentMainKeyboard();
 
   const welcomeText = isNewUser
     ? `👋 Привет! Я бот VibeStudy.
@@ -65,10 +66,15 @@ export async function handleStartCommand(
 /progress - Прогресс
 /help - Помощь`;
 
+  // Send message with persistent keyboard
+  // Note: We can't send both inline and reply keyboard in the same message easily if we want the reply keyboard to persist.
+  // Usually, we send the reply keyboard with the text, and inline keyboard with specific actions.
+  // But here, let's attach the persistent keyboard to the welcome message.
+
   return {
     text: welcomeText,
     parseMode: 'Markdown',
-    replyMarkup: keyboard
+    replyMarkup: persistentKeyboard
   };
 }
 

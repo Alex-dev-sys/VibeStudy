@@ -6,6 +6,7 @@ import type { Achievement } from '@/types/achievements';
 import { getAchievementProgress, ACHIEVEMENTS } from '@/lib/achievements';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface AchievementCardProps {
   achievement: Achievement;
@@ -16,14 +17,39 @@ export function AchievementCard({ achievement, isUnlocked }: AchievementCardProp
   const stats = useAchievementsStore((state) => state.stats);
   const achievementDef = ACHIEVEMENTS.find((a) => a.id === achievement.id);
   const progress = achievementDef ? getAchievementProgress(achievementDef, stats) : 0;
+  const [showTooltip, setShowTooltip] = useState(false);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: isUnlocked ? 1.02 : 1.01 }}
-      className="h-full"
+      className="h-full relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
     >
+      {/* Tooltip */}
+      {showTooltip && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none"
+        >
+          <div className="bg-black/95 backdrop-blur-sm text-white px-3 py-2 rounded-lg shadow-xl border border-white/10 whitespace-nowrap">
+            <p className="text-xs font-medium">{achievement.description}</p>
+            {!isUnlocked && progress > 0 && (
+              <p className="text-[10px] text-white/60 mt-1">
+                Прогресс: {Math.round(progress)}%
+              </p>
+            )}
+          </div>
+          {/* Arrow */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px]">
+            <div className="w-2 h-2 bg-black/95 border-r border-b border-white/10 rotate-45" />
+          </div>
+        </motion.div>
+      )}
+
       <div
         className={cn(
           "relative flex h-full flex-col items-center justify-between overflow-hidden rounded-xl border p-4 text-center transition-all",

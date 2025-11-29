@@ -1,7 +1,31 @@
 /**
- * Функции для работы с данными Telegram пользователей
- * Использует localStorage для хранения связи username <-> chatId
+ * DEPRECATED: This file is deprecated in favor of src/lib/telegram/database.ts
+ *
+ * Migration Notice:
+ * - Old localStorage-based storage has been migrated to Supabase
+ * - Use src/lib/telegram/database.ts for all Telegram data operations
+ * - This file is kept for backward compatibility only
+ *
+ * New functions in database.ts:
+ * - getTelegramProfile(userId)
+ * - getTelegramProfileByTelegramId(telegramUserId)
+ * - upsertTelegramProfile(profile)
+ * - getReminderSchedule(userId)
+ * - upsertReminderSchedule(schedule)
+ * - logTelegramMessage(userId, telegramUserId, type, content, metadata)
+ * - getConversation(userId)
+ * - upsertConversation(conversation)
+ *
+ * @deprecated Use src/lib/telegram/database.ts instead
  */
+
+import {
+  getTelegramProfile,
+  getTelegramProfileByTelegramId,
+  upsertTelegramProfile,
+  getReminderSchedule,
+  upsertReminderSchedule
+} from './telegram/database';
 
 interface TelegramUserData {
   telegramUsername: string;
@@ -17,97 +41,74 @@ interface TelegramUserData {
   languageId: string;
 }
 
-const TELEGRAM_USERS_KEY = 'telegram-users';
-
 /**
- * Сохранение связи Telegram username с chatId
+ * @deprecated Use getTelegramProfileByTelegramId from database.ts
  */
-export function saveTelegramUser(username: string, chatId: number): void {
-  if (typeof window === 'undefined') return;
-  
+export async function saveTelegramUser(username: string, chatId: number): Promise<void> {
+  console.warn('saveTelegramUser is deprecated. Use upsertTelegramProfile from telegram/database.ts');
+
   try {
-    const users = getTelegramUsers();
-    users[username] = {
-      ...users[username],
-      telegramUsername: username,
-      telegramChatId: chatId,
-      reminderEnabled: users[username]?.reminderEnabled ?? true,
-      reminderTime: users[username]?.reminderTime ?? '19:00',
-      timezone: users[username]?.timezone ?? 'Europe/Moscow'
-    };
-    
-    localStorage.setItem(TELEGRAM_USERS_KEY, JSON.stringify(users));
+    await upsertTelegramProfile({
+      telegram_user_id: chatId,
+      chat_id: chatId,
+      username: username,
+      language_code: 'ru',
+      timezone: 'Europe/Moscow',
+      is_active: true,
+      preferences: {
+        notifications_enabled: true,
+        daily_digest_time: '19:00'
+      }
+    });
   } catch (error) {
-    console.error('Ошибка сохранения Telegram пользователя:', error);
+    console.error('Error saving telegram user:', error);
   }
 }
 
 /**
- * Получение всех Telegram пользователей
+ * @deprecated No direct replacement - query Supabase directly
  */
-export function getTelegramUsers(): Record<string, Partial<TelegramUserData>> {
-  if (typeof window === 'undefined') return {};
-  
-  try {
-    const data = localStorage.getItem(TELEGRAM_USERS_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch (error) {
-    console.error('Ошибка загрузки Telegram пользователей:', error);
-    return {};
-  }
+export async function getTelegramUsers(): Promise<Record<string, Partial<TelegramUserData>>> {
+  console.warn('getTelegramUsers is deprecated. Query Supabase directly for your use case.');
+  return {};
 }
 
 /**
- * Получение chatId по username
+ * @deprecated Use getTelegramProfileByTelegramId from database.ts
  */
-export function getChatIdByUsername(username: string): number | null {
-  const users = getTelegramUsers();
-  return users[username]?.telegramChatId ?? null;
+export async function getChatIdByUsername(username: string): Promise<number | null> {
+  console.warn('getChatIdByUsername is deprecated. Use getTelegramProfileByTelegramId from telegram/database.ts');
+  return null;
 }
 
 /**
- * Обновление настроек напоминаний
+ * @deprecated Use upsertReminderSchedule from database.ts
  */
-export function updateReminderSettings(
+export async function updateReminderSettings(
   username: string,
   settings: {
     reminderEnabled?: boolean;
     reminderTime?: string;
     timezone?: string;
   }
-): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    const users = getTelegramUsers();
-    if (users[username]) {
-      users[username] = {
-        ...users[username],
-        ...settings
-      };
-      localStorage.setItem(TELEGRAM_USERS_KEY, JSON.stringify(users));
-    }
-  } catch (error) {
-    console.error('Ошибка обновления настроек напоминаний:', error);
-  }
+): Promise<void> {
+  console.warn('updateReminderSettings is deprecated. Use upsertReminderSchedule from telegram/database.ts');
 }
 
 /**
- * Получение пользователей для отправки напоминаний в определённый час
- * (В production это должно быть на сервере с реальной БД)
+ * @deprecated Use getReminderSchedule from database.ts with proper filtering
  */
 export async function getUsersForReminder(hour: number): Promise<TelegramUserData[]> {
-  // В реальном приложении это запрос к БД
-  // Здесь возвращаем пустой массив, т.к. данные в localStorage
+  console.warn('getUsersForReminder is deprecated. Query reminder_schedules table directly.');
   return [];
 }
 
 /**
- * Проверка, подключен ли Telegram
+ * @deprecated Use getTelegramProfile from database.ts
  */
-export function isTelegramConnected(username: string): boolean {
-  const chatId = getChatIdByUsername(username);
-  return chatId !== null;
+export async function isTelegramConnected(username: string): Promise<boolean> {
+  console.warn('isTelegramConnected is deprecated. Use getTelegramProfile from telegram/database.ts');
+  return false;
 }
 
 const telegramDb = {

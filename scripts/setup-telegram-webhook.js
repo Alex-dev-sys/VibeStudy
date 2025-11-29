@@ -1,12 +1,12 @@
 /**
  * Setup Telegram Webhook & Menu Button
- * 
+ *
  * This script manages Telegram Bot API configuration including:
  * - Webhook setup for receiving bot updates
  * - Menu button configuration for launching Mini App
- * 
+ *
  * Usage: node scripts/setup-telegram-webhook.js <command> [parameters]
- * 
+ *
  * Commands:
  * - set <url>: Set webhook URL
  * - check: Check webhook status
@@ -15,10 +15,22 @@
  * - menu <url>: Set menu button with Mini App URL
  * - menu-check: Check current menu button
  * - menu-delete: Delete menu button
+ * - auto: Auto-setup webhook from environment
  */
 
-const TELEGRAM_BOT_TOKEN = '8584552955:AAHadQf9Zr4EVEBHsV0-zkj6TREAHHksxD0';
-const TELEGRAM_WEBHOOK_SECRET = 'vibestudy_webhook_secret_2025';
+require('dotenv').config({ path: '.env.local' });
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL;
+
+if (!TELEGRAM_BOT_TOKEN) {
+  console.error('❌ TELEGRAM_BOT_TOKEN не найден в .env.local');
+  console.log('\n📝 Добавь в .env.local:');
+  console.log('TELEGRAM_BOT_TOKEN=your_bot_token_here');
+  console.log('TELEGRAM_WEBHOOK_SECRET=your_webhook_secret_here\n');
+  process.exit(1);
+}
 
 async function setupWebhook(webhookUrl) {
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook`;
@@ -210,6 +222,53 @@ async function deleteMenuButton() {
   }
 }
 
+async function autoSetup() {
+  console.log('🚀 Автоматическая настройка webhook...\n');
+
+  if (!SITE_URL) {
+    console.error('❌ NEXT_PUBLIC_SITE_URL или VERCEL_URL не найдены');
+    console.log('Укажи URL вручную: node scripts/setup-telegram-webhook.js set <url>\n');
+    process.exit(1);
+  }
+
+  const webhookUrl = SITE_URL.startsWith('http')
+    ? `${SITE_URL}/api/telegram/webhook`
+    : `https://${SITE_URL}/api/telegram/webhook`;
+
+  const miniAppUrl = SITE_URL.startsWith('http')
+    ? `${SITE_URL}/telegram-mini`
+    : `https://${SITE_URL}/telegram-mini`;
+
+  console.log('📋 Настройки:');
+  console.log(`   Webhook URL: ${webhookUrl}`);
+  console.log(`   Mini App URL: ${miniAppUrl}`);
+  console.log(`   Secret: ${TELEGRAM_WEBHOOK_SECRET || '(не установлен)'}\n`);
+
+  // Step 1: Delete old webhook
+  console.log('1️⃣ Удаление старого webhook...');
+  await deleteWebhook();
+
+  // Step 2: Set new webhook
+  console.log('2️⃣ Установка нового webhook...');
+  await setupWebhook(webhookUrl);
+
+  // Step 3: Set menu button
+  console.log('3️⃣ Настройка menu button...');
+  await setMenuButton(miniAppUrl);
+
+  // Step 4: Get bot info
+  console.log('4️⃣ Информация о боте:');
+  await getBotInfo();
+
+  console.log('\n✅ Автоматическая настройка завершена!');
+  console.log('\n📝 Следующие шаги:');
+  console.log('   1. Открой бота в Telegram');
+  console.log('   2. Отправь /start');
+  console.log('   3. Проверь работу команд');
+  console.log('\n💡 Для проверки webhook:');
+  console.log('   node scripts/setup-telegram-webhook.js check\n');
+}
+
 // Main
 const args = process.argv.slice(2);
 const command = args[0];
@@ -222,6 +281,7 @@ if (!command) {
   node scripts/setup-telegram-webhook.js <команда> [параметры]
 
 Команды:
+  auto                - 🚀 Автоматическая настройка (рекомендуется!)
   set <url>           - Установить webhook
   check               - Проверить webhook
   delete              - Удалить webhook
@@ -231,18 +291,19 @@ if (!command) {
   menu-delete         - Удалить menu button
 
 Примеры:
+  node scripts/setup-telegram-webhook.js auto
   node scripts/setup-telegram-webhook.js set https://your-domain.vercel.app/api/telegram/webhook
   node scripts/setup-telegram-webhook.js check
-  node scripts/setup-telegram-webhook.js delete
   node scripts/setup-telegram-webhook.js info
-  node scripts/setup-telegram-webhook.js menu https://your-domain.vercel.app/telegram-mini
-  node scripts/setup-telegram-webhook.js menu-check
-  node scripts/setup-telegram-webhook.js menu-delete
 `);
   process.exit(0);
 }
 
 switch (command) {
+  case 'auto':
+    autoSetup();
+    break;
+
   case 'set':
     if (!args[1]) {
       console.error('❌ Укажи URL webhook');
@@ -250,19 +311,19 @@ switch (command) {
     }
     setupWebhook(args[1]);
     break;
-  
+
   case 'check':
     checkWebhook();
     break;
-  
+
   case 'delete':
     deleteWebhook();
     break;
-  
+
   case 'info':
     getBotInfo();
     break;
-  
+
   case 'menu':
     if (!args[1]) {
       console.error('❌ Укажи URL Mini App');
@@ -271,15 +332,15 @@ switch (command) {
     }
     setMenuButton(args[1]);
     break;
-  
+
   case 'menu-check':
     getMenuButton();
     break;
-  
+
   case 'menu-delete':
     deleteMenuButton();
     break;
-  
+
   default:
     console.error(`❌ Неизвестная команда: ${command}`);
     process.exit(1);
