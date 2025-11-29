@@ -10,9 +10,26 @@
  * - getTelegramProfile(userId)
  * - getTelegramProfileByTelegramId(telegramUserId)
  * - upsertTelegramProfile(profile)
- * - getReminderSchedule(userId)
+ * - getReminderSchedules(userId)
  * - upsertReminderSchedule(schedule)
  * - logTelegramMessage(userId, telegramUserId, type, content, metadata)
+ * - getConversation(userId)
+ * - upsertConversation(conversation)
+ *
+ * @deprecated Use src/lib/telegram/database.ts instead
+ */
+
+export {
+  getTelegramProfile,
+  getTelegramProfileByTelegramId,
+  upsertTelegramProfile,
+  getReminderSchedules,
+  upsertReminderSchedule
+} from './telegram/database';
+
+interface TelegramUserData {
+  telegramUsername: string;
+  telegramChatId: number;
   reminderTime: string; // "09:00", "14:00", "19:00", "22:00"
   reminderEnabled: boolean;
   timezone: string;
@@ -29,23 +46,6 @@
  */
 export async function saveTelegramUser(username: string, chatId: number): Promise<void> {
   console.warn('saveTelegramUser is deprecated. Use upsertTelegramProfile from telegram/database.ts');
-
-  try {
-    await upsertTelegramProfile({
-      telegram_user_id: chatId,
-      chat_id: chatId,
-      username: username,
-      language_code: 'ru',
-      timezone: 'Europe/Moscow',
-      is_active: true,
-      preferences: {
-        notifications_enabled: true,
-        daily_digest_time: '19:00'
-      }
-    });
-  } catch (error) {
-    console.error('Error saving telegram user:', error);
-  }
 }
 
 /**
@@ -79,7 +79,7 @@ export async function updateReminderSettings(
 }
 
 /**
- * @deprecated Use getReminderSchedule from database.ts with proper filtering
+ * @deprecated Use getReminderSchedules from database.ts with proper filtering
  */
 export async function getUsersForReminder(hour: number): Promise<TelegramUserData[]> {
   console.warn('getUsersForReminder is deprecated. Query reminder_schedules table directly.');
@@ -104,4 +104,3 @@ const telegramDb = {
 };
 
 export default telegramDb;
-
