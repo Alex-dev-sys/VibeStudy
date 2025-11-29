@@ -16,13 +16,14 @@ let metrics = {
   rateLimitedRequests: 0
 };
 
-export function incrementMetric(metric: keyof typeof metrics) {
+// Helper functions (not exported as they're not valid Next.js route exports)
+function incrementMetric(metric: keyof typeof metrics) {
   if (typeof metrics[metric] === 'number') {
     (metrics[metric] as number)++;
   }
 }
 
-export function recordUpdate(success: boolean, command?: string) {
+function recordUpdate(success: boolean, command?: string) {
   metrics.totalUpdates++;
   metrics.lastUpdateAt = Date.now();
 
@@ -37,13 +38,20 @@ export function recordUpdate(success: boolean, command?: string) {
   }
 }
 
-export function recordError(errorType: string) {
+function recordError(errorType: string) {
   metrics.errorsByType[errorType] = (metrics.errorsByType[errorType] || 0) + 1;
 }
 
-export function recordRateLimit() {
+function recordRateLimit() {
   metrics.rateLimitedRequests++;
 }
+
+// Export these for use in webhook
+export const metricsHelpers = {
+  recordUpdate,
+  recordError,
+  recordRateLimit
+};
 
 /**
  * GET /api/telegram/health

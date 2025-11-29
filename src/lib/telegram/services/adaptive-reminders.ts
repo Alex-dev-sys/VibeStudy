@@ -2,7 +2,8 @@
 // Smart reminders that adapt to user behavior
 
 import type { ReminderType, ReminderContext } from '@/types/telegram';
-import { getUserProgress } from '../database';
+// TODO: Implement getUserProgress in database.ts  
+// import { getUserProgress } from '../database';
 
 interface AdaptiveReminderConfig {
   type: ReminderType;

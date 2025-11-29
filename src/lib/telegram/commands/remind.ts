@@ -2,7 +2,7 @@
 // Smart adaptive reminder configuration
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
-import { getReminderSchedule, getTelegramProfile } from '../database';
+import { getReminderSchedules, getTelegramProfile } from '../database';
 
 export async function handleRemindCommand(
   userId: string,
@@ -19,7 +19,7 @@ export async function handleRemindCommand(
 
   // Get current reminder settings
   const { data: profile } = await getTelegramProfile(userId);
-  const { data: reminders } = await getReminderSchedule(userId);
+  const { data: reminders } = await getReminderSchedules(userId);
 
   const hasReminders = reminders && reminders.length > 0;
   const dailyReminder = reminders?.find(r => r.reminder_type === 'daily_study');
@@ -42,15 +42,21 @@ export async function handleRemindCommand(
         { text: '🌙 Ночь (22:00)', callback_data: 'remind:time:22:00' }
       ],
       [
-        { text: adaptiveMode ? '🤖 Адаптивный ✓' : '🤖 Адаптивный режим',
-          callback_data: 'remind:toggle:adaptive' },
-        { text: streakReminder?.enabled ? '🔥 Защита серии ✓' : '🔥 Защита серии',
-          callback_data: 'remind:toggle:streak' }
+        {
+          text: adaptiveMode ? '🤖 Адаптивный ✓' : '🤖 Адаптивный режим',
+          callback_data: 'remind:toggle:adaptive'
+        },
+        {
+          text: streakReminder?.enabled ? '🔥 Защита серии ✓' : '🔥 Защита серии',
+          callback_data: 'remind:toggle:streak'
+        }
       ],
       [
         { text: '😴 DND режим', callback_data: 'remind:dnd' },
-        { text: hasReminders ? '🔕 Отключить все' : '🔔 Включить',
-          callback_data: 'remind:toggle:all' }
+        {
+          text: hasReminders ? '🔕 Отключить все' : '🔔 Включить',
+          callback_data: 'remind:toggle:all'
+        }
       ],
       [
         { text: '🔙 Назад', callback_data: 'btn_menu' }
