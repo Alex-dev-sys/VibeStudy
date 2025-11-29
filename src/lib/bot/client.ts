@@ -51,6 +51,9 @@ export function getBot(): TelegramBot | null {
 
 /**
  * Initialize bot with commands and handlers
+ * 
+ * NOTE: Command registration is now handled by the new bot architecture
+ * in /lib/telegram/bot-controller.ts
  */
 export function initializeBot(): TelegramBot | null {
     const bot = getBot();
@@ -59,19 +62,22 @@ export function initializeBot(): TelegramBot | null {
         return null;
     }
 
-    // Register basic commands
-    registerBasicCommands(bot);
+    // Command registration is now handled in bot-controller.ts
+    // registerBasicCommands(bot);
 
     return bot;
 }
 
+/* DEPRECATED - Commands are now in /lib/telegram/commands/
 /**
  * Register basic bot commands
  */
+/*
 function registerBasicCommands(bot: TelegramBot) {
     // Import and register all command handlers
     const { registerCommandHandlers } = require('./commands');
     registerCommandHandlers(bot);
 }
+*/
 
 export default getBot;
