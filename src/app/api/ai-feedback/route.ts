@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { contentType, contentKey, feedbackType, metadata } = body;
+    const { contentType, contentKey, feedbackType, comment, metadata } = body;
 
     // Validate required fields
     if (!contentType || !contentKey || !feedbackType) {
@@ -59,17 +59,68 @@ export async function POST(request: Request) {
     // If user is authenticated, save to database
     if (user && supabase) {
       try {
-        const { data, error } = await supabase
-          .from('ai_feedback')
-          .insert({
-            user_id: user.id,
-            content_type: contentType,
-            content_key: contentKey,
-            feedback_type: feedbackType,
-            metadata: metadata || {},
-          } as any)
-          .select()
-          .single();
+        // For negative feedback with comment, try to update existing feedback
+        let data, error;
+        
+        if (feedbackType === 'negative' && comment) {
+          // Try to find existing feedback and update it
+          const { data: existing } = await supabase
+            .from('ai_feedback')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('content_type', contentType)
+            .eq('content_key', contentKey)
+            .eq('feedback_type', 'negative')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (existing) {
+            // Update existing feedback with comment
+            const result = await supabase
+              .from('ai_feedback')
+              .update({
+                comment: comment,
+                metadata: metadata || {},
+              } as any)
+              .eq('id', existing.id)
+              .select()
+              .single();
+            data = result.data;
+            error = result.error;
+          } else {
+            // Create new feedback with comment
+            const result = await supabase
+              .from('ai_feedback')
+              .insert({
+                user_id: user.id,
+                content_type: contentType,
+                content_key: contentKey,
+                feedback_type: feedbackType,
+                comment: comment,
+                metadata: metadata || {},
+              } as any)
+              .select()
+              .single();
+            data = result.data;
+            error = result.error;
+          }
+        } else {
+          // Regular feedback without comment
+          const result = await supabase
+            .from('ai_feedback')
+            .insert({
+              user_id: user.id,
+              content_type: contentType,
+              content_key: contentKey,
+              feedback_type: feedbackType,
+              metadata: metadata || {},
+            } as any)
+            .select()
+            .single();
+          data = result.data;
+          error = result.error;
+        }
 
         if (error) {
           console.error('Error inserting feedback:', error);
