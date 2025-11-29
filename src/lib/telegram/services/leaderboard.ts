@@ -114,21 +114,17 @@ export class LeaderboardService {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-      // Query learning_analytics for this week
+      // Query learning_analytics for this week with user profiles
       const { data, error } = await supabase
         .from('learning_analytics')
         .select(`
           user_id,
-          user_telegram_profiles!inner(username, first_name),
-          sum(tasks_completed).sum(),
-          sum(study_duration_minutes).sum(),
-          avg(engagement_score).avg()
+          tasks_completed,
+          study_duration_minutes,
+          engagement_score,
+          user_telegram_profiles!inner(username, first_name, is_active)
         `)
-        .gte('date', weekAgoStr)
-        .eq('user_telegram_profiles.is_active', true)
-        .group('user_id')
-        .order('sum', { ascending: false })
-        .limit(limit);
+        .gte('date', weekAgoStr);
 
       if (error) {
         console.error('Error fetching weekly leaderboard:', error);
@@ -139,22 +135,65 @@ export class LeaderboardService {
         return this.getFallbackWeeklyLeaderboard();
       }
 
-      return data.map((entry: any, index: number) => {
-        const tasksCompleted = entry.sum || 0;
-        const studyTime = entry.sum || 0;
-        const avgEngagement = entry.avg || 0;
+      // Group by user_id and aggregate
+      const userStats = new Map<string, {
+        user_id: string;
+        username: string;
+        first_name: string;
+        totalTasks: number;
+        totalStudyMinutes: number;
+        engagementScores: number[];
+      }>();
 
-        return {
-          username: entry.user_telegram_profiles?.username || entry.user_telegram_profiles?.first_name || 'Anonymous',
-          first_name: entry.user_telegram_profiles?.first_name,
-          level: calculateLevel(tasksCompleted),
-          xp: calculateXP(tasksCompleted),
-          tasks_solved: tasksCompleted,
-          study_hours: Math.round(studyTime / 60),
-          avg_engagement: Math.round(avgEngagement),
-          rank: index + 1
-        };
+      data.forEach((entry: any) => {
+        const userId = entry.user_id;
+        const profile = entry.user_telegram_profiles;
+        
+        // Filter out inactive users
+        if (!profile || profile.is_active !== true) {
+          return;
+        }
+        
+        if (!userStats.has(userId)) {
+          userStats.set(userId, {
+            user_id: userId,
+            username: profile?.username || profile?.first_name || 'Anonymous',
+            first_name: profile?.first_name || '',
+            totalTasks: 0,
+            totalStudyMinutes: 0,
+            engagementScores: []
+          });
+        }
+
+        const stats = userStats.get(userId)!;
+        stats.totalTasks += entry.tasks_completed || 0;
+        stats.totalStudyMinutes += entry.study_duration_minutes || 0;
+        if (entry.engagement_score) {
+          stats.engagementScores.push(entry.engagement_score);
+        }
       });
+
+      // Convert to array and calculate averages
+      const leaderboard = Array.from(userStats.values())
+        .map((stats) => ({
+          username: stats.username,
+          first_name: stats.first_name,
+          level: calculateLevel(stats.totalTasks),
+          xp: calculateXP(stats.totalTasks),
+          tasks_solved: stats.totalTasks,
+          study_hours: Math.round(stats.totalStudyMinutes / 60),
+          avg_engagement: stats.engagementScores.length > 0
+            ? Math.round(stats.engagementScores.reduce((a, b) => a + b, 0) / stats.engagementScores.length)
+            : 0
+        }))
+        .sort((a, b) => b.tasks_solved - a.tasks_solved)
+        .slice(0, limit)
+        .map((entry, index) => ({
+          ...entry,
+          rank: index + 1
+        }));
+
+      return leaderboard;
     } catch (error) {
       console.error('Weekly leaderboard error:', error);
       return this.getFallbackWeeklyLeaderboard();
