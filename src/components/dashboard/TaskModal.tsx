@@ -247,7 +247,24 @@ export function TaskModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-hidden">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6"
+        onClick={(e) => {
+          // Закрываем модальное окно при клике на фон
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+        onTouchMove={(e) => {
+          // Разрешаем скролл внутри модального окна на мобильных устройствах
+          const target = e.target as HTMLElement;
+          const modalContent = target.closest('.modal-scroll-container');
+          if (!modalContent || modalContent === e.currentTarget) {
+            // Если событие не внутри модального контента, не блокируем
+            return;
+          }
+        }}
+      >
         {showConfetti && (
           <LazyConfetti
             width={windowSize.width}
@@ -262,7 +279,24 @@ export function TaskModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel-foreground modal-scroll-container relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 overflow-y-auto rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
+          className="glass-panel-foreground modal-scroll-container relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 overflow-y-auto overflow-x-hidden rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
+          style={{ 
+            maxHeight: '95vh',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch' // Для плавного скролла на iOS
+          }}
+          onClick={(e) => {
+            // Предотвращаем закрытие при клике внутри модального окна
+            e.stopPropagation();
+          }}
+          onWheel={(e) => {
+            // Позволяем скролл внутри модального окна
+            e.stopPropagation();
+          }}
+          onTouchStart={(e) => {
+            // Разрешаем touch-события для скролла
+            e.stopPropagation();
+          }}
         >
           {/* Заголовок */}
           <div className="flex items-start justify-between gap-2 sm:gap-4">

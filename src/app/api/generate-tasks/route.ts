@@ -145,8 +145,8 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     const prompt = buildPrompt(body);
 
     const systemMessage = body.locale === 'en'
-      ? 'You are an educational platform methodologist. Generate structured assignments, respond strictly in JSON. All content must be in English. IMPORTANT: Include detailed theory with code examples and task descriptions.'
-      : 'Ты — методист образовательной платформы. Генерируй структурированные задания, отвечай строго в JSON. ВАЖНО: Включай подробную теорию с примерами кода и описаниями заданий.';
+      ? 'You are an expert programming instructor with 20+ years of experience. Your task is to create EXCELLENT educational content. Generate detailed, well-structured theory (minimum 400-600 words) with code examples, and create 5 tasks with gradual difficulty increase. Respond STRICTLY in JSON format. Theory must be beginner-friendly with analogies and practical examples. All code examples must be working and self-contained.'
+      : 'Ты — эксперт-преподаватель программирования с 20+ годами опыта. Твоя задача — создать ОТЛИЧНЫЙ учебный материал. Генерируй подробную, хорошо структурированную теорию (минимум 400-600 слов) с примерами кода, создавай 5 задач с плавным нарастанием сложности. Отвечай СТРОГО в JSON формате. Теория должна быть понятной для новичков, с аналогиями и практическими примерами. Все примеры кода должны быть рабочими и самодостаточными.';
 
     let parsedResponse: GeneratedContent = fallbackResponse;
     let isFallback = true;
@@ -166,8 +166,8 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
                   content: prompt
                 }
               ],
-              temperature: 0.8,
-              maxTokens: 2000
+              temperature: 0.7, // Немного снижено для более стабильного и структурированного ответа
+              maxTokens: 4000 // Увеличено для детальной теории с примерами
             }),
           {
             timeoutMs: 120_000,

@@ -1,0 +1,12 @@
+СКОПИРУЙТЕ И ВЫПОЛНИТЕ ЭТИ КОМАНДЫ В ТЕРМИНАЛЕ:
+
+git add src/lib/ai/prompts.ts
+git add src/components/ai/FeedbackButtons.tsx
+git add src/app/api/ai-feedback/route.ts
+git add src/lib/content-formatting.ts
+git add src/components/dashboard/TheoryBlock.tsx
+
+git commit -m "feat: значительно улучшен промпт для AI и исправлены ошибки" -m "- Улучшен промпт для генерации теории: добавлена детальная структура, примеры, чеклист качества" -m "- Исправлена фильтрация undefined/null для Python в теории" -m "- Добавлена форма комментария после дизлайка в FeedbackButtons" -m "- Создана таблица ai_feedback с полем comment" -m "- Улучшен дизайн TheoryBlock (более мягкие цвета)"
+
+git push
+
