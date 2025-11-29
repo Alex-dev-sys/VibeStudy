@@ -10,12 +10,12 @@ Write-Host "Проверяю статус..." -ForegroundColor Cyan
 git status --short
 
 Write-Host "Создаю коммит..." -ForegroundColor Cyan
-git commit -m "fix: исправлены ошибки типизации и улучшен дизайн теории
+    git commit -m "fix: исправлены ошибки типизации и улучшен дизайн теории
 
-- Исправлены ошибки типизации в telegram/database.ts
-- Исправлена ошибка с group() в leaderboard
-- Улучшен дизайн компонента TheoryBlock с красивой типографикой
-- Исправлена обработка ошибок аналитики"
+    - Исправлены ошибки типизации в telegram/database.ts
+    - Исправлена ошибка с group() в leaderboard
+    - Улучшен дизайн компонента TheoryBlock с красивой типографикой
+    - Исправлена обработка ошибок аналитики"
 
 Write-Host "Пушим на git..." -ForegroundColor Cyan
 git push

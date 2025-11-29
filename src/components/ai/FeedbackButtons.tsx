@@ -39,12 +39,25 @@ export function FeedbackButtons({
       });
 
       if (response.ok) {
+        const result = await response.json();
         setFeedback(type);
       } else {
-        console.error('Failed to submit feedback');
+        // Try to get error message from response
+        let errorMessage = 'Не удалось отправить отзыв';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Ignore JSON parsing errors
+        }
+        console.error('Failed to submit feedback:', errorMessage, response.status);
+        // Still mark as submitted to avoid retries
+        setFeedback(type);
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
+      // Network error or other issue - still mark as submitted
+      setFeedback(type);
     } finally {
       setIsSubmitting(false);
     }

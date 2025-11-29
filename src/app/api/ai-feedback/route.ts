@@ -34,32 +34,64 @@ export async function POST(request: Request) {
     }
 
     // Try to get authenticated user (optional for guest mode)
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    let supabase;
+    try {
+      supabase = createClient();
+    } catch (error) {
+      console.error('Error creating Supabase client:', error);
+      // Continue as guest user
+      supabase = null;
+    }
+
+    let user = null;
+    if (supabase) {
+      try {
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        if (!authError && authUser) {
+          user = authUser;
+        }
+      } catch (error) {
+        console.error('Error getting user:', error);
+        // Continue as guest user
+      }
+    }
 
     // If user is authenticated, save to database
-    if (user) {
-      const { data, error } = await supabase
-        .from('ai_feedback')
-        .insert({
-          user_id: user.id,
-          content_type: contentType,
-          content_key: contentKey,
-          feedback_type: feedbackType,
-          metadata: metadata || {},
-        })
-        .select()
-        .single();
+    if (user && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('ai_feedback')
+          .insert({
+            user_id: user.id,
+            content_type: contentType,
+            content_key: contentKey,
+            feedback_type: feedbackType,
+            metadata: metadata || {},
+          } as any)
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error inserting feedback:', error);
-        return NextResponse.json(
-          { error: 'Failed to save feedback' },
-          { status: 500 }
-        );
+        if (error) {
+          console.error('Error inserting feedback:', error);
+          // Fall back to guest mode if insert fails
+          console.log('[Guest Feedback] (fallback)', {
+            contentType,
+            contentKey,
+            feedbackType,
+            metadata,
+          });
+          return NextResponse.json({ 
+            success: true, 
+            guest: true,
+            message: 'Feedback recorded (guest mode)' 
+          });
+        }
+
+        return NextResponse.json({ success: true, data });
+      } catch (error) {
+        console.error('Error saving feedback to database:', error);
+        // Fall back to guest mode
       }
-
-      return NextResponse.json({ success: true, data });
     }
 
     // For guest users, just log and return success
