@@ -13,7 +13,7 @@ import {
   recordUpdate,
   recordError,
   recordRateLimit
-} from "../health/route";
+} from "../metrics";
 
 /**
  * Rate limiting implementation

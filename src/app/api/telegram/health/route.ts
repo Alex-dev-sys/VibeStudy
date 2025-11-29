@@ -2,56 +2,7 @@
 // Provides metrics and status for monitoring
 
 import { NextResponse } from 'next/server';
-
-// In-memory metrics (reset on server restart)
-// For production, consider using Redis or database
-let metrics = {
-  startTime: Date.now(),
-  totalUpdates: 0,
-  successfulUpdates: 0,
-  failedUpdates: 0,
-  lastUpdateAt: null as number | null,
-  errorsByType: {} as Record<string, number>,
-  updatesByCommand: {} as Record<string, number>,
-  rateLimitedRequests: 0
-};
-
-// Helper functions (not exported as they're not valid Next.js route exports)
-function incrementMetric(metric: keyof typeof metrics) {
-  if (typeof metrics[metric] === 'number') {
-    (metrics[metric] as number)++;
-  }
-}
-
-function recordUpdate(success: boolean, command?: string) {
-  metrics.totalUpdates++;
-  metrics.lastUpdateAt = Date.now();
-
-  if (success) {
-    metrics.successfulUpdates++;
-  } else {
-    metrics.failedUpdates++;
-  }
-
-  if (command) {
-    metrics.updatesByCommand[command] = (metrics.updatesByCommand[command] || 0) + 1;
-  }
-}
-
-function recordError(errorType: string) {
-  metrics.errorsByType[errorType] = (metrics.errorsByType[errorType] || 0) + 1;
-}
-
-function recordRateLimit() {
-  metrics.rateLimitedRequests++;
-}
-
-// Export these for use in webhook
-export const metricsHelpers = {
-  recordUpdate,
-  recordError,
-  recordRateLimit
-};
+import { metrics, resetMetrics } from '../metrics';
 
 /**
  * GET /api/telegram/health
@@ -135,16 +86,7 @@ export async function GET() {
  * Reset metrics (for testing)
  */
 export async function POST() {
-  metrics = {
-    startTime: Date.now(),
-    totalUpdates: 0,
-    successfulUpdates: 0,
-    failedUpdates: 0,
-    lastUpdateAt: null,
-    errorsByType: {},
-    updatesByCommand: {},
-    rateLimitedRequests: 0
-  };
+  resetMetrics();
 
   return NextResponse.json({
     success: true,
