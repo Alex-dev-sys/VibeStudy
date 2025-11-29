@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyMonacoEditor, LazyConfetti } from '@/lib/performance/lazy-components';
 import { Button } from '@/components/ui/button';
@@ -67,6 +67,7 @@ export function TaskModal({
   const [editorError, setEditorError] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
   const t = useTranslations();
   const { locale } = useLocaleStore();
@@ -99,6 +100,13 @@ export function TaskModal({
       setEditorLoading(true);
       setEditorError(false);
       setShowConfetti(false);
+      
+      // Автопрокрутка к началу модального окна при открытии
+      setTimeout(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.scrollTop = 0;
+        }
+      }, 100);
     }
   }, [isOpen, task.id]);
 
@@ -248,7 +256,8 @@ export function TaskModal({
   return (
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 md:p-6"
+        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-y-auto"
+        style={{ paddingTop: '1rem', paddingBottom: '1rem' }}
         onClick={(e) => {
           // Закрываем модальное окно при клике на фон
           if (e.target === e.currentTarget) {
@@ -276,14 +285,16 @@ export function TaskModal({
           />
         )}
         <motion.div
+          ref={modalContentRef}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel-foreground modal-scroll-container relative flex max-h-[95vh] w-full max-w-5xl flex-col gap-3 overflow-y-auto overflow-x-hidden rounded-2xl p-4 sm:max-h-[90vh] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
+          className="glass-panel-foreground modal-scroll-container relative flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col gap-3 overflow-y-auto overflow-x-hidden rounded-2xl p-4 sm:max-h-[calc(100vh-2rem)] sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8 my-2"
           style={{ 
-            maxHeight: '95vh',
+            maxHeight: 'calc(100vh - 2rem)',
             overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch' // Для плавного скролла на iOS
+            WebkitOverflowScrolling: 'touch', // Для плавного скролла на iOS
+            scrollBehavior: 'smooth'
           }}
           onClick={(e) => {
             // Предотвращаем закрытие при клике внутри модального окна
@@ -321,7 +332,7 @@ export function TaskModal({
           </div>
 
           {/* Редактор кода */}
-          <div className="flex-1 overflow-hidden rounded-xl border border-white/10 sm:rounded-2xl">
+          <div className="flex-1 overflow-hidden rounded-xl border border-white/10 sm:rounded-2xl min-h-[250px]">
             {editorError ? (
               <div className="flex h-[300px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
                 <span className="text-4xl">⚠️</span>
@@ -338,34 +349,46 @@ export function TaskModal({
                 />
               </div>
             ) : (
-              <LazyMonacoEditor
-                height="250px"
-                language={monacoLanguage}
-                theme="vs-dark"
-                value={code}
-                onChange={(val) => setCode(val ?? '')}
-                onMount={() => {
-                  setEditorLoading(false);
-                }}
-                loading={
-                  <div className="flex h-[250px] items-center justify-center bg-black/60">
+              <>
+                {editorLoading && (
+                  <div className="absolute inset-0 flex h-[250px] items-center justify-center bg-black/60 rounded-xl z-10">
                     <div className="text-center">
-                      <div className="mb-3 text-2xl">⏳</div>
+                      <div className="mb-3 text-2xl animate-pulse">⏳</div>
                       <p className="text-sm text-white/60">{t.editor.loading}</p>
                     </div>
                   </div>
-                }
-                options={{
-                  fontSize: 12,
-                  fontLigatures: true,
-                  automaticLayout: true,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  lineNumbers: 'on',
-                  wordWrap: 'on',
-                  readOnly: isViewMode
-                }}
-              />
+                )}
+                <LazyMonacoEditor
+                  height="250px"
+                  language={monacoLanguage}
+                  theme="vs-dark"
+                  value={code}
+                  onChange={(val) => setCode(val ?? '')}
+                  onMount={() => {
+                    setEditorLoading(false);
+                  }}
+                  loading={<div />}
+                  options={{
+                    fontSize: 12,
+                    fontLigatures: true,
+                    automaticLayout: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    lineNumbers: 'on',
+                    wordWrap: 'on',
+                    readOnly: isViewMode,
+                    quickSuggestions: true,
+                    suggestOnTriggerCharacters: true,
+                    acceptSuggestionOnEnter: 'on',
+                    tabCompletion: 'on',
+                    wordBasedSuggestions: 'allDocuments',
+                    // Оптимизация производительности
+                    renderValidationDecorations: 'off',
+                    renderLineHighlight: 'none',
+                    renderWhitespace: 'none'
+                  }}
+                />
+              </>
             )}
           </div>
 
