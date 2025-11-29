@@ -49,3 +49,12 @@ data/generated-content.json
 
 *storybook.log
 storybook-static
+
+# development tools
+.kiro/
+.qodo/
+.playwright-mcp/
+.claude/
+test-results/
+playwright-report/
+nul

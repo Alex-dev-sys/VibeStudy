@@ -1,5 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { logInfo, logError } from "@/lib/logger";
 
 export interface PrivacySettings {
   showOnLeaderboard: boolean;
@@ -33,7 +34,7 @@ interface ProfileStore {
   updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
   setAuthenticated: (isAuth: boolean, userData?: Partial<UserProfile>) => void;
   logout: () => void;
-  
+
   // Sync methods
   syncToCloud: () => Promise<void>;
   fetchFromCloud: () => Promise<void>;
@@ -47,15 +48,15 @@ const defaultPrivacySettings: PrivacySettings = {
 };
 
 const defaultProfile: UserProfile = {
-  id: 'local-user',
-  name: 'Гость',
+  id: "local-user",
+  name: "Гость",
   joinedAt: Date.now(),
-  preferredLanguage: 'python',
-  interfaceLanguage: 'ru',
+  preferredLanguage: "python",
+  interfaceLanguage: "ru",
   telegramNotifications: true,
-  reminderTime: '19:00',
+  reminderTime: "19:00",
   isAuthenticated: false,
-  privacySettings: defaultPrivacySettings
+  privacySettings: defaultPrivacySettings,
 };
 
 export const useProfileStore = create<ProfileStore>()(
@@ -67,8 +68,8 @@ export const useProfileStore = create<ProfileStore>()(
         set((state) => {
           // Trigger sync to cloud
           setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const { syncManager } = await import("@/lib/sync");
+            const { getCurrentUser } = await import("@/lib/supabase/auth");
             const user = await getCurrentUser();
             if (user) {
               syncManager.syncProfile({ ...state.profile, ...updates });
@@ -76,23 +77,26 @@ export const useProfileStore = create<ProfileStore>()(
           }, 0);
 
           return {
-            profile: { ...state.profile, ...updates }
+            profile: { ...state.profile, ...updates },
           };
         }),
 
       updatePrivacySettings: (settings) =>
         set((state) => {
-          const newPrivacySettings = { ...state.profile.privacySettings, ...settings };
-          
+          const newPrivacySettings = {
+            ...state.profile.privacySettings,
+            ...settings,
+          };
+
           // Trigger sync to cloud
           setTimeout(async () => {
-            const { syncManager } = await import('@/lib/sync');
-            const { getCurrentUser } = await import('@/lib/supabase/auth');
+            const { syncManager } = await import("@/lib/sync");
+            const { getCurrentUser } = await import("@/lib/supabase/auth");
             const user = await getCurrentUser();
             if (user) {
-              syncManager.syncProfile({ 
-                ...state.profile, 
-                privacySettings: newPrivacySettings 
+              syncManager.syncProfile({
+                ...state.profile,
+                privacySettings: newPrivacySettings,
               });
             }
           }, 0);
@@ -100,8 +104,8 @@ export const useProfileStore = create<ProfileStore>()(
           return {
             profile: {
               ...state.profile,
-              privacySettings: newPrivacySettings
-            }
+              privacySettings: newPrivacySettings,
+            },
           };
         }),
 
@@ -110,48 +114,48 @@ export const useProfileStore = create<ProfileStore>()(
           profile: {
             ...state.profile,
             ...userData,
-            isAuthenticated: isAuth
-          }
+            isAuthenticated: isAuth,
+          },
         })),
 
       logout: () =>
         set({
-          profile: defaultProfile
+          profile: defaultProfile,
         }),
-      
+
       // Sync methods
       syncToCloud: async () => {
-        const { getCurrentUser } = await import('@/lib/supabase/auth');
-        const { syncManager } = await import('@/lib/sync');
-        
+        const { getCurrentUser } = await import("@/lib/supabase/auth");
+        const { syncManager } = await import("@/lib/sync");
+
         const user = await getCurrentUser();
         if (!user) {
-          console.log('No user logged in, skipping profile sync');
+          logInfo("No user logged in, skipping profile sync");
           return;
         }
-        
+
         try {
           const state = useProfileStore.getState();
           syncManager.syncProfile(state.profile);
-          console.log('✅ Profile synced to cloud');
+          logInfo("Profile synced to cloud");
         } catch (error) {
-          console.error('❌ Failed to sync profile:', error);
+          logError("Failed to sync profile", error as Error);
         }
       },
-      
+
       fetchFromCloud: async () => {
-        const { getCurrentUser } = await import('@/lib/supabase/auth');
-        const { syncManager } = await import('@/lib/sync');
-        
+        const { getCurrentUser } = await import("@/lib/supabase/auth");
+        const { syncManager } = await import("@/lib/sync");
+
         const user = await getCurrentUser();
         if (!user) {
-          console.log('No user logged in, skipping profile fetch');
+          logInfo("No user logged in, skipping profile fetch");
           return;
         }
-        
+
         try {
-          const remoteData = await syncManager.fetchFromCloud('profile');
-          
+          const remoteData = await syncManager.fetchFromCloud("profile");
+
           if (remoteData) {
             set({
               profile: {
@@ -161,19 +165,19 @@ export const useProfileStore = create<ProfileStore>()(
                 preferredLanguage: remoteData.preferred_language,
                 githubUsername: remoteData.github_username,
                 telegramUsername: remoteData.telegram_username,
-                privacySettings: remoteData.privacy_settings || defaultPrivacySettings
-              }
+                privacySettings:
+                  remoteData.privacy_settings || defaultPrivacySettings,
+              },
             });
-            console.log('✅ Profile fetched from cloud');
+            logInfo("Profile fetched from cloud");
           }
         } catch (error) {
-          console.error('❌ Failed to fetch profile:', error);
+          logError("Failed to fetch profile", error as Error);
         }
-      }
+      },
     }),
     {
-      name: 'vibestudy-profile'
-    }
-  )
+      name: "vibestudy-profile",
+    },
+  ),
 );
-

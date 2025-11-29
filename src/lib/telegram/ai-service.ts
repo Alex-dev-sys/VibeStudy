@@ -1,10 +1,11 @@
-// AI Service for intelligent bot responses
+// AI Service for intelligent bot responses using GPT Llama API
 
 import type { UserContext, HintLevel, WeakTopic } from '@/types/telegram';
-
-const HF_API_URL = process.env.HF_API_BASE_URL || 'https://router.huggingface.co/v1';
-const HF_TOKEN = process.env.HF_TOKEN;
-const HF_MODEL = process.env.HF_MODEL || 'MiniMaxAI/MiniMax-M2:novita';
+import gptLamaClient from '@/lib/modules/mentor/gpt-lama';
+import {
+  AI_CACHE_TTL_RECOMMENDATIONS_MINUTES,
+  AI_CACHE_TTL_QUESTIONS_MINUTES
+} from './constants';
 
 // Simple in-memory cache
 const cache = new Map<string, { data: string; expiresAt: number }>();
@@ -25,48 +26,21 @@ function setCache(key: string, data: string, ttlMinutes: number = 60) {
   });
 }
 
-async function callAI(prompt: string): Promise<string> {
-  if (!HF_TOKEN) {
-    throw new Error('HF_TOKEN not configured');
-  }
-
-  const response = await fetch(`${HF_API_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${HF_TOKEN}`
-    },
-    body: JSON.stringify({
-      model: HF_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
-      temperature: 0.7
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || 'Не удалось получить ответ';
-}
-
 export async function generateRecommendation(context: UserContext): Promise<string> {
   const cacheKey = `rec_${context.userId}_${context.currentDay}`;
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
   try {
-    const prompt = `Ты - AI помощник для обучения программированию. 
+    const prompt = `Ты - AI помощник для обучения программированию на платформе VibeStudy.
 Пользователь на дне ${context.currentDay} из 90, завершил ${context.completedDays} дней.
 Текущая серия: ${context.streak} дней.
 Слабые темы: ${context.weakTopics.join(', ') || 'нет данных'}.
 
-Дай краткую персональную рекомендацию (2-3 предложения) что делать дальше.`;
+Дай краткую персональную рекомендацию (2-3 предложения) что делать дальше. Используй emoji для наглядности.`;
 
-    const result = await callAI(prompt);
-    setCache(cacheKey, result, 60);
+    const result = await gptLamaClient.query(prompt);
+    setCache(cacheKey, result, AI_CACHE_TTL_RECOMMENDATIONS_MINUTES);
     return result;
   } catch (error) {
     console.error('AI recommendation error:', error);
@@ -76,13 +50,13 @@ export async function generateRecommendation(context: UserContext): Promise<stri
 
 export async function generateMotivation(context: UserContext): Promise<string> {
   try {
-    const prompt = `Ты - мотивационный AI тренер.
+    const prompt = `Ты - мотивационный AI тренер для платформы VibeStudy.
 Пользователь завершил ${context.completedDays} дней из 90.
 Серия: ${context.streak} дней.
 
-Напиши короткое мотивационное сообщение (2-3 предложения).`;
+Напиши короткое мотивационное сообщение (2-3 предложения). Используй emoji для позитива.`;
 
-    return await callAI(prompt);
+    return await gptLamaClient.query(prompt);
   } catch (error) {
     console.error('AI motivation error:', error);
     return getFallbackMotivation(context);
@@ -98,18 +72,18 @@ export async function answerQuestion(
   if (cached) return cached;
 
   try {
-    const prompt = `Ты - преподаватель программирования.
+    const prompt = `Ты - преподаватель программирования на платформе VibeStudy.
 Тема урока: ${lessonContext.topic} (день ${lessonContext.day}).
 Вопрос студента: ${question}
 
-Дай краткий, понятный ответ с примером кода если нужно.`;
+Дай краткий, понятный ответ с примером кода если нужно. Используй emoji для наглядности.`;
 
-    const result = await callAI(prompt);
-    setCache(cacheKey, result, 30);
+    const result = await gptLamaClient.query(prompt);
+    setCache(cacheKey, result, AI_CACHE_TTL_QUESTIONS_MINUTES);
     return result;
   } catch (error) {
     console.error('AI answer error:', error);
-    return 'Извини, не могу ответить прямо сейчас. Попробуй переформулировать вопрос или спроси позже.';
+    return '❌ Извини, не могу ответить прямо сейчас. Попробуй переформулировать вопрос или спроси позже.';
   }
 }
 
@@ -125,12 +99,13 @@ export async function generateHint(
       detailed: 'детальную подсказку с примером'
     };
 
-    const prompt = `Задача: ${taskId}
+    const prompt = `Ты - AI ментор на платформе VibeStudy.
+Задача: ${taskId}
 Код пользователя: ${userCode || 'пусто'}
 
-Дай ${hintLevels[level]} для решения задачи.`;
+Дай ${hintLevels[level]} для решения задачи. Не давай готовое решение, помогай понять подход.`;
 
-    return await callAI(prompt);
+    return await gptLamaClient.query(prompt);
   } catch (error) {
     console.error('AI hint error:', error);
     return getFallbackHint(level);
@@ -140,7 +115,7 @@ export async function generateHint(
 export async function analyzeWeakTopics(userHistory: any[]): Promise<WeakTopic[]> {
   // Simplified analysis without AI
   const topics = new Map<string, { total: number; success: number }>();
-  
+
   userHistory.forEach(attempt => {
     const topic = attempt.topic || 'unknown';
     const current = topics.get(topic) || { total: 0, success: 0 };
@@ -170,11 +145,11 @@ function getFallbackRecommendation(context: UserContext): string {
   if (context.weakTopics.length > 0) {
     return `💡 Рекомендую повторить темы: ${context.weakTopics.slice(0, 2).join(', ')}. Практика поможет закрепить материал!`;
   }
-  
+
   if (context.streak === 0) {
     return `🔥 Начни новую серию! Даже 15 минут практики сегодня помогут войти в ритм.`;
   }
-  
+
   return `🎯 Продолжай в том же духе! Ты на дне ${context.currentDay} из 90. Осталось ${90 - context.currentDay} дней до цели!`;
 }
 
@@ -185,7 +160,7 @@ function getFallbackMotivation(context: UserContext): string {
     `🚀 Каждый день приближает тебя к цели. Ты молодец!`,
     `⭐ ${context.completedDays} дней завершено - это уже результат! Продолжай!`
   ];
-  
+
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -195,7 +170,6 @@ function getFallbackHint(level: HintLevel): string {
     moderate: '💡 Попробуй разбить задачу на более мелкие шаги. Начни с простого случая.',
     detailed: '💡 Используй цикл для перебора элементов и условие для проверки. Не забудь про граничные случаи.'
   };
-  
+
   return hints[level];
 }
-

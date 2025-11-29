@@ -1,5 +1,13 @@
-import { getSupabaseClient, isSupabaseConfigured } from './client';
-import type { AuthResult, AuthCallback, Unsubscribe, User, Session, ProfileUpdates } from './types';
+import { getSupabaseClient, isSupabaseConfigured } from "./client";
+import type {
+  AuthResult,
+  AuthCallback,
+  Unsubscribe,
+  User,
+  Session,
+  ProfileUpdates,
+} from "./types";
+import { logWarn, logError } from "../logger";
 
 /**
  * Authentication Service
@@ -11,22 +19,24 @@ import type { AuthResult, AuthCallback, Unsubscribe, User, Session, ProfileUpdat
  */
 export async function signInWithGoogle(): Promise<AuthResult> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     return {
       user: null,
       session: null,
-      error: new Error('Supabase is not configured. Please set up environment variables.')
+      error: new Error(
+        "Supabase is not configured. Please set up environment variables.",
+      ),
     };
   }
 
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        skipBrowserRedirect: false
-      }
+        skipBrowserRedirect: false,
+      },
     });
 
     if (error) {
@@ -39,7 +49,10 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     return {
       user: null,
       session: null,
-      error: error instanceof Error ? error : new Error('Unknown error during Google sign in')
+      error:
+        error instanceof Error
+          ? error
+          : new Error("Unknown error during Google sign in"),
     };
   }
 }
@@ -49,12 +62,14 @@ export async function signInWithGoogle(): Promise<AuthResult> {
  */
 export async function signInWithEmail(email: string): Promise<AuthResult> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     return {
       user: null,
       session: null,
-      error: new Error('Supabase is not configured. Please set up environment variables.')
+      error: new Error(
+        "Supabase is not configured. Please set up environment variables.",
+      ),
     };
   }
 
@@ -62,8 +77,8 @@ export async function signInWithEmail(email: string): Promise<AuthResult> {
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`
-      }
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     if (error) {
@@ -76,7 +91,10 @@ export async function signInWithEmail(email: string): Promise<AuthResult> {
     return {
       user: null,
       session: null,
-      error: error instanceof Error ? error : new Error('Unknown error during email sign in')
+      error:
+        error instanceof Error
+          ? error
+          : new Error("Unknown error during email sign in"),
     };
   }
 }
@@ -86,16 +104,16 @@ export async function signInWithEmail(email: string): Promise<AuthResult> {
  */
 export async function signOut(): Promise<void> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
-    console.warn('Supabase not configured, nothing to sign out from');
+    logWarn("Supabase not configured, nothing to sign out from");
     return;
   }
 
   try {
     await supabase.auth.signOut();
   } catch (error) {
-    console.error('Error signing out:', error);
+    logError("Error signing out", error as Error);
     throw error;
   }
 }
@@ -105,22 +123,22 @@ export async function signOut(): Promise<void> {
  */
 export async function getSession(): Promise<Session | null> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     return null;
   }
 
   try {
     const { data, error } = await supabase.auth.getSession();
-    
+
     if (error) {
-      console.error('Error getting session:', error);
+      logError("Error getting session", error as Error);
       return null;
     }
-    
+
     return data.session;
   } catch (error) {
-    console.error('Error getting session:', error);
+    logError("Error getting session", error as Error);
     return null;
   }
 }
@@ -130,22 +148,22 @@ export async function getSession(): Promise<Session | null> {
  */
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     return null;
   }
 
   try {
     const { data, error } = await supabase.auth.getUser();
-    
+
     if (error) {
-      console.error('Error getting user:', error);
+      logError("Error getting user", error as Error);
       return null;
     }
-    
+
     return data.user;
   } catch (error) {
-    console.error('Error getting user:', error);
+    logError("Error getting user", error as Error);
     return null;
   }
 }
@@ -155,13 +173,15 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export function onAuthStateChange(callback: AuthCallback): Unsubscribe {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
-    console.warn('Supabase not configured, auth state changes will not be tracked');
+    logWarn("Supabase not configured, auth state changes will not be tracked");
     return () => {}; // Return empty unsubscribe function
   }
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, session) => {
     callback(event, session);
   });
 
@@ -173,23 +193,25 @@ export function onAuthStateChange(callback: AuthCallback): Unsubscribe {
 /**
  * Update user profile metadata
  */
-export async function updateUserProfile(updates: ProfileUpdates): Promise<void> {
+export async function updateUserProfile(
+  updates: ProfileUpdates,
+): Promise<void> {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
-    throw new Error('Supabase is not configured');
+    throw new Error("Supabase is not configured");
   }
 
   try {
     const { error } = await supabase.auth.updateUser({
-      data: updates
+      data: updates,
     });
 
     if (error) {
       throw error;
     }
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    logError("Error updating user profile", error as Error);
     throw error;
   }
 }

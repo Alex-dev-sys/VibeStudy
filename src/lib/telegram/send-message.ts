@@ -1,16 +1,52 @@
 // Telegram Message Sending Utilities
 
 import type { BotResponse, InlineKeyboard } from '@/types/telegram';
+import {
+  TELEGRAM_MAX_MESSAGE_LENGTH,
+  TELEGRAM_MAX_CAPTION_LENGTH,
+  FETCH_TIMEOUT_MS,
+  FETCH_MAX_RETRIES,
+  FETCH_RETRY_DELAY_MS
+} from './constants';
 
-const TELEGRAM_API_URL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
+const TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+
+/**
+ * Build Telegram API URL safely without exposing token in logs
+ */
+function buildApiUrl(method: string): string {
+  return `${TELEGRAM_API_BASE}${BOT_TOKEN}/${method}`;
+}
 
 /**
  * Sleep utility for retry delays
  */
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Fetch with timeout to prevent hanging requests
+ */
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
 }
 
 /**
@@ -25,7 +61,7 @@ export async function sendMessageWithRetry(
     disableNotification?: boolean;
     disableWebPagePreview?: boolean;
   } = {},
-  maxRetries: number = MAX_RETRIES
+  maxRetries: number = FETCH_MAX_RETRIES
 ): Promise<boolean> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -40,7 +76,7 @@ export async function sendMessageWithRetry(
       }
       
       // Exponential backoff
-      await sleep(RETRY_DELAY * attempt);
+      await sleep(FETCH_RETRY_DELAY_MS * attempt);
     }
   }
   
@@ -60,11 +96,11 @@ export async function sendMessage(
     disableWebPagePreview?: boolean;
   } = {}
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/sendMessage`;
+  const url = buildApiUrl('sendMessage');
   
   const body: any = {
     chat_id: chatId,
-    text: text.slice(0, 4096), // Telegram limit
+    text: text.slice(0, TELEGRAM_MAX_MESSAGE_LENGTH), // Telegram limit
     parse_mode: options.parseMode || 'Markdown',
     disable_notification: options.disableNotification || false,
     disable_web_page_preview: options.disableWebPagePreview || false
@@ -75,7 +111,7 @@ export async function sendMessage(
   }
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -140,12 +176,12 @@ export async function editMessageText(
     replyMarkup?: InlineKeyboard;
   } = {}
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/editMessageText`;
+  const url = buildApiUrl('editMessageText');
   
   const body: any = {
     chat_id: chatId,
     message_id: messageId,
-    text: text.slice(0, 4096),
+    text: text.slice(0, TELEGRAM_MAX_MESSAGE_LENGTH),
     parse_mode: options.parseMode || 'Markdown'
   };
   
@@ -154,7 +190,7 @@ export async function editMessageText(
   }
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -174,10 +210,10 @@ export async function deleteMessage(
   chatId: number,
   messageId: number
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/deleteMessage`;
+  const url = buildApiUrl('deleteMessage');
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -197,10 +233,10 @@ export async function deleteMessage(
  * Send typing action
  */
 export async function sendTypingAction(chatId: number): Promise<void> {
-  const url = `${TELEGRAM_API_URL}/sendChatAction`;
+  const url = buildApiUrl('sendChatAction');
   
   try {
-    await fetch(url, {
+    await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -217,10 +253,10 @@ export async function sendTypingAction(chatId: number): Promise<void> {
  * Get file download URL
  */
 export async function getFileUrl(fileId: string): Promise<string | null> {
-  const url = `${TELEGRAM_API_URL}/getFile`;
+  const url = buildApiUrl('getFile');
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ file_id: fileId })
@@ -246,10 +282,10 @@ export async function answerCallbackQuery(
   text?: string,
   showAlert: boolean = false
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/answerCallbackQuery`;
+  const url = buildApiUrl('answerCallbackQuery');
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -278,7 +314,7 @@ export async function sendPhoto(
     replyMarkup?: InlineKeyboard;
   } = {}
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/sendPhoto`;
+  const url = buildApiUrl('sendPhoto');
   
   const body: any = {
     chat_id: chatId,
@@ -286,7 +322,7 @@ export async function sendPhoto(
   };
   
   if (caption) {
-    body.caption = caption.slice(0, 1024); // Telegram caption limit
+    body.caption = caption.slice(0, TELEGRAM_MAX_CAPTION_LENGTH); // Telegram caption limit
     body.parse_mode = options.parseMode || 'Markdown';
   }
   
@@ -295,7 +331,7 @@ export async function sendPhoto(
   }
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -317,7 +353,7 @@ export async function sendDocument(
   caption?: string,
   filename?: string
 ): Promise<boolean> {
-  const url = `${TELEGRAM_API_URL}/sendDocument`;
+  const url = buildApiUrl('sendDocument');
   
   const body: any = {
     chat_id: chatId,
@@ -325,7 +361,7 @@ export async function sendDocument(
   };
   
   if (caption) {
-    body.caption = caption.slice(0, 1024);
+    body.caption = caption.slice(0, TELEGRAM_MAX_CAPTION_LENGTH);
   }
   
   if (filename) {
@@ -333,7 +369,7 @@ export async function sendDocument(
   }
   
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)

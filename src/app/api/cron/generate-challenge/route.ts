@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { LANGUAGES } from '@/lib/languages';
-import { logError, logInfo } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  callChatCompletion,
+  extractMessageContent,
+  isAiConfigured,
+} from "@/lib/ai-client";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { LANGUAGES } from "@/lib/languages";
+import { logError, logInfo, logWarn } from "@/lib/logger";
 
 interface ChallengeTask {
   description: string;
@@ -25,7 +29,7 @@ interface TestCase {
 interface GeneratedChallenge {
   problem: ChallengeTask;
   test_cases: TestCase[];
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   metadata: {
     topics: string[];
     estimated_time_minutes: number;
@@ -88,28 +92,32 @@ Make the challenge interesting and educational!`;
 
 const parseChallengeResponse = (content: string): GeneratedChallenge | null => {
   try {
-    const sanitized = content.replace(/```json|```/g, '').trim();
-    if (!sanitized || !sanitized.startsWith('{')) {
-      console.warn('AI response is not valid JSON');
+    const sanitized = content.replace(/```json|```/g, "").trim();
+    if (!sanitized || !sanitized.startsWith("{")) {
+      logWarn("AI response is not valid JSON");
       return null;
     }
-    
+
     const parsed = JSON.parse(sanitized) as GeneratedChallenge;
-    
+
     // Validate required fields
-    if (!parsed.problem || !parsed.test_cases || !Array.isArray(parsed.test_cases)) {
-      console.warn('Challenge missing required fields');
+    if (
+      !parsed.problem ||
+      !parsed.test_cases ||
+      !Array.isArray(parsed.test_cases)
+    ) {
+      logWarn("Challenge missing required fields");
       return null;
     }
-    
+
     if (parsed.test_cases.length < 3) {
-      console.warn('Challenge has too few test cases');
+      logWarn("Challenge has too few test cases");
       return null;
     }
-    
+
     return parsed;
   } catch (error) {
-    console.error('Failed to parse challenge response:', error);
+    logError("Failed to parse challenge response:", error as Error);
     return null;
   }
 };
@@ -117,60 +125,61 @@ const parseChallengeResponse = (content: string): GeneratedChallenge | null => {
 export async function POST(request: NextRequest) {
   try {
     // Verify cron secret for security
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-    
+
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      logError('Unauthorized cron request', new Error('Invalid cron secret'), {
-        component: 'api',
-        action: 'generate-challenge'
+      logError("Unauthorized cron request", new Error("Invalid cron secret"), {
+        component: "api",
+        action: "generate-challenge",
       });
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if AI is configured
     if (!isAiConfigured()) {
-      logError('AI not configured', new Error('AI_API_TOKEN not set'), {
-        component: 'api',
-        action: 'generate-challenge'
+      logError("AI not configured", new Error("AI_API_TOKEN not set"), {
+        component: "api",
+        action: "generate-challenge",
       });
       return NextResponse.json(
-        { error: 'AI service not configured' },
-        { status: 503 }
+        { error: "AI service not configured" },
+        { status: 503 },
       );
     }
 
     // Use service role key for admin access (bypasses RLS)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!supabaseUrl || !supabaseServiceKey) {
-      logError('Supabase not configured', new Error('Missing Supabase credentials'), {
-        component: 'api',
-        action: 'generate-challenge'
-      });
+      logError(
+        "Supabase not configured",
+        new Error("Missing Supabase credentials"),
+        {
+          component: "api",
+          action: "generate-challenge",
+        },
+      );
       return NextResponse.json(
-        { error: 'Database service not configured' },
-        { status: 503 }
+        { error: "Database service not configured" },
+        { status: 503 },
       );
     }
-    
+
     const supabase = createSupabaseClient(supabaseUrl, supabaseServiceKey);
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    logInfo('Starting daily challenge generation', {
-      component: 'api',
-      action: 'generate-challenge',
-      metadata: { date: today }
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    logInfo("Starting daily challenge generation", {
+      component: "api",
+      action: "generate-challenge",
+      metadata: { date: today },
     });
 
     const results = {
       success: [] as string[],
       failed: [] as string[],
-      skipped: [] as string[]
+      skipped: [] as string[],
     };
 
     // Generate challenge for each language
@@ -178,22 +187,22 @@ export async function POST(request: NextRequest) {
       try {
         // Check if challenge already exists for this date and language
         const { data: existing, error: checkError } = await supabase
-          .from('daily_challenges')
-          .select('id')
-          .eq('date', today)
-          .eq('language', lang.id)
+          .from("daily_challenges")
+          .select("id")
+          .eq("date", today)
+          .eq("language", lang.id)
           .single();
 
-        if (checkError && checkError.code !== 'PGRST116') {
+        if (checkError && checkError.code !== "PGRST116") {
           // PGRST116 is "not found" error, which is expected
           throw checkError;
         }
 
         if (existing) {
           logInfo(`Challenge already exists for ${lang.id}`, {
-            component: 'api',
-            action: 'generate-challenge',
-            metadata: { language: lang.id, date: today }
+            component: "api",
+            action: "generate-challenge",
+            metadata: { language: lang.id, date: today },
           });
           results.skipped.push(lang.id);
           continue;
@@ -201,51 +210,59 @@ export async function POST(request: NextRequest) {
 
         // Generate challenge using AI
         logInfo(`Generating challenge for ${lang.id}`, {
-          component: 'api',
-          action: 'generate-challenge',
-          metadata: { language: lang.id }
+          component: "api",
+          action: "generate-challenge",
+          metadata: { language: lang.id },
         });
 
         const prompt = buildChallengePrompt(lang.label, today);
-        
+
         const { data, raw } = await callChatCompletion({
           messages: [
             {
-              role: 'system',
-              content: 'You are an expert programming instructor. Generate coding challenges in valid JSON format only.'
+              role: "system",
+              content:
+                "You are an expert programming instructor. Generate coding challenges in valid JSON format only.",
             },
             {
-              role: 'user',
-              content: prompt
-            }
+              role: "user",
+              content: prompt,
+            },
           ],
           temperature: 0.9, // Higher temperature for more variety
-          maxTokens: 2000
+          maxTokens: 2000,
         });
 
         const content = raw || extractMessageContent(data);
         const challenge = parseChallengeResponse(String(content));
 
         if (!challenge) {
-          logError(`Failed to parse challenge for ${lang.id}`, new Error('Invalid AI response'), {
-            component: 'api',
-            action: 'generate-challenge',
-            metadata: { language: lang.id, response: String(content).slice(0, 200) }
-          });
+          logError(
+            `Failed to parse challenge for ${lang.id}`,
+            new Error("Invalid AI response"),
+            {
+              component: "api",
+              action: "generate-challenge",
+              metadata: {
+                language: lang.id,
+                response: String(content).slice(0, 200),
+              },
+            },
+          );
           results.failed.push(lang.id);
           continue;
         }
 
         // Save challenge to database
         const { error: insertError } = await supabase
-          .from('daily_challenges')
+          .from("daily_challenges")
           .insert({
             date: today,
             language: lang.id,
             problem: challenge.problem,
             test_cases: challenge.test_cases,
             difficulty: challenge.difficulty,
-            metadata: challenge.metadata
+            metadata: challenge.metadata,
           });
 
         if (insertError) {
@@ -253,54 +270,52 @@ export async function POST(request: NextRequest) {
         }
 
         logInfo(`Successfully generated challenge for ${lang.id}`, {
-          component: 'api',
-          action: 'generate-challenge',
-          metadata: { 
-            language: lang.id, 
+          component: "api",
+          action: "generate-challenge",
+          metadata: {
+            language: lang.id,
             difficulty: challenge.difficulty,
-            testCases: challenge.test_cases.length 
-          }
+            testCases: challenge.test_cases.length,
+          },
         });
 
         results.success.push(lang.id);
 
         // Add small delay between requests to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         logError(`Error generating challenge for ${lang.id}`, error as Error, {
-          component: 'api',
-          action: 'generate-challenge',
-          metadata: { language: lang.id }
+          component: "api",
+          action: "generate-challenge",
+          metadata: { language: lang.id },
         });
         results.failed.push(lang.id);
       }
     }
 
-    logInfo('Daily challenge generation completed', {
-      component: 'api',
-      action: 'generate-challenge',
-      metadata: results
+    logInfo("Daily challenge generation completed", {
+      component: "api",
+      action: "generate-challenge",
+      metadata: results,
     });
 
     return NextResponse.json({
       success: true,
       date: today,
-      results
+      results,
     });
-
   } catch (error) {
-    logError('Fatal error in challenge generation', error as Error, {
-      component: 'api',
-      action: 'generate-challenge'
+    logError("Fatal error in challenge generation", error as Error, {
+      component: "api",
+      action: "generate-challenge",
     });
 
     return NextResponse.json(
-      { 
-        error: 'Failed to generate challenges',
-        message: error instanceof Error ? error.message : 'Unknown error'
+      {
+        error: "Failed to generate challenges",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -308,15 +323,12 @@ export async function POST(request: NextRequest) {
 // GET endpoint for manual testing
 export async function GET(request: NextRequest) {
   // Only allow in development or with proper auth
-  if (process.env.NODE_ENV === 'production') {
-    const authHeader = request.headers.get('authorization');
+  if (process.env.NODE_ENV === "production") {
+    const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-    
+
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
 

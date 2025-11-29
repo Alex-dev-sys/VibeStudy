@@ -12,10 +12,11 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: Request) {
   try {
-    const { secret } = await request.json();
-    
-    // Проверка секретного ключа для защиты эндпоинта
-    if (secret !== process.env.CRON_SECRET) {
+    // Проверка секретного ключа через Authorization header (более безопасно чем query/body)
+    const authHeader = request.headers.get('authorization');
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+
+    if (authHeader !== expectedAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -73,13 +74,16 @@ export async function POST(request: Request) {
  */
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const username = searchParams.get('username');
-    const secret = searchParams.get('secret');
+    // Проверка секретного ключа через Authorization header
+    const authHeader = request.headers.get('authorization');
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
 
-    if (secret !== process.env.CRON_SECRET) {
+    if (authHeader !== expectedAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get('username');
 
     if (!username) {
       return NextResponse.json({ error: 'Username required' }, { status: 400 });

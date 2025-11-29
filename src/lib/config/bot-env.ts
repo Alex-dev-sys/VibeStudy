@@ -9,10 +9,10 @@ const botEnv = {
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
     TELEGRAM_WEBHOOK_URL: process.env.TELEGRAM_WEBHOOK_URL || '',
 
-    // GPT Lama AI Configuration  
-    GPT_LAMA_API_KEY: process.env.HF_TOKEN || '',
-    GPT_LAMA_API_URL: process.env.HF_API_BASE_URL || 'https://api.gptlama.ru/v1',
-    GPT_LAMA_MODEL: process.env.HF_MODEL || 'gpt-4o-mini',
+    // GPT Lama AI Configuration
+    GPT_LAMA_API_KEY: process.env.AI_API_TOKEN || process.env.HF_TOKEN || '',
+    GPT_LAMA_API_URL: process.env.AI_API_BASE_URL || process.env.HF_API_BASE_URL || 'https://api.gptlama.ru/v1',
+    GPT_LAMA_MODEL: process.env.AI_MODEL_FREE || process.env.HF_MODEL || 'gemini-1.5-flash',
 
     // App Configuration
     NODE_ENV: process.env.NODE_ENV || 'development',

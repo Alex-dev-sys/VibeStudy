@@ -17,6 +17,38 @@ import {
 import { commandHandlers } from './commands';
 import { handleCallbackQuery } from './callbacks';
 import { handleVoiceMessage } from './voice-handler';
+import { FETCH_TIMEOUT_MS } from './constants';
+
+// Secure API URL builder to avoid exposing token in logs
+const TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+
+function buildApiUrl(method: string): string {
+  return `${TELEGRAM_API_BASE}${BOT_TOKEN}/${method}`;
+}
+
+/**
+ * Fetch with timeout to prevent hanging requests
+ */
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
+}
 
 export class BotController {
   /**
@@ -202,12 +234,12 @@ export class BotController {
     switch (context.expected_input_type) {
       case 'reminder_time':
         // Handle reminder time input
-        await this.handleReminderTimeInput(text, userId, chatId);
+        await this.handleReminderTimeInput(text, userId, chatId, telegramUserId);
         break;
-      
+
       case 'language_selection':
         // Handle language selection
-        await this.handleLanguageInput(text, userId, chatId);
+        await this.handleLanguageInput(text, userId, chatId, telegramUserId);
         break;
       
       default:
@@ -287,7 +319,7 @@ export class BotController {
    * Send response to user
    */
   async sendResponse(chatId: number, response: BotResponse): Promise<void> {
-    const url = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const url = buildApiUrl('sendMessage');
     
     const body: any = {
       chat_id: chatId,
@@ -301,7 +333,7 @@ export class BotController {
     }
     
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -321,9 +353,9 @@ export class BotController {
    * Answer callback query
    */
   private async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {
-    const url = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`;
+    const url = buildApiUrl('answerCallbackQuery');
     
-    await fetch(url, {
+    await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -352,7 +384,7 @@ export class BotController {
   /**
    * Handle reminder time input
    */
-  private async handleReminderTimeInput(text: string, userId: string, chatId: number): Promise<void> {
+  private async handleReminderTimeInput(text: string, userId: string, chatId: number, telegramUserId: number): Promise<void> {
     // Parse time input (HH:MM format)
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
     
@@ -375,7 +407,7 @@ export class BotController {
     // Clear conversation context
     await upsertConversation({
       user_id: userId,
-      telegram_user_id: chatId,
+      telegram_user_id: telegramUserId,
       conversation_context: {},
       last_interaction_at: new Date().toISOString()
     });
@@ -384,7 +416,7 @@ export class BotController {
   /**
    * Handle language input
    */
-  private async handleLanguageInput(text: string, userId: string, chatId: number): Promise<void> {
+  private async handleLanguageInput(text: string, userId: string, chatId: number, telegramUserId: number): Promise<void> {
     const validLanguages = ['ru', 'en', 'русский', 'english'];
     const normalizedText = text.toLowerCase();
     
@@ -419,7 +451,7 @@ export class BotController {
     // Clear conversation context
     await upsertConversation({
       user_id: userId,
-      telegram_user_id: chatId,
+      telegram_user_id: telegramUserId,
       conversation_context: {},
       last_interaction_at: new Date().toISOString()
     });

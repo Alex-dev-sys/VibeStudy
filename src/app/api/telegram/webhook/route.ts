@@ -1,35 +1,53 @@
 // Telegram Webhook Endpoint
 // Receives updates from Telegram Bot API
 
-import { NextRequest, NextResponse } from 'next/server';
-import { botController } from '@/lib/telegram/bot-controller';
-import type { TelegramUpdate } from '@/types/telegram';
+import { NextRequest, NextResponse } from "next/server";
+import { botController } from "@/lib/telegram/bot-controller";
+import type { TelegramUpdate } from "@/types/telegram";
+import { logWarn, logError } from "@/lib/logger";
+import {
+  RATE_LIMIT_REQUESTS_PER_MINUTE,
+  RATE_LIMIT_WINDOW_MS
+} from "@/lib/telegram/constants";
 
-// Rate limiting map (simple in-memory implementation)
+/**
+ * Rate limiting implementation
+ * NOTE: In-memory solution - not suitable for multi-instance deployments
+ * For production with multiple instances, use Redis or Supabase
+ * State is lost on server restart
+ */
 const rateLimitMap = new Map<number, { count: number; resetAt: number }>();
-
-const RATE_LIMIT = 30; // requests per minute
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in ms
 
 /**
  * Check rate limit for user
+ * Thread-safe for single instance (Node.js is single-threaded)
  */
 function checkRateLimit(userId: number): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(userId);
-  
+
+  // Clean up expired entries periodically
+  if (Math.random() < 0.01) { // 1% chance to cleanup
+    for (const [id, data] of rateLimitMap.entries()) {
+      if (data.resetAt < now) {
+        rateLimitMap.delete(id);
+      }
+    }
+  }
+
   if (!entry || entry.resetAt < now) {
     rateLimitMap.set(userId, {
       count: 1,
-      resetAt: now + RATE_LIMIT_WINDOW
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
     });
     return true;
   }
-  
-  if (entry.count >= RATE_LIMIT) {
+
+  if (entry.count >= RATE_LIMIT_REQUESTS_PER_MINUTE) {
     return false;
   }
-  
+
+  // Atomic increment
   entry.count++;
   return true;
 }
@@ -38,24 +56,32 @@ function checkRateLimit(userId: number): boolean {
  * Verify webhook request is from Telegram
  */
 function verifyWebhook(request: NextRequest): boolean {
-  const secretToken = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+  const secretToken = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
   const expectedToken = process.env.TELEGRAM_WEBHOOK_SECRET;
-  
+
   if (!expectedToken) {
-    console.warn('TELEGRAM_WEBHOOK_SECRET not set, skipping verification');
-    return true; // Allow in development
+    logWarn("TELEGRAM_WEBHOOK_SECRET not set, skipping verification");
+    // Only allow in development
+    if (process.env.NODE_ENV === "production") {
+      return false;
+    }
+    return true;
   }
-  
+
   return secretToken === expectedToken;
 }
 
 /**
- * Sanitize input text
+ * Sanitize user input to prevent XSS and injection attacks
+ * Uses whitelist approach - removes all HTML tags and dangerous patterns
  */
 function sanitizeInput(text: string): string {
   return text
-    .replace(/<script>/gi, '')
-    .replace(/javascript:/gi, '')
+    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers (onclick=, onerror=, etc)
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
     .trim()
     .slice(0, 4096); // Telegram message limit
 }
@@ -68,56 +94,56 @@ export async function POST(request: NextRequest) {
   try {
     // Verify webhook
     if (!verifyWebhook(request)) {
-      console.error('Webhook verification failed');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+      logError(
+        "Webhook verification failed",
+        new Error("Invalid webhook token"),
       );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     // Parse update
     const update: TelegramUpdate = await request.json();
-    
+
     // Extract user ID for rate limiting
     const userId = update.message?.from.id || update.callback_query?.from.id;
-    
+
     if (!userId) {
-      console.error('No user ID in update');
+      logError("No user ID in update", new Error("Missing user ID"));
       return NextResponse.json({ ok: true }); // Acknowledge but ignore
     }
-    
+
     // Check rate limit
     if (!checkRateLimit(userId)) {
-      console.warn(`Rate limit exceeded for user ${userId}`);
-      
+      logWarn(`Rate limit exceeded for user ${userId}`);
+
       // Send rate limit message
-      const chatId = update.message?.chat.id || update.callback_query?.message?.chat.id;
+      const chatId =
+        update.message?.chat.id || update.callback_query?.message?.chat.id;
       if (chatId) {
         await botController.sendResponse(chatId, {
-          text: '⏳ Слишком много запросов. Подожди немного.',
-          parseMode: 'Markdown'
+          text: "⏳ Слишком много запросов. Подожди немного.",
+          parseMode: "Markdown",
         });
       }
-      
+
       return NextResponse.json({ ok: true });
     }
-    
+
     // Sanitize text input if present
     if (update.message?.text) {
       update.message.text = sanitizeInput(update.message.text);
     }
-    
+
     // Process update asynchronously (don't wait for completion)
-    botController.handleMessage(update).catch(error => {
-      console.error('Error processing update:', error);
+    botController.handleMessage(update).catch((error) => {
+      logError("Error processing update:", error as Error);
     });
-    
+
     // Respond immediately to Telegram
     return NextResponse.json({ ok: true });
-    
   } catch (error) {
-    console.error('Webhook error:', error);
-    
+    logError("Webhook error:", error as Error);
+
     // Still return 200 to prevent Telegram from retrying
     return NextResponse.json({ ok: true });
   }
@@ -129,8 +155,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   return NextResponse.json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
+    status: "ok",
+    timestamp: new Date().toISOString(),
   });
 }
-

@@ -3,10 +3,11 @@
  * Coordinates synchronization with debouncing and conflict resolution
  */
 
-import { syncQueue } from './sync-queue';
-import { SyncOperationType, SyncAction } from './types';
-import { DebounceManager, DEBOUNCE_DELAYS } from './debounce';
-import { getSupabaseClient } from '../supabase/client';
+import { syncQueue } from "./sync-queue";
+import { SyncOperationType, SyncAction } from "./types";
+import { DebounceManager, DEBOUNCE_DELAYS } from "./debounce";
+import { getSupabaseClient } from "../supabase/client";
+import { logWarn, logError, logInfo } from "../logger";
 
 class SyncManager {
   private debounceManager = new DebounceManager();
@@ -34,30 +35,30 @@ class SyncManager {
   private setupDebouncedFunctions(): void {
     // Code editor sync (debounced)
     this.debounceManager.register(
-      'code',
-      (data: any) => this.syncImmediate('progress', 'update', data),
-      DEBOUNCE_DELAYS.CODE_EDITOR
+      "code",
+      (data: any) => this.syncImmediate("progress", "update", data),
+      DEBOUNCE_DELAYS.CODE_EDITOR,
     );
 
     // Notes sync (debounced)
     this.debounceManager.register(
-      'notes',
-      (data: any) => this.syncImmediate('progress', 'update', data),
-      DEBOUNCE_DELAYS.NOTES
+      "notes",
+      (data: any) => this.syncImmediate("progress", "update", data),
+      DEBOUNCE_DELAYS.NOTES,
     );
 
     // Recap answer sync (debounced)
     this.debounceManager.register(
-      'recap',
-      (data: any) => this.syncImmediate('progress', 'update', data),
-      DEBOUNCE_DELAYS.RECAP_ANSWER
+      "recap",
+      (data: any) => this.syncImmediate("progress", "update", data),
+      DEBOUNCE_DELAYS.RECAP_ANSWER,
     );
 
     // Profile sync (debounced)
     this.debounceManager.register(
-      'profile',
-      (data: any) => this.syncImmediate('profile', 'update', data),
-      DEBOUNCE_DELAYS.PROFILE
+      "profile",
+      (data: any) => this.syncImmediate("profile", "update", data),
+      DEBOUNCE_DELAYS.PROFILE,
     );
   }
 
@@ -66,11 +67,11 @@ class SyncManager {
    */
   syncCode(topicId: string, taskId: string, code: string): void {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync code - user not initialized");
       return;
     }
 
-    this.debounceManager.execute('code', {
+    this.debounceManager.execute("code", {
       topic_id: topicId,
       task_id: taskId,
       code,
@@ -83,11 +84,11 @@ class SyncManager {
    */
   syncNotes(topicId: string, notes: string): void {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync notes - user not initialized");
       return;
     }
 
-    this.debounceManager.execute('notes', {
+    this.debounceManager.execute("notes", {
       topic_id: topicId,
       notes,
       updated_at: Date.now(),
@@ -99,11 +100,11 @@ class SyncManager {
    */
   syncRecapAnswer(topicId: string, recapAnswer: string): void {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync recap - user not initialized");
       return;
     }
 
-    this.debounceManager.execute('recap', {
+    this.debounceManager.execute("recap", {
       topic_id: topicId,
       recap_answer: recapAnswer,
       updated_at: Date.now(),
@@ -113,13 +114,19 @@ class SyncManager {
   /**
    * Sync task completion (immediate)
    */
-  async syncTaskCompletion(topicId: string, taskId: string, completed: boolean): Promise<void> {
+  async syncTaskCompletion(
+    topicId: string,
+    taskId: string,
+    completed: boolean,
+  ): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn(
+        "SyncManager: Cannot sync task completion - user not initialized",
+      );
       return;
     }
 
-    await this.syncImmediate('progress', 'update', {
+    await this.syncImmediate("progress", "update", {
       topic_id: topicId,
       task_id: taskId,
       completed,
@@ -133,11 +140,11 @@ class SyncManager {
    */
   async syncDayCompletion(topicId: string, completed: boolean): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync day completion - user not initialized");
       return;
     }
 
-    await this.syncImmediate('progress', 'update', {
+    await this.syncImmediate("progress", "update", {
       topic_id: topicId,
       day_completed: completed,
       day_completed_at: completed ? Date.now() : null,
@@ -150,11 +157,11 @@ class SyncManager {
    */
   async syncAchievementUnlock(achievementId: string): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync achievement - user not initialized");
       return;
     }
 
-    await this.syncImmediate('achievement', 'create', {
+    await this.syncImmediate("achievement", "create", {
       achievement_id: achievementId,
       unlocked_at: Date.now(),
     });
@@ -165,11 +172,11 @@ class SyncManager {
    */
   async syncUserStats(stats: any): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync user stats - user not initialized");
       return;
     }
 
-    await this.syncImmediate('achievement', 'update', {
+    await this.syncImmediate("achievement", "update", {
       stats,
       updated_at: Date.now(),
     });
@@ -180,11 +187,11 @@ class SyncManager {
    */
   syncProfile(profileData: any): void {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync profile - user not initialized");
       return;
     }
 
-    this.debounceManager.execute('profile', {
+    this.debounceManager.execute("profile", {
       ...profileData,
       updated_at: Date.now(),
     });
@@ -195,11 +202,11 @@ class SyncManager {
    */
   async syncTaskAttempt(attemptData: any): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync task attempt - user not initialized");
       return;
     }
 
-    await this.syncImmediate('task_attempt', 'create', {
+    await this.syncImmediate("task_attempt", "create", {
       ...attemptData,
       attempted_at: Date.now(),
     });
@@ -210,11 +217,11 @@ class SyncManager {
    */
   async syncTopicMastery(topic: string, masteryData: any): Promise<void> {
     if (!this.userId) {
-      console.warn('[SyncManager] Cannot sync: user not initialized');
+      logWarn("SyncManager: Cannot sync topic mastery - user not initialized");
       return;
     }
 
-    await this.syncImmediate('topic_mastery', 'update', {
+    await this.syncImmediate("topic_mastery", "update", {
       topic,
       ...masteryData,
       updated_at: Date.now(),
@@ -227,16 +234,16 @@ class SyncManager {
   private async syncImmediate(
     type: SyncOperationType,
     action: SyncAction,
-    data: any
+    data: any,
   ): Promise<void> {
     if (!this.userId) {
-      throw new Error('User not initialized');
+      throw new Error("User not initialized");
     }
 
     try {
       await syncQueue.queueOperation(type, action, data, this.userId);
     } catch (error) {
-      console.error('[SyncManager] Failed to queue sync operation:', error);
+      logError("SyncManager: Failed to queue sync operation", error as Error);
       throw error;
     }
   }
@@ -266,10 +273,20 @@ class SyncManager {
    * Sync all data at once (used for guest data migration)
    */
   async syncAllData(data: any): Promise<void> {
-    const { userId, activeDay, languageId, dayStates, record, achievements, profile, analytics, playground } = data;
-    
+    const {
+      userId,
+      activeDay,
+      languageId,
+      dayStates,
+      record,
+      achievements,
+      profile,
+      analytics,
+      playground,
+    } = data;
+
     if (!userId) {
-      throw new Error('User ID is required for syncing all data');
+      throw new Error("User ID is required for syncing all data");
     }
 
     // Temporarily set userId for sync operations
@@ -279,7 +296,7 @@ class SyncManager {
     try {
       // Sync progress data
       if (dayStates && record) {
-        await this.syncImmediate('progress', 'update', {
+        await this.syncImmediate("progress", "update", {
           active_day: activeDay,
           language_id: languageId,
           day_states: dayStates,
@@ -302,7 +319,7 @@ class SyncManager {
 
       // Sync profile
       if (profile) {
-        await this.syncImmediate('profile', 'update', {
+        await this.syncImmediate("profile", "update", {
           ...profile,
           updated_at: Date.now(),
         });
@@ -311,9 +328,9 @@ class SyncManager {
       // Note: Analytics and playground data are stored locally only
       // They can be synced through profile metadata if needed in the future
 
-      console.log('[SyncManager] All data synced successfully');
+      logInfo("SyncManager: All data synced successfully");
     } catch (error) {
-      console.error('[SyncManager] Failed to sync all data:', error);
+      logError("SyncManager: Failed to sync all data", error as Error);
       throw error;
     } finally {
       // Restore previous userId
@@ -326,51 +343,51 @@ class SyncManager {
    */
   async fetchFromCloud(type: SyncOperationType): Promise<any> {
     if (!this.userId) {
-      throw new Error('User not initialized');
+      throw new Error("User not initialized");
     }
 
     const client = getSupabaseClient();
     if (!client) {
-      throw new Error('Supabase client not available');
+      throw new Error("Supabase client not available");
     }
 
     switch (type) {
-      case 'progress': {
+      case "progress": {
         const { data, error } = await client
-          .from('user_progress')
-          .select('*')
-          .eq('user_id', this.userId);
+          .from("user_progress")
+          .select("*")
+          .eq("user_id", this.userId);
 
         if (error) throw error;
         return data;
       }
 
-      case 'achievement': {
+      case "achievement": {
         const { data, error } = await client
-          .from('user_achievements')
-          .select('*')
-          .eq('user_id', this.userId);
+          .from("user_achievements")
+          .select("*")
+          .eq("user_id", this.userId);
 
         if (error) throw error;
         return data;
       }
 
-      case 'profile': {
+      case "profile": {
         const { data, error } = await client
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', this.userId)
+          .from("user_profiles")
+          .select("*")
+          .eq("user_id", this.userId)
           .single();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error && error.code !== "PGRST116") throw error;
         return data;
       }
 
-      case 'topic_mastery': {
+      case "topic_mastery": {
         const { data, error } = await client
-          .from('topic_mastery')
-          .select('*')
-          .eq('user_id', this.userId);
+          .from("topic_mastery")
+          .select("*")
+          .eq("user_id", this.userId);
 
         if (error) throw error;
         return data;

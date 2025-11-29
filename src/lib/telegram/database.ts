@@ -12,12 +12,24 @@ import type {
   ReminderType,
   MessageType
 } from '@/types/telegram';
+import { AI_DAILY_QUESTIONS_LIMIT } from './constants';
 
 // ============================================================================
-// Helper: Create Supabase Client
+// Helper: Supabase Client with Connection Pooling
 // ============================================================================
+
+/**
+ * Singleton Supabase client instance
+ * Reuses the same client across multiple requests for better performance
+ */
+let supabaseClient: ReturnType<typeof createSupabaseClient> | null = null;
 
 function createClient() {
+  // Return existing client if already created
+  if (supabaseClient) {
+    return supabaseClient;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -30,12 +42,15 @@ function createClient() {
     throw new Error('Supabase credentials not configured');
   }
 
-  return createSupabaseClient(supabaseUrl, supabaseKey, {
+  // Create and cache the client
+  supabaseClient = createSupabaseClient(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false
     }
   });
+
+  return supabaseClient;
 }
 
 // ============================================================================
@@ -398,7 +413,7 @@ export async function getAIQuestionTracking(userId: string) {
         user_id: userId,
         date: today,
         questions_asked: 0,
-        questions_remaining: 10
+        questions_remaining: AI_DAILY_QUESTIONS_LIMIT
       })
       .select()
       .single();

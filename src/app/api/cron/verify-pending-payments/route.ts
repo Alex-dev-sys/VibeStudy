@@ -1,21 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import {
   verifyPayment,
   getPricingForTier,
   type TierType,
-} from '@/lib/ton-client';
+} from "@/lib/ton-client";
+import { logInfo, logError } from "@/lib/logger";
 
 // Force dynamic rendering for this route
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * Cron Job: Verify Pending TON Payments
- * 
+ *
  * Periodically checks pending payments on the TON blockchain
  * Updates user tiers when payments are confirmed
- * 
+ *
  * Should be called via Vercel Cron or similar scheduler
  * Recommended frequency: Every 5-10 minutes
  */
@@ -23,7 +24,7 @@ export const runtime = 'nodejs';
 interface VerificationResult {
   paymentId: string;
   userId: string;
-  status: 'verified' | 'pending' | 'expired' | 'error';
+  status: "verified" | "pending" | "expired" | "error";
   error?: string;
 }
 
@@ -45,7 +46,7 @@ function createSupabaseAdminClient() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase admin credentials not configured');
+    throw new Error("Supabase admin credentials not configured");
   }
 
   return createClient(supabaseUrl, supabaseServiceKey, {
@@ -61,23 +62,23 @@ function createSupabaseAdminClient() {
  */
 async function verifyPendingPayment(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
-  payment: any
+  payment: any,
 ): Promise<VerificationResult> {
   const result: VerificationResult = {
     paymentId: payment.id,
     userId: payment.user_id,
-    status: 'pending',
+    status: "pending",
   };
 
   try {
     // Check if payment has expired
     if (new Date(payment.expires_at) < new Date()) {
       await supabase
-        .from('payments')
-        .update({ status: 'expired' })
-        .eq('id', payment.id);
+        .from("payments")
+        .update({ status: "expired" })
+        .eq("id", payment.id);
 
-      result.status = 'expired';
+      result.status = "expired";
       return result;
     }
 
@@ -85,12 +86,12 @@ async function verifyPendingPayment(
     const pricing = getPricingForTier(payment.tier as TierType);
     const verificationResult = await verifyPayment(
       payment.payment_comment,
-      pricing.amount
+      pricing.amount,
     );
 
     if (!verificationResult.verified) {
       // Still pending
-      result.status = 'pending';
+      result.status = "pending";
       return result;
     }
 
@@ -101,56 +102,77 @@ async function verifyPendingPayment(
 
     // Update payment status
     const { error: updatePaymentError } = await supabase
-      .from('payments')
+      .from("payments")
       .update({
-        status: 'completed',
+        status: "completed",
         completed_at: now.toISOString(),
         transaction_hash: verificationResult.transaction?.hash,
         ton_sender_address: verificationResult.transaction?.from,
       })
-      .eq('id', payment.id);
+      .eq("id", payment.id);
 
     if (updatePaymentError) {
-      throw new Error(`Failed to update payment: ${updatePaymentError.message}`);
+      throw new Error(
+        `Failed to update payment: ${updatePaymentError.message}`,
+      );
     }
 
     // Update user tier
     const { error: updateUserError } = await supabase
-      .from('users')
+      .from("users")
       .update({
         tier: payment.tier,
         tier_expires_at: tierExpiresAt.toISOString(),
       })
-      .eq('id', payment.user_id);
+      .eq("id", payment.user_id);
 
     if (updateUserError) {
       // Rollback payment status
       await supabase
-        .from('payments')
-        .update({ status: 'pending' })
-        .eq('id', payment.id);
+        .from("payments")
+        .update({ status: "pending" })
+        .eq("id", payment.id);
 
       throw new Error(`Failed to update user tier: ${updateUserError.message}`);
     }
 
-    console.log(`[cron] Successfully verified payment ${payment.id} for user ${payment.user_id}`);
-    result.status = 'verified';
+    logInfo(
+      `Successfully verified payment ${payment.id} for user ${payment.user_id}`,
+      {
+        component: "cron",
+        action: "verify-payment",
+      },
+    );
+    result.status = "verified";
     return result;
   } catch (error) {
-    console.error(`[cron] Error verifying payment ${payment.id}:`, error);
-    result.status = 'error';
-    result.error = error instanceof Error ? error.message : 'Unknown error';
+    logError(`Error verifying payment ${payment.id}`, error as Error, {
+      component: "cron",
+      action: "verify-payment",
+    });
+    result.status = "error";
+    result.error = error instanceof Error ? error.message : "Unknown error";
     return result;
   }
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<CronResponse>> {
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<CronResponse>> {
   try {
     // Verify cron secret for security
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      logError(
+        "Unauthorized CRON request to verify-pending-payments",
+        new Error("Invalid or missing CRON secret"),
+        {
+          component: "cron",
+          action: "verify-payment",
+        },
+      );
       return NextResponse.json(
         {
           success: false,
@@ -159,9 +181,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
           expired: 0,
           errors: 0,
           results: [],
-          error: 'Unauthorized',
+          error: "Unauthorized",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -170,14 +192,17 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
 
     // Fetch all pending payments
     const { data: pendingPayments, error: fetchError } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
+      .from("payments")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
       .limit(100); // Process up to 100 payments per run
 
     if (fetchError) {
-      console.error('[cron] Error fetching pending payments:', fetchError);
+      logError("Error fetching pending payments", fetchError as Error, {
+        component: "cron",
+        action: "verify-payment",
+      });
       return NextResponse.json(
         {
           success: false,
@@ -186,14 +211,17 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
           expired: 0,
           errors: 0,
           results: [],
-          error: 'Failed to fetch pending payments',
+          error: "Failed to fetch pending payments",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     if (!pendingPayments || pendingPayments.length === 0) {
-      console.log('[cron] No pending payments to process');
+      logInfo("No pending payments to process", {
+        component: "cron",
+        action: "verify-payment",
+      });
       return NextResponse.json({
         success: true,
         processed: 0,
@@ -204,7 +232,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
       });
     }
 
-    console.log(`[cron] Processing ${pendingPayments.length} pending payments`);
+    logInfo(`Processing ${pendingPayments.length} pending payments`, {
+      component: "cron",
+      action: "verify-payment",
+    });
 
     // Verify each payment
     const results: VerificationResult[] = [];
@@ -214,11 +245,18 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
     }
 
     // Count results
-    const verified = results.filter((r) => r.status === 'verified').length;
-    const expired = results.filter((r) => r.status === 'expired').length;
-    const errors = results.filter((r) => r.status === 'error').length;
+    const verified = results.filter((r) => r.status === "verified").length;
+    const expired = results.filter((r) => r.status === "expired").length;
+    const errors = results.filter((r) => r.status === "error").length;
 
-    console.log(`[cron] Completed: ${verified} verified, ${expired} expired, ${errors} errors`);
+    logInfo(
+      `Completed: ${verified} verified, ${expired} expired, ${errors} errors`,
+      {
+        component: "cron",
+        action: "verify-payment",
+        metadata: { verified, expired, errors },
+      },
+    );
 
     return NextResponse.json({
       success: true,
@@ -229,7 +267,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
       results,
     });
   } catch (error) {
-    console.error('[cron] Unexpected error:', error);
+    logError("Unexpected error in verify-pending-payments", error as Error, {
+      component: "cron",
+      action: "verify-payment",
+    });
     return NextResponse.json(
       {
         success: false,
@@ -238,9 +279,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<CronRespon
         expired: 0,
         errors: 0,
         results: [],
-        error: error instanceof Error ? error.message : 'Internal server error',
+        error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

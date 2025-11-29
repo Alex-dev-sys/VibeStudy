@@ -241,14 +241,38 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
           console.log('[Analytics] Response status:', response.status);
 
           if (!response.ok) {
+            let errorData: { error?: string } | null = null;
+            
+            // Пытаемся получить сообщение об ошибке из ответа
+            try {
+              const contentType = response.headers.get('content-type');
+              if (contentType && contentType.includes('application/json')) {
+                errorData = await response.json();
+                console.error('[Analytics] Server error:', errorData);
+              } else {
+                const errorText = await response.text();
+                if (errorText) {
+                  console.error('[Analytics] Server error text:', errorText);
+                  try {
+                    errorData = JSON.parse(errorText);
+                  } catch {
+                    // Если не JSON, используем текст как сообщение об ошибке
+                    errorData = { error: errorText };
+                  }
+                }
+              }
+            } catch (parseError) {
+              console.error('[Analytics] Error parsing error response:', parseError);
+            }
+            
+            const errorMessage = errorData?.error || `Ошибка ${response.status}`;
+            
             if (response.status === 401) {
               throw new Error('Необходима авторизация');
             } else if (response.status === 500) {
-              const errorText = await response.text();
-              console.error('[Analytics] Server error:', errorText);
               throw new Error('Данные аналитики временно недоступны');
             }
-            throw new Error(`Ошибка ${response.status}`);
+            throw new Error(errorMessage);
           }
 
           const data = await response.json();
@@ -259,12 +283,26 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
             learningVelocity: data.learningVelocity || defaultVelocity,
             weakAreas: data.weakAreas || [],
             recommendations: data.recommendations || [],
-            isLoading: false
+            isLoading: false,
+            error: null
           });
         } catch (error) {
           console.error('[Analytics] Error:', error);
+          let errorMessage = 'Не удалось загрузить аналитику';
+          
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          } else if (typeof error === 'string') {
+            errorMessage = error;
+          }
+          
+          // Если ошибка сети (например, fetch failed)
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            errorMessage = 'Не удалось подключиться к серверу. Проверьте подключение к интернету.';
+          }
+          
           set({
-            error: error instanceof Error ? error.message : 'Не удалось загрузить аналитику',
+            error: errorMessage,
             isLoading: false,
             topicMastery: {},
             learningVelocity: defaultVelocity,

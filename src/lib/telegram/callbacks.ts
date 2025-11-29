@@ -57,7 +57,12 @@ export async function handleCallbackQuery(
 
     case 'leaderboard_global':
       const globalData = await leaderboardService.getGlobalLeaderboard();
-      const globalText = globalData.map((u, i) => `${i + 1}. ${u.username} - ${u.xp} XP`).join('\n');
+      const globalText = globalData
+        .map((u, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+          return `${medal} *${u.username}*\n   Lvl ${u.level} | ${u.tasks_solved} задач | ${u.xp} XP`;
+        })
+        .join('\n\n');
       return {
         text: `🌍 *Глобальный рейтинг*\n\n${globalText}`,
         parseMode: 'Markdown',
@@ -66,7 +71,12 @@ export async function handleCallbackQuery(
 
     case 'leaderboard_weekly':
       const weeklyData = await leaderboardService.getWeeklyLeaderboard();
-      const weeklyText = weeklyData.map((u, i) => `${i + 1}. ${u.username} - ${u.xp} XP`).join('\n');
+      const weeklyText = weeklyData
+        .map((u, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+          return `${medal} *${u.username}*\n   ${u.tasks_solved} задач за неделю | ${u.xp} XP`;
+        })
+        .join('\n\n');
       return {
         text: `📅 *Недельный рейтинг*\n\n${weeklyText}`,
         parseMode: 'Markdown',

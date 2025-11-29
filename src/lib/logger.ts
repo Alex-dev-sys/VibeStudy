@@ -32,7 +32,7 @@ class Logger {
     return `[${timestamp}] [${level}] ${message}${contextStr}`;
   }
 
-  private log(level: LogLevel, levelName: string, message: string, context?: LogContext, error?: Error): void {
+  private log(level: LogLevel, levelName: string, message: string, context?: LogContext, error?: Error, ...args: unknown[]): void {
     if (level < this.level) {
       return;
     }
@@ -42,17 +42,17 @@ class Logger {
     switch (level) {
       case LogLevel.DEBUG:
         if (this.isDevelopment) {
-          console.debug(formattedMessage);
+          console.debug(formattedMessage, ...args);
         }
         break;
       case LogLevel.INFO:
-        console.info(formattedMessage);
+        console.info(formattedMessage, ...args);
         break;
       case LogLevel.WARN:
-        console.warn(formattedMessage);
+        console.warn(formattedMessage, ...args);
         break;
       case LogLevel.ERROR:
-        console.error(formattedMessage, error || '');
+        console.error(formattedMessage, error || '', ...args);
         // TODO: Send to error tracking service in production
         // if (!this.isDevelopment) {
         //   errorTracker.captureException(error || new Error(message), { extra: context });
@@ -61,20 +61,20 @@ class Logger {
     }
   }
 
-  debug(message: string, context?: LogContext): void {
-    this.log(LogLevel.DEBUG, 'DEBUG', message, context);
+  debug(message: string, context?: LogContext, ...args: unknown[]): void {
+    this.log(LogLevel.DEBUG, 'DEBUG', message, context, undefined, ...args);
   }
 
-  info(message: string, context?: LogContext): void {
-    this.log(LogLevel.INFO, 'INFO', message, context);
+  info(message: string, context?: LogContext, ...args: unknown[]): void {
+    this.log(LogLevel.INFO, 'INFO', message, context, undefined, ...args);
   }
 
-  warn(message: string, context?: LogContext): void {
-    this.log(LogLevel.WARN, 'WARN', message, context);
+  warn(message: string, context?: LogContext, ...args: unknown[]): void {
+    this.log(LogLevel.WARN, 'WARN', message, context, undefined, ...args);
   }
 
-  error(message: string, error?: Error, context?: LogContext): void {
-    this.log(LogLevel.ERROR, 'ERROR', message, context, error);
+  error(message: string, error?: Error, context?: LogContext, ...args: unknown[]): void {
+    this.log(LogLevel.ERROR, 'ERROR', message, context, error, ...args);
   }
 
   setLevel(level: LogLevel): void {
@@ -86,8 +86,8 @@ class Logger {
 export const logger = new Logger();
 
 // Convenience functions
-export const logDebug = (message: string, context?: LogContext) => logger.debug(message, context);
-export const logInfo = (message: string, context?: LogContext) => logger.info(message, context);
-export const logWarn = (message: string, context?: LogContext) => logger.warn(message, context);
-export const logError = (message: string, error?: Error, context?: LogContext) => logger.error(message, error, context);
+export const logDebug = (message: string, context?: LogContext, ...args: unknown[]): void => logger.debug(message, context, ...args);
+export const logInfo = (message: string, context?: LogContext, ...args: unknown[]): void => logger.info(message, context, ...args);
+export const logWarn = (message: string, context?: LogContext, ...args: unknown[]): void => logger.warn(message, context, ...args);
+export const logError = (message: string, error?: Error, context?: LogContext, ...args: unknown[]): void => logger.error(message, error, context, ...args);
 
