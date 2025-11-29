@@ -13,23 +13,6 @@
  * - getReminderSchedule(userId)
  * - upsertReminderSchedule(schedule)
  * - logTelegramMessage(userId, telegramUserId, type, content, metadata)
- * - getConversation(userId)
- * - upsertConversation(conversation)
- *
- * @deprecated Use src/lib/telegram/database.ts instead
- */
-
-import {
-  getTelegramProfile,
-  getTelegramProfileByTelegramId,
-  upsertTelegramProfile,
-  getReminderSchedule,
-  upsertReminderSchedule
-} from './telegram/database';
-
-interface TelegramUserData {
-  telegramUsername: string;
-  telegramChatId: number;
   reminderTime: string; // "09:00", "14:00", "19:00", "22:00"
   reminderEnabled: boolean;
   timezone: string;
