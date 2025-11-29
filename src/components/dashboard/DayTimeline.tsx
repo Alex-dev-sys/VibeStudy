@@ -150,8 +150,6 @@ export function DayTimeline() {
             data-day={dayData.day}
             onClick={() => !dayData.isLocked && setActiveDay(dayData.day)}
             disabled={dayData.isLocked}
-            whileHover={!dayData.isLocked ? { scale: 1.05 } : {}}
-            whileTap={!dayData.isLocked ? { scale: 0.95 } : {}}
             className={clsx(
               'group relative w-full aspect-square rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',

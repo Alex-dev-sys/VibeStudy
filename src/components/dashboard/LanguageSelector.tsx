@@ -25,8 +25,6 @@ export function LanguageSelector() {
           return (
             <motion.button
               key={language.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => setLanguage(language.id)}
               className={`group flex flex-col gap-1.5 rounded-2xl border p-3 text-left transition-all duration-200 sm:gap-2 sm:rounded-3xl sm:p-4 ${
                 isActive
