@@ -163,7 +163,7 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         return (
           <h2
             key={index}
-            className="mt-6 mb-4 text-xl font-bold bg-gradient-to-r from-[#ff0094] via-[#ffd200] to-[#ff0094] bg-clip-text text-transparent sm:text-2xl"
+            className="mt-6 mb-4 text-xl font-semibold text-white/90 sm:text-2xl"
           >
             {block.content}
           </h2>
@@ -173,7 +173,7 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         return (
           <h3
             key={index}
-            className="mt-5 mb-3 text-lg font-semibold text-white sm:text-xl"
+            className="mt-5 mb-3 text-lg font-medium text-white/85 sm:text-xl"
           >
             {block.content}
           </h3>
@@ -184,18 +184,18 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         return (
           <div
             key={index}
-            className="my-4 rounded-xl overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-[#ff0094]/30 shadow-lg"
+            className="my-4 rounded-lg overflow-hidden bg-[#1a1a1a] border border-white/10"
           >
-            <div className="flex items-center justify-between px-4 py-2 bg-[#2a2a2a] border-b border-[#ff0094]/20">
+            <div className="flex items-center justify-between px-3 py-1.5 bg-[#252525] border-b border-white/5">
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-[#ff0094]" />
-                <span className="text-xs font-semibold text-[#ff0094]">
+                <Code2 className="w-3.5 h-3.5 text-white/60" />
+                <span className="text-xs font-medium text-white/60">
                   {block.metadata?.language || languageId}
                 </span>
               </div>
             </div>
-            <pre className="overflow-x-auto p-4">
-              <code className="text-sm font-mono text-[#00ff88] leading-relaxed">
+            <pre className="overflow-x-auto p-3">
+              <code className="text-sm font-mono text-[#7dd3fc] leading-relaxed">
                 {codeLines.map((line, i) => (
                   <div key={i} className="whitespace-pre">
                     {line || '\u00A0'}
@@ -215,21 +215,21 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         return (
           <div
             key={index}
-            className={`my-4 rounded-xl border-2 p-4 shadow-lg ${
+            className={`my-4 rounded-lg border p-4 ${
               isWarning
-                ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-400/40'
+                ? 'bg-amber-500/10 border-amber-500/20'
                 : isTip
-                ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/10 border-blue-400/40'
-                : 'bg-gradient-to-br from-green-500/20 to-emerald-500/10 border-green-400/40'
+                ? 'bg-blue-500/10 border-blue-500/20'
+                : 'bg-green-500/10 border-green-500/20'
             }`}
           >
             <div className="flex gap-3">
               <IconComponent
-                className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                  isWarning ? 'text-amber-400' : isTip ? 'text-blue-400' : 'text-green-400'
+                className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                  isWarning ? 'text-amber-400/80' : isTip ? 'text-blue-400/80' : 'text-green-400/80'
                 }`}
               />
-              <div className="flex-1 text-sm sm:text-base leading-relaxed text-white/90">
+              <div className="flex-1 text-sm sm:text-base leading-relaxed text-white/85">
                 {block.content.split('\n').map((line, i) => (
                   <p key={i} className={i > 0 ? 'mt-2' : ''}>
                     {line.replace(/^(Важно|Важно:|⚠️|💡|Совет|Совет:)\s*/i, '')}
@@ -243,24 +243,24 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
       case 'list':
         const items = block.content.split('\n').filter(Boolean);
         return (
-          <ul key={index} className="my-3 space-y-2.5 list-none">
+          <ul key={index} className="my-3 space-y-2 list-none">
             {items.map((item, i) => {
               // Обработка жирного текста в начале пункта
               const boldMatch = item.match(/^\*\*([^*]+)\*\*:\s*(.+)/);
               if (boldMatch) {
                 return (
                   <li key={i} className="flex gap-3">
-                    <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ffd200] mt-2.5" />
-                    <span className="text-sm sm:text-base text-white/90 leading-relaxed flex-1">
-                      <strong className="text-white font-semibold">{boldMatch[1]}:</strong> {boldMatch[2]}
+                    <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-white/40 mt-2.5" />
+                    <span className="text-sm sm:text-base text-white/85 leading-relaxed flex-1">
+                      <strong className="text-white/95 font-medium">{boldMatch[1]}:</strong> {boldMatch[2]}
                     </span>
                   </li>
                 );
               }
               return (
                 <li key={i} className="flex gap-3">
-                  <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ffd200] mt-2.5" />
-                  <span className="text-sm sm:text-base text-white/90 leading-relaxed flex-1">{item}</span>
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-white/40 mt-2.5" />
+                  <span className="text-sm sm:text-base text-white/85 leading-relaxed flex-1">{item}</span>
                 </li>
               );
             })}
@@ -269,7 +269,7 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
 
       case 'bold':
         return (
-          <p key={index} className="my-3 text-base font-semibold text-white sm:text-lg">
+          <p key={index} className="my-3 text-base font-medium text-white/85 sm:text-lg">
             {block.content}
           </p>
         );
@@ -278,9 +278,9 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         return (
           <pre
             key={index}
-            className="my-2 rounded-lg bg-gradient-to-r from-[#1a1a1a] to-[#0f0f0f] border border-[#00ff88]/30 px-3 py-2 overflow-x-auto"
+            className="my-2 rounded-md bg-[#1a1a1a] border border-white/10 px-3 py-2 overflow-x-auto"
           >
-            <code className="text-xs sm:text-sm font-mono text-[#00ff88] leading-relaxed">
+            <code className="text-xs sm:text-sm font-mono text-[#7dd3fc] leading-relaxed">
               {block.content}
             </code>
           </pre>
@@ -290,14 +290,14 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
         // Обработка inline кода
         const parts = block.content.split(/\u0001CODE\u0001([^\u0001]+)\u0001\/CODE\u0001/);
         return (
-          <p key={index} className="my-3 text-sm sm:text-base leading-relaxed text-white/90">
+          <p key={index} className="my-3 text-sm sm:text-base leading-relaxed text-white/80">
             {parts.map((part, i) => {
               if (i % 2 === 1) {
                 // Это код
                 return (
                   <code
                     key={i}
-                    className="px-2 py-1 rounded bg-black/60 text-[#00ff88] font-mono text-xs sm:text-sm border border-[#00ff88]/30"
+                    className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#7dd3fc] font-mono text-xs sm:text-sm border border-white/10"
                   >
                     {part}
                   </code>
@@ -313,7 +313,7 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
 
       default:
         return (
-          <p key={index} className="my-3 text-sm sm:text-base leading-relaxed text-white/90">
+          <p key={index} className="my-3 text-sm sm:text-base leading-relaxed text-white/80">
             {block.content}
           </p>
         );
@@ -321,18 +321,18 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
   };
 
   return (
-    <Card className="border border-[#ff0094]/25 glow-border overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-[#ff0094]/10 via-[#ffd200]/10 to-[#ff0094]/10">
+    <Card className="border border-white/10 overflow-hidden">
+      <CardHeader className="bg-white/5">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#ff0094]/45 to-[#ffd200]/30 text-xl text-white shadow-lg sm:h-10 sm:w-10 sm:text-2xl">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xl text-white sm:h-10 sm:w-10 sm:text-2xl">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base bg-gradient-to-r from-[#ff0094] to-[#ffd200] bg-clip-text text-transparent">
+              <CardTitle className="text-sm sm:text-base text-white/95">
                 Теория дня {dayNumber}
               </CardTitle>
-              <p className="text-xs text-white/90 sm:text-sm">{topic}</p>
+              <p className="text-xs text-white/70 sm:text-sm">{topic}</p>
             </div>
           </div>
           <FeedbackButtons
@@ -345,17 +345,17 @@ export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }
       </CardHeader>
       
       <div className="space-y-4 px-4 pb-4 sm:space-y-5 sm:px-6 sm:pb-6 pt-4 sm:pt-6">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[rgba(255,255,255,0.08)] to-[rgba(255,255,255,0.03)] p-5 sm:p-6 shadow-[0_20px_60px_rgba(12,6,28,0.4)] backdrop-blur-sm">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5 p-5 sm:p-6">
           <div className="prose prose-invert max-w-none">
             {parsedBlocks.map((block, index) => renderBlock(block, index))}
           </div>
         </div>
         
-        <div className="rounded-xl border-2 border-[#ffd200]/40 bg-gradient-to-br from-[#ffd200]/15 to-[#ff0094]/15 p-4 shadow-lg backdrop-blur-sm">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <div className="flex gap-3">
-            <Lightbulb className="w-5 h-5 text-[#ffd200] flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-white/90 font-medium sm:text-sm flex-1 leading-relaxed">
-              <strong className="text-[#ffd200]">Совет:</strong> Внимательно изучи теорию перед выполнением заданий. Все задачи можно решить, используя только материал из этой теории.
+            <Lightbulb className="w-4 h-4 text-white/50 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-white/70 font-normal sm:text-sm flex-1 leading-relaxed">
+              <strong className="text-white/80">Совет:</strong> Внимательно изучи теорию перед выполнением заданий. Все задачи можно решить, используя только материал из этой теории.
             </p>
           </div>
         </div>
