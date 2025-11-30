@@ -15,7 +15,8 @@ module.exports = {
     name: 'vibestudy-bot',
 
     // Скрипт для запуска
-    script: 'scripts/telegram-bot-local.js',
+    script: 'scripts/telegram-bot-polling.ts',
+    interpreter: 'node_modules/.bin/ts-node',
 
     // Количество инстансов (1 для экономии памяти)
     instances: 1,
