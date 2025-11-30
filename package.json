@@ -58,10 +58,11 @@
     "sonner": "1.5.0",
     "three": "^0.181.1",
     "tonweb": "^0.0.66",
-    "zod": "^3.25.76",
-    "zustand": "4.5.2",
     "ts-node": "^10.9.2",
-    "typescript": "5.4.5"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "5.4.5",
+    "zod": "^3.25.76",
+    "zustand": "4.5.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
@@ -95,7 +96,6 @@
     "prettier": "3.3.2",
     "shadcn": "^3.5.0",
     "storybook": "^10.0.8",
-    "tailwindcss": "3.4.4",
     "tailwindcss": "3.4.4",
     "vitest": "^4.0.10"
   }
