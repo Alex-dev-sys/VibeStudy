@@ -14,9 +14,8 @@ module.exports = {
     // Имя процесса в PM2
     name: 'vibestudy-bot',
 
-    // Скрипт для запуска
-    script: 'scripts/telegram-bot-polling.ts',
-    interpreter: 'node_modules/.bin/ts-node',
+    // Скрипт для запуска (JS обертка для TS)
+    script: 'scripts/start-bot.js',
 
     // Количество инстансов (1 для экономии памяти)
     instances: 1,
@@ -59,8 +58,5 @@ module.exports = {
 
     // Время ожидания перед force kill
     wait_ready: false,
-
-    // Опции для cron (опционально - автоперезапуск раз в день)
-    // cron_restart: '0 3 * * *',  // Каждый день в 3:00 утра
   }]
 };
