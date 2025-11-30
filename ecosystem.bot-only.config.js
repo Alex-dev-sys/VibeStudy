@@ -31,7 +31,7 @@ module.exports = {
 
     // Переменные окружения
     env: {
-      NODE_ENV: 'production'
+      NODE_ENV: 'development' // Use development to enable polling
     },
 
     // Логирование
