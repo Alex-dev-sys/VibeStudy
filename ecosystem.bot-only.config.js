@@ -14,8 +14,8 @@ module.exports = {
     // Имя процесса в PM2
     name: 'vibestudy-bot',
 
-    // Скрипт для запуска (JS обертка для TS)
-    script: 'scripts/start-bot.js',
+    // Скрипт для запуска
+    script: 'scripts/telegram-bot-polling.js',
 
     // Количество инстансов (1 для экономии памяти)
     instances: 1,
