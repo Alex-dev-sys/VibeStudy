@@ -41,6 +41,12 @@ async function getUpdates() {
  * Обработка входящего сообщения
  */
 async function handleUpdate(update) {
+  // Handle callback queries (inline button clicks)
+  if (update.callback_query) {
+    await handleCallbackQuery(update.callback_query);
+    return;
+  }
+
   if (!update.message || !update.message.text) {
     return;
   }
@@ -99,8 +105,10 @@ async function handleUpdate(update) {
       responseText = `📖 *Помощь*\n\n` +
         `*Доступные команды:*\n` +
         `/start - Начать работу с ботом\n` +
+        `/menu - Главное меню\n` +
         `/stats - Показать статистику обучения\n` +
-        `/run - Запустить код (Python, JS и др.)\n` +
+        `/ask [вопрос] - Спросить AI\n` +
+        `/run [код] - Запустить код (Python, JS и др.)\n` +
         `/advice - Получить персональный совет\n` +
         `/remind - Настроить напоминания\n` +
         `/help - Эта справка\n\n` +
@@ -109,6 +117,85 @@ async function handleUpdate(update) {
         `2. Бот автоматически свяжется с тобой\n` +
         `3. Получай напоминания и советы!\n\n` +
         `Вопросы? Пиши в поддержку!`;
+      break;
+
+    case '/menu':
+      // Send menu with inline keyboard
+      await sendMessage(chatId, '📋 *Главное меню*\n\nВыбери раздел:', {
+        inline_keyboard: [
+          [
+            { text: '📊 Статистика', callback_data: 'stats' },
+            { text: '📚 Прогресс', callback_data: 'progress' }
+          ],
+          [
+            { text: '💻 Code Runner', callback_data: 'run' },
+            { text: '🤖 AI помощник', callback_data: 'ask' }
+          ],
+          [
+            { text: '⏰ Напоминания', callback_data: 'remind' },
+            { text: '🎓 Советы', callback_data: 'advice' }
+          ],
+          [
+            { text: '⚙️ Настройки', callback_data: 'settings' },
+            { text: '❓ Помощь', callback_data: 'help' }
+          ]
+        ]
+      });
+      return;
+
+    case '/ask':
+      const question = text.replace('/ask', '').trim();
+      if (!question) {
+        responseText = '🤖 *AI Помощник*\n\nЗадай мне вопрос!\n\nПример:\n`/ask Что такое JavaScript?`';
+      } else {
+        responseText = '🤖 *Думаю...*';
+        await sendMessage(chatId, responseText);
+
+        // Call AI API
+        try {
+          const AI_API_TOKEN = process.env.AI_API_TOKEN;
+          const AI_API_BASE_URL = process.env.AI_API_BASE_URL || 'https://api.gptlama.ru/v1';
+          const AI_MODEL_FREE = process.env.AI_MODEL_FREE || 'gemini-1.5-flash';
+
+          if (!AI_API_TOKEN) {
+            responseText = '❌ AI API не настроен. Добавь AI_API_TOKEN в .env.local';
+            break;
+          }
+
+          const res = await fetch(`${AI_API_BASE_URL}/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${AI_API_TOKEN}`
+            },
+            body: JSON.stringify({
+              model: AI_MODEL_FREE,
+              messages: [
+                {
+                  role: 'system',
+                  content: 'Ты - AI помощник для платформы обучения программированию VibeStudy. Отвечай кратко и понятно на русском языке.'
+                },
+                {
+                  role: 'user',
+                  content: question
+                }
+              ],
+              max_tokens: 500,
+              temperature: 0.7
+            })
+          });
+
+          const data = await res.json();
+
+          if (data.choices && data.choices[0]?.message?.content) {
+            responseText = `🤖 *AI ответ:*\n\n${data.choices[0].message.content}`;
+          } else {
+            responseText = '❌ Не удалось получить ответ от AI. Попробуй позже.';
+          }
+        } catch (e) {
+          responseText = '❌ Ошибка AI: ' + e.message;
+        }
+      }
       break;
 
     case '/run':
@@ -162,26 +249,88 @@ async function handleUpdate(update) {
 
     case '/advice':
     case '🎓 Совет':
-      responseText = `🎓 *Персональный совет*\n\n` +
-        `💡 Начни с основ!\n` +
-        `Первый день — самый важный. Не спеши, внимательно изучи теорию.\n\n` +
-        `✨ Советы для старта:\n` +
-        `• Выбери удобное время для занятий\n` +
-        `• Занимайся каждый день хотя бы 30 минут\n` +
-        `• Не бойся задавать вопросы ИИ-помощнику\n\n` +
-        `Удачи в обучении! 🚀`;
+      // Get advice from AI
+      responseText = '🎓 *Генерирую персональный совет...*';
+      await sendMessage(chatId, responseText);
+
+      try {
+        const AI_API_TOKEN = process.env.AI_API_TOKEN;
+        const AI_API_BASE_URL = process.env.AI_API_BASE_URL || 'https://api.gptlama.ru/v1';
+        const AI_MODEL_FREE = process.env.AI_MODEL_FREE || 'gemini-1.5-flash';
+
+        if (!AI_API_TOKEN) {
+          responseText = '❌ AI API не настроен';
+          break;
+        }
+
+        const res = await fetch(`${AI_API_BASE_URL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AI_API_TOKEN}`
+          },
+          body: JSON.stringify({
+            model: AI_MODEL_FREE,
+            messages: [
+              {
+                role: 'system',
+                content: 'Ты - персональный наставник для студента платформы VibeStudy. Дай короткий мотивирующий совет по изучению программирования (максимум 150 слов).'
+              },
+              {
+                role: 'user',
+                content: 'Дай мне персональный совет как лучше учить программирование'
+              }
+            ],
+            max_tokens: 300,
+            temperature: 0.8
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.choices && data.choices[0]?.message?.content) {
+          responseText = `🎓 *Персональный совет*\n\n${data.choices[0].message.content}\n\n💪 Продолжай учиться!`;
+        } else {
+          responseText = '❌ Не удалось получить совет. Попробуй /advice позже.';
+        }
+      } catch (e) {
+        responseText = '❌ Ошибка: ' + e.message;
+      }
       break;
 
     case '/remind':
     case '⏰ Напоминания':
-      responseText = `⏰ *Настройка напоминаний*\n\n` +
-        `Выбери удобное время для напоминаний:\n\n` +
-        `🌅 Утро (9:00)\n` +
-        `☀️ День (14:00)\n` +
-        `🌆 Вечер (19:00)\n` +
-        `🌙 Ночь (22:00)\n\n` +
-        `Настрой время в профиле на сайте VibeStudy!`;
-      break;
+      // Send reminders menu with inline keyboard
+      await sendMessage(chatId, `⏰ *Умные напоминания*\n\n` +
+        `📱 *Настройки:*\n` +
+        `• Время: не установлено\n` +
+        `• Адаптивный режим: ❌ Выкл\n` +
+        `• Защита серии: ❌ Выкл\n\n` +
+        `🤖 *Адаптивный режим*\n` +
+        `Бот автоматически подберёт лучшее время!\n\n` +
+        `🔥 *Защита серии*\n` +
+        `Напоминание вечером, если серия под угрозой.\n\n` +
+        `Выбери опцию:`, {
+        inline_keyboard: [
+          [
+            { text: '🌅 Утро (9:00)', callback_data: 'remind:09:00' },
+            { text: '☀️ День (14:00)', callback_data: 'remind:14:00' }
+          ],
+          [
+            { text: '🌆 Вечер (19:00)', callback_data: 'remind:19:00' },
+            { text: '🌙 Ночь (22:00)', callback_data: 'remind:22:00' }
+          ],
+          [
+            { text: '🤖 Адаптивный режим', callback_data: 'remind:adaptive' },
+            { text: '🔥 Защита серии', callback_data: 'remind:streak' }
+          ],
+          [
+            { text: '😴 DND режим', callback_data: 'remind:dnd' },
+            { text: '🔔 Включить все', callback_data: 'remind:enable' }
+          ]
+        ]
+      });
+      return;
 
     case '📚 Уроки':
       responseText = `📚 *Уроки*\n\nСписок уроков доступен на сайте.`;
@@ -195,15 +344,172 @@ async function handleUpdate(update) {
       responseText = `🏆 *Рейтинг*\n\n1. 🥇 User1 - 1000 XP\n2. 🥈 User2 - 800 XP\n3. 🥉 You - 0 XP`;
       break;
 
+    case '/settings':
     case '⚙️ Настройки':
-      responseText = `⚙️ *Настройки*\n\nДоступны на веб-платформе.`;
-      break;
+      // Send settings menu with inline keyboard
+      await sendMessage(chatId, `⚙️ *Настройки бота*\n\n` +
+        `📱 *Текущие настройки:*\n` +
+        `• Язык: 🇷🇺 Русский\n` +
+        `• Уведомления: ✅ Включены\n` +
+        `• Режим DND: ❌ Выключен\n\n` +
+        `Выбери что настроить:`, {
+        inline_keyboard: [
+          [
+            { text: '🌐 Язык', callback_data: 'settings:language' },
+            { text: '🔔 Уведомления', callback_data: 'settings:notifications' }
+          ],
+          [
+            { text: '😴 DND режим', callback_data: 'settings:dnd' },
+            { text: '🔐 Приватность', callback_data: 'settings:privacy' }
+          ],
+          [
+            { text: '📊 Сбросить данные', callback_data: 'settings:reset' },
+            { text: '❓ Помощь', callback_data: 'help' }
+          ]
+        ]
+      });
+      return;
 
     default:
       responseText = `❓ Неизвестная команда.\n\nИспользуй /help для списка доступных команд.`;
   }
 
   // Отправляем ответ
+  await sendMessage(chatId, responseText);
+}
+
+/**
+ * Обработка callback queries (нажатия на inline кнопки)
+ */
+async function handleCallbackQuery(callbackQuery) {
+  const chatId = callbackQuery.message.chat.id;
+  const data = callbackQuery.data;
+  const callbackQueryId = callbackQuery.id;
+
+  // Answer callback query to remove loading state
+  await fetch(`${API_URL}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      callback_query_id: callbackQueryId,
+      text: '✅'
+    })
+  });
+
+  let responseText = '';
+
+  switch (data) {
+    case 'stats':
+      responseText = `📊 *Твоя статистика VibeStudy*\n\n` +
+        `🎯 Текущий день: 1/90\n` +
+        `✅ Завершено: 0 дней (0%)\n` +
+        `░░░░░░░░░░\n\n` +
+        `🔥 Серия: 0 дней\n` +
+        `⭐ Средний балл: 0/100\n` +
+        `💻 Язык: PYTHON\n\n` +
+        `Начни обучение на сайте! 🚀`;
+      break;
+
+    case 'progress':
+      responseText = `📅 *Твой прогресс*\n\nТы только в начале пути! Продолжай учиться.`;
+      break;
+
+    case 'run':
+      responseText = '💻 *Code Runner*\n\nОтправь код после команды /run\n\nПример:\n`/run print("Hello")`';
+      break;
+
+    case 'ask':
+      responseText = '🤖 *AI Помощник*\n\nЗадай мне вопрос!\n\nПример:\n`/ask Что такое JavaScript?`';
+      break;
+
+    case 'remind':
+      responseText = `⏰ *Настройка напоминаний*\n\n` +
+        `Выбери удобное время для напоминаний:\n\n` +
+        `🌅 Утро (9:00)\n` +
+        `☀️ День (14:00)\n` +
+        `🌆 Вечер (19:00)\n` +
+        `🌙 Ночь (22:00)\n\n` +
+        `Настрой время в профиле на сайте VibeStudy!`;
+      break;
+
+    case 'advice':
+      responseText = `🎓 *Персональный совет*\n\n` +
+        `💡 Начни с основ!\n` +
+        `Первый день — самый важный. Не спеши, внимательно изучи теорию.\n\n` +
+        `✨ Советы для старта:\n` +
+        `• Выбери удобное время для занятий\n` +
+        `• Занимайся каждый день хотя бы 30 минут\n` +
+        `• Не бойся задавать вопросы ИИ-помощнику\n\n` +
+        `Удачи в обучении! 🚀`;
+      break;
+
+    case 'settings':
+      responseText = `⚙️ *Настройки*\n\nДоступны на веб-платформе.`;
+      break;
+
+    case 'help':
+      responseText = `📖 *Помощь*\n\n` +
+        `*Доступные команды:*\n` +
+        `/start - Начать работу с ботом\n` +
+        `/menu - Главное меню\n` +
+        `/stats - Показать статистику обучения\n` +
+        `/ask [вопрос] - Спросить AI\n` +
+        `/run [код] - Запустить код\n` +
+        `/help - Эта справка`;
+      break;
+
+    // Reminder callbacks
+    default:
+      if (data.startsWith('remind:')) {
+        const action = data.split(':')[1];
+        switch (action) {
+          case '09:00':
+          case '14:00':
+          case '19:00':
+          case '22:00':
+            responseText = `✅ Напоминания установлены на ${action}\n\nЯ буду напоминать тебе о занятиях!`;
+            break;
+          case 'adaptive':
+            responseText = `🤖 *Адаптивный режим*\n\nВключен!\nБот будет автоматически подбирать лучшее время на основе твоей активности.`;
+            break;
+          case 'streak':
+            responseText = `🔥 *Защита серии*\n\nВключена!\nПолучишь дополнительное напоминание вечером, если серия под угрозой.`;
+            break;
+          case 'dnd':
+            responseText = `😴 *Do-Not-Disturb*\n\nУстанови период когда не хочешь получать уведомления:\n\nПример: 23:00 - 08:00`;
+            break;
+          case 'enable':
+            responseText = `🔔 Все напоминания включены!\n\nБудешь получать:\n• Ежедневные напоминания\n• Защиту серии\n• Персональные советы`;
+            break;
+          default:
+            responseText = '❓ Неизвестная настройка';
+        }
+      } else if (data.startsWith('settings:')) {
+        const action = data.split(':')[1];
+        switch (action) {
+          case 'language':
+            responseText = `🌐 *Выбор языка*\n\nДоступные языки:\n🇷🇺 Русский (текущий)\n🇬🇧 English\n\nВыбери язык на сайте VibeStudy.`;
+            break;
+          case 'notifications':
+            responseText = `🔔 *Уведомления*\n\nТекущий статус: ✅ Включены\n\nМожешь управлять:\n• Ежедневные напоминания\n• Достижения\n• Системные уведомления`;
+            break;
+          case 'dnd':
+            responseText = `😴 *DND режим*\n\nНе беспокоить:\nПериод: не установлен\n\nУстанови время когда не хочешь получать уведомления.`;
+            break;
+          case 'privacy':
+            responseText = `🔐 *Приватность*\n\nТвои данные защищены согласно GDPR.\n\nМожешь:\n• Экспортировать данные\n• Удалить аккаунт\n• Посмотреть политику`;
+            break;
+          case 'reset':
+            responseText = `⚠️ *Сброс данных*\n\nЭто удалит:\n• Настройки бота\n• Историю сообщений\n\nПрогресс на сайте сохранится!\n\nДля подтверждения напиши: /confirm_reset`;
+            break;
+          default:
+            responseText = '❓ Неизвестная настройка';
+        }
+      } else {
+        responseText = '❓ Неизвестная команда';
+      }
+  }
+
   await sendMessage(chatId, responseText);
 }
 

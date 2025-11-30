@@ -10,6 +10,7 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "bot": "node scripts/telegram-bot-local.js",
+    "bot:improved": "ts-node scripts/telegram-bot-polling.ts",
     "bot:test": "node scripts/test-bot-local.js",
     "bot:webhook": "node scripts/setup-telegram-webhook.js auto",
     "bot:webhook:check": "node scripts/setup-telegram-webhook.js check",
