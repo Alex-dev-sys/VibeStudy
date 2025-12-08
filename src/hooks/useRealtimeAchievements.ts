@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { getCurrentUser } from '@/lib/supabase/auth';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 /**
  * Hook for subscribing to real-time achievement updates
@@ -9,7 +10,7 @@ import { getCurrentUser } from '@/lib/supabase/auth';
  */
 export function useRealtimeAchievements() {
   useEffect(() => {
-    let channel: any = null;
+    let channel: RealtimeChannel | null = null;
     
     const setupSubscription = async () => {
       const user = await getCurrentUser();

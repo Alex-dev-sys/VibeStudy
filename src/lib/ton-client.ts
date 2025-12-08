@@ -127,6 +127,20 @@ export interface TonTransaction {
 }
 
 /**
+ * Raw transaction response from TON API
+ */
+interface TonApiTransaction {
+  transaction_id?: { hash?: string };
+  in_msg?: {
+    source?: string;
+    destination?: string;
+    value?: string;
+    message?: string;
+  };
+  utime?: number;
+}
+
+/**
  * Get transactions for the wallet address
  */
 export async function getWalletTransactions(
@@ -142,7 +156,7 @@ export async function getWalletTransactions(
       return [];
     }
 
-    return response.map((tx: any) => ({
+    return response.map((tx: TonApiTransaction) => ({
       hash: tx.transaction_id?.hash || '',
       from: tx.in_msg?.source || '',
       to: tx.in_msg?.destination || walletAddress,

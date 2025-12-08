@@ -545,11 +545,12 @@ npm run health-check     # Проверка здоровья сервиса
 
 Подробные гайды по настройке и использованию:
 
-- 📘 [**FEATURES.md**](FEATURES.md) — Полное описание всех возможностей
-- 🔐 [**AUTH_QUICK_START.md**](AUTH_QUICK_START.md) — Быстрая настройка аутентификации
-- ☁️ [**SUPABASE_SETUP.md**](SUPABASE_SETUP.md) — Настройка Supabase
-- 📱 [**TELEGRAM_BOT_SETUP.md**](TELEGRAM_BOT_SETUP.md) — Настройка Telegram бота
-- 🚀 [**DEPLOY_INSTRUCTIONS.md**](DEPLOY_INSTRUCTIONS.md) — Деплой на Vercel
+- 📘 [**docs/README.md**](docs/README.md) — Индекс всей документации
+- 📱 [**docs/README_BOT.md**](docs/README_BOT.md) — Документация Telegram бота
+- 🚀 [**docs/QUICK_START_BOT.md**](docs/QUICK_START_BOT.md) — Быстрый старт бота
+- ☁️ [**docs/VERCEL_BOT_SETUP.md**](docs/VERCEL_BOT_SETUP.md) — Деплой на Vercel
+- 🖥️ [**docs/VPS_DEPLOYMENT_GUIDE.md**](docs/VPS_DEPLOYMENT_GUIDE.md) — Деплой на VPS
+- 🔐 [**docs/SECURITY_NOTICE.md**](docs/SECURITY_NOTICE.md) — Безопасность
 - 🧪 [**tests/README.md**](tests/README.md) — Тестирование
 
 ---

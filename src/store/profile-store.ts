@@ -66,19 +66,24 @@ export const useProfileStore = create<ProfileStore>()(
 
       updateProfile: (updates) =>
         set((state) => {
-          // Trigger sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import("@/lib/sync");
-            const { getCurrentUser } = await import("@/lib/supabase/auth");
-            const user = await getCurrentUser();
-            if (user) {
-              syncManager.syncProfile({ ...state.profile, ...updates });
-            }
-          }, 0);
+          const newProfile = { ...state.profile, ...updates };
 
-          return {
-            profile: { ...state.profile, ...updates },
-          };
+          // Trigger sync to cloud with proper error handling
+          queueMicrotask(async () => {
+            try {
+              const { syncManager } = await import("@/lib/sync");
+              const { getCurrentUser } = await import("@/lib/supabase/auth");
+              const user = await getCurrentUser();
+              if (user) {
+                await syncManager.syncProfile(newProfile);
+              }
+            } catch (error) {
+              logError("Failed to sync profile to cloud", error as Error);
+              // Profile is still updated locally, sync will retry on next update
+            }
+          });
+
+          return { profile: newProfile };
         }),
 
       updatePrivacySettings: (settings) =>
@@ -87,26 +92,27 @@ export const useProfileStore = create<ProfileStore>()(
             ...state.profile.privacySettings,
             ...settings,
           };
-
-          // Trigger sync to cloud
-          setTimeout(async () => {
-            const { syncManager } = await import("@/lib/sync");
-            const { getCurrentUser } = await import("@/lib/supabase/auth");
-            const user = await getCurrentUser();
-            if (user) {
-              syncManager.syncProfile({
-                ...state.profile,
-                privacySettings: newPrivacySettings,
-              });
-            }
-          }, 0);
-
-          return {
-            profile: {
-              ...state.profile,
-              privacySettings: newPrivacySettings,
-            },
+          const newProfile = {
+            ...state.profile,
+            privacySettings: newPrivacySettings,
           };
+
+          // Trigger sync to cloud with proper error handling
+          queueMicrotask(async () => {
+            try {
+              const { syncManager } = await import("@/lib/sync");
+              const { getCurrentUser } = await import("@/lib/supabase/auth");
+              const user = await getCurrentUser();
+              if (user) {
+                await syncManager.syncProfile(newProfile);
+              }
+            } catch (error) {
+              logError("Failed to sync privacy settings to cloud", error as Error);
+              // Settings are still updated locally
+            }
+          });
+
+          return { profile: newProfile };
         }),
 
       setAuthenticated: (isAuth, userData = {}) =>

@@ -78,17 +78,37 @@ function verifyWebhook(request: NextRequest): boolean {
 
 /**
  * Sanitize user input to prevent XSS and injection attacks
- * Uses whitelist approach - removes all HTML tags and dangerous patterns
+ * Uses defense-in-depth approach with multiple layers of protection
  */
 function sanitizeInput(text: string): string {
-  return text
-    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers (onclick=, onerror=, etc)
-    .replace(/data:/gi, '') // Remove data: protocol
-    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-    .trim()
-    .slice(0, 4096); // Telegram message limit
+  // First, decode any HTML entities to catch encoded attacks
+  let sanitized = text
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(\d+);/gi, (_, num) => String.fromCharCode(parseInt(num, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  // Remove all HTML tags (including malformed ones)
+  sanitized = sanitized.replace(/<[^>]*>?/g, '');
+
+  // Remove dangerous protocols (case-insensitive, with optional whitespace)
+  sanitized = sanitized.replace(/j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/gi, '');
+  sanitized = sanitized.replace(/v\s*b\s*s\s*c\s*r\s*i\s*p\s*t\s*:/gi, '');
+  sanitized = sanitized.replace(/d\s*a\s*t\s*a\s*:/gi, '');
+
+  // Remove event handlers (various obfuscation attempts)
+  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  sanitized = sanitized.replace(/on\w+\s*\(/gi, '');
+
+  // Remove expression() which can be used in CSS for XSS
+  sanitized = sanitized.replace(/expression\s*\(/gi, '');
+
+  // Remove null bytes and other control characters (except newlines/tabs)
+  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+  return sanitized.trim().slice(0, 4096); // Telegram message limit
 }
 
 /**

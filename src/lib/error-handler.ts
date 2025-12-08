@@ -71,7 +71,8 @@ export class ErrorHandler {
     this.handle(normalized, context);
 
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Integrate Sentry / Logtail / Axiom here
+      // Send to external error tracking service
+      this.sendToErrorTracking(normalized, context);
     } else {
       logInfo('Report skipped (dev mode)', {
         component: 'error-handler',
@@ -79,6 +80,108 @@ export class ErrorHandler {
         metadata: context?.metadata
       });
     }
+  }
+
+  /**
+   * Send error to external tracking service
+   * Supports Sentry, Logtail, or custom webhook
+   */
+  private async sendToErrorTracking(error: Error, context?: ErrorContext): Promise<void> {
+    const errorTrackingUrl = process.env.ERROR_TRACKING_WEBHOOK;
+    const sentryDsn = process.env.SENTRY_DSN;
+
+    // Try Sentry-style DSN first
+    if (sentryDsn) {
+      try {
+        // Note: For full Sentry integration, install @sentry/nextjs
+        // This is a lightweight fallback that sends to Sentry's envelope API
+        const dsnMatch = sentryDsn.match(/https:\/\/([^@]+)@([^/]+)\/(\d+)/);
+        if (dsnMatch) {
+          const [, publicKey, host, projectId] = dsnMatch;
+          const sentryUrl = `https://${host}/api/${projectId}/envelope/`;
+
+          await fetch(sentryUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-sentry-envelope',
+              'X-Sentry-Auth': `Sentry sentry_version=7, sentry_key=${publicKey}`,
+            },
+            body: JSON.stringify({
+              event_id: crypto.randomUUID().replace(/-/g, ''),
+              timestamp: new Date().toISOString(),
+              level: context?.severity || 'error',
+              message: error.message,
+              exception: {
+                values: [{
+                  type: error.name,
+                  value: error.message,
+                  stacktrace: { frames: this.parseStackTrace(error.stack) }
+                }]
+              },
+              tags: {
+                component: context?.component,
+                action: context?.action,
+              },
+              user: context?.userId ? { id: context.userId } : undefined,
+              extra: context?.metadata,
+            }),
+          });
+        }
+      } catch (e) {
+        logWarn('Failed to send error to Sentry', {
+          component: 'error-handler',
+          action: 'sentry-report',
+          metadata: { error: (e as Error).message }
+        });
+      }
+    }
+
+    // Fallback to custom webhook (Logtail, Axiom, etc.)
+    if (errorTrackingUrl) {
+      try {
+        await fetch(errorTrackingUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: context?.severity || 'error',
+            message: error.message,
+            stack: error.stack,
+            context: {
+              component: context?.component,
+              action: context?.action,
+              userId: context?.userId,
+              ...context?.metadata,
+            },
+          }),
+        });
+      } catch (e) {
+        logWarn('Failed to send error to tracking webhook', {
+          component: 'error-handler',
+          action: 'webhook-report',
+          metadata: { error: (e as Error).message }
+        });
+      }
+    }
+  }
+
+  /**
+   * Parse stack trace into Sentry-compatible frames
+   */
+  private parseStackTrace(stack?: string): Array<{ filename: string; function: string; lineno?: number }> {
+    if (!stack) return [];
+
+    return stack.split('\n').slice(1).map(line => {
+      const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):\d+\)/);
+      if (match) {
+        return {
+          function: match[1],
+          filename: match[2],
+          lineno: parseInt(match[3], 10),
+        };
+      }
+      return { filename: 'unknown', function: line.trim() };
+    }).slice(0, 10); // Limit to 10 frames
   }
 
   /**

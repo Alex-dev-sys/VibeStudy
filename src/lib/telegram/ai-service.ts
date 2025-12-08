@@ -7,7 +7,10 @@ import {
   AI_CACHE_TTL_QUESTIONS_MINUTES
 } from './constants';
 
-// Simple in-memory cache
+/**
+ * LRU Cache with size limits to prevent memory leaks
+ */
+const MAX_CACHE_SIZE = 500;
 const cache = new Map<string, { data: string; expiresAt: number }>();
 
 function getCached(key: string): string | null {
@@ -16,14 +19,43 @@ function getCached(key: string): string | null {
     cache.delete(key);
     return null;
   }
+  // Move to end for LRU behavior
+  cache.delete(key);
+  cache.set(key, entry);
   return entry.data;
 }
 
 function setCache(key: string, data: string, ttlMinutes: number = 60) {
+  // Enforce max cache size (LRU eviction)
+  if (cache.size >= MAX_CACHE_SIZE) {
+    // Delete oldest entry (first in Map)
+    const firstKey = cache.keys().next().value;
+    if (firstKey) {
+      cache.delete(firstKey);
+    }
+  }
+
   cache.set(key, {
     data,
     expiresAt: Date.now() + ttlMinutes * 60 * 1000
   });
+}
+
+/**
+ * Clean expired entries periodically
+ */
+function cleanExpiredCache() {
+  const now = Date.now();
+  for (const [key, entry] of cache.entries()) {
+    if (entry.expiresAt < now) {
+      cache.delete(key);
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+if (typeof setInterval !== 'undefined') {
+  setInterval(cleanExpiredCache, 5 * 60 * 1000);
 }
 
 export async function generateRecommendation(context: UserContext): Promise<string> {
