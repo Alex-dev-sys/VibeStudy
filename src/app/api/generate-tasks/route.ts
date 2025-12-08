@@ -14,68 +14,229 @@ import { withRetry } from '@/lib/ai/retry-service';
 import { generatedContentSchema, GeneratedContent } from '@/lib/ai/schemas';
 
 const fallbackResponse: GeneratedContent = {
-  theory: 'Сегодня закрепляем материал через повторение ключевых концепций и реализацию практических сценариев.',
-  recap: 'Расскажи своими словами, что важного ты вынес из вчерашнего дня обучения.',
+  theory: `# Основы программирования
+
+Программирование — это искусство создания инструкций для компьютера. Представь, что ты пишешь рецепт для робота-повара: каждый шаг должен быть чётким и понятным.
+
+## Почему это важно?
+
+Умение программировать открывает двери в мир технологий. Ты сможешь создавать сайты, приложения, игры и автоматизировать рутинные задачи.
+
+## Ключевые концепции
+
+**Переменные** — это как коробки с именами, в которых хранятся данные. Например:
+\`\`\`python
+name = "Иван"
+age = 25
+\`\`\`
+
+**Функции** — это набор инструкций, которые можно вызывать по имени:
+\`\`\`python
+def greet(name):
+    print(f"Привет, {name}!")
+
+greet("Мир")
+\`\`\`
+
+**Условия** позволяют программе принимать решения:
+\`\`\`python
+if age >= 18:
+    print("Ты совершеннолетний")
+else:
+    print("Ты ещё молод")
+\`\`\`
+
+## Важные замечания
+
+- Пиши код понятно — это поможет и тебе, и другим
+- Тестируй каждый шаг — ошибки легче найти в маленьком коде
+- Не бойся ошибок — они часть обучения
+
+Практикуйся каждый день, и успех придёт!`,
+  recap: 'Какие основные концепции программирования ты уже знаешь? Расскажи своими словами.',
   recapTask: undefined,
   tasks: [
     {
       id: 'fallback-1',
       difficulty: 'easy',
-      prompt: 'Опиши шаги решения вчерашней задачи и постарайся улучшить свой алгоритм.',
-      solutionHint: 'Вспомни приёмы оптимизации, которые мы обсуждали.'
+      prompt: 'Создай переменную с твоим именем и выведи её на экран с помощью print().',
+      solutionHint: 'Используй формат: name = "Твоё имя", затем print(name)'
     },
     {
       id: 'fallback-2',
       difficulty: 'easy',
-      prompt: 'Создай простую программу, демонстрирующую базовые концепции.',
-      solutionHint: 'Начни с минимальной реализации.'
+      prompt: 'Создай две числовые переменные a = 10 и b = 5. Выведи их сумму.',
+      solutionHint: 'Сложи переменные: result = a + b, затем выведи result'
     },
     {
       id: 'fallback-3',
       difficulty: 'medium',
-      prompt: 'Объедини несколько изученных концепций в одной программе.',
-      solutionHint: 'Разбей задачу на подзадачи.'
+      prompt: 'Запроси у пользователя имя через input() и выведи приветствие: "Привет, [имя]!"',
+      solutionHint: 'Используй input() для получения данных и f-строку для вывода'
     },
     {
       id: 'fallback-4',
       difficulty: 'hard',
-      prompt: 'Реализуй алгоритм с учётом граничных случаев и оптимизации.',
-      solutionHint: 'Подумай об обработке ошибок.'
+      prompt: 'Напиши программу, которая запрашивает два числа и выводит большее из них.',
+      solutionHint: 'Используй if-else для сравнения чисел. Не забудь преобразовать input() в int()'
     },
     {
       id: 'fallback-5',
       difficulty: 'challenge',
-      prompt: 'Создай законченное мини-приложение, демонстрирующее мастерство.',
-      solutionHint: 'Используй всё изученное ранее.'
+      prompt: 'Создай простой калькулятор: запроси два числа и операцию (+, -, *, /), выведи результат.',
+      solutionHint: 'Используй if-elif-else для выбора операции. Обработай деление на ноль.'
     }
   ]
 };
 
+/**
+ * Robust JSON parser with multiple recovery strategies
+ */
 const parseAiResponse = (content: string): GeneratedContent => {
   try {
-    const sanitized = content.replace(/```json|```/g, '').trim();
-    if (!sanitized || sanitized === 'null' || sanitized === 'undefined') {
-      return fallbackResponse;
-    }
-    if (!sanitized.startsWith('{')) {
-      console.warn('Ответ AI не похож на JSON, возвращаем fallback.', sanitized.slice(0, 120));
-      return fallbackResponse;
-    }
-    const parsed = JSON.parse(sanitized);
+    // Step 1: Clean up the response
+    let sanitized = content
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
+      .trim();
 
-    // Validate content with Zod
+    // Step 2: Try to extract JSON if wrapped in other text
+    const jsonMatch = sanitized.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      sanitized = jsonMatch[0];
+    }
+
+    if (!sanitized || sanitized === 'null' || sanitized === 'undefined') {
+      console.warn('[AI Parser] Empty or null response');
+      return fallbackResponse;
+    }
+
+    if (!sanitized.startsWith('{')) {
+      console.warn('[AI Parser] Response does not start with {:', sanitized.slice(0, 100));
+      return fallbackResponse;
+    }
+
+    // Step 3: Fix common JSON issues before parsing
+    sanitized = sanitized
+      // Remove trailing commas before } or ]
+      .replace(/,(\s*[}\]])/g, '$1')
+      // Remove control characters except newlines and tabs
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+
+    // Step 4: Parse JSON with recovery attempts
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(sanitized);
+    } catch (parseError) {
+      console.warn('[AI Parser] Initial parse failed, attempting recovery');
+
+      // Attempt 1: Fix unescaped quotes in strings
+      try {
+        const fixedQuotes = sanitized
+          .replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\') // Fix invalid escapes
+          .replace(/\t/g, '\\t') // Escape tabs
+          .replace(/\r\n/g, '\\n') // Normalize line endings
+          .replace(/\r/g, '\\n');
+        parsed = JSON.parse(fixedQuotes);
+      } catch {
+        // Attempt 2: More aggressive cleanup
+        try {
+          const aggressiveClean = sanitized
+            .replace(/[\u0000-\u001F]+/g, ' ')
+            .replace(/\n\s*\n/g, '\n');
+          parsed = JSON.parse(aggressiveClean);
+        } catch {
+          console.error('[AI Parser] All recovery attempts failed');
+          return fallbackResponse;
+        }
+      }
+    }
+
+    // Step 5: Validate with Zod
     const result = generatedContentSchema.safeParse(parsed);
     if (!result.success) {
-      console.warn('Content validation failed:', result.error.message);
+      console.warn('[AI Parser] Validation failed:', result.error.issues.map(i => i.message).join(', '));
+
+      // Try to fix common validation issues
+      const fixedContent = tryFixValidationIssues(parsed as Record<string, unknown>);
+      const retryResult = generatedContentSchema.safeParse(fixedContent);
+
+      if (retryResult.success) {
+        console.log('[AI Parser] Content fixed after validation retry');
+        return retryResult.data;
+      }
+
+      console.error('[AI Parser] Could not fix validation issues');
       return fallbackResponse;
     }
 
     return result.data;
   } catch (error) {
-    console.warn('Ошибка парсинга ответа AI', error, content);
+    console.error('[AI Parser] Unexpected error:', error);
     return fallbackResponse;
   }
 };
+
+/**
+ * Try to fix common validation issues in AI response
+ */
+function tryFixValidationIssues(content: Record<string, unknown>): Record<string, unknown> {
+  const fixed = { ...content };
+
+  // Ensure recap exists
+  if (!fixed.recap || typeof fixed.recap !== 'string' || (fixed.recap as string).length < 20) {
+    fixed.recap = 'Что ты узнал из предыдущего урока? Расскажи своими словами.';
+  }
+
+  // Fix tasks array
+  if (Array.isArray(fixed.tasks)) {
+    const difficulties = ['easy', 'easy', 'medium', 'hard', 'challenge'];
+
+    fixed.tasks = fixed.tasks.map((task: unknown, index: number) => {
+      if (typeof task !== 'object' || task === null) {
+        return {
+          id: `task_${index + 1}`,
+          difficulty: difficulties[index] || 'medium',
+          prompt: 'Выполни практическое задание по теме урока',
+          solutionHint: 'Используй изученный материал'
+        };
+      }
+
+      const t = task as Record<string, unknown>;
+      return {
+        id: t.id || `task_${index + 1}`,
+        difficulty: t.difficulty || difficulties[index] || 'medium',
+        prompt: t.prompt || 'Выполни задание',
+        solutionHint: t.solutionHint || t.hint || 'Примени знания из теории'
+      };
+    });
+
+    // Ensure exactly 5 tasks
+    while ((fixed.tasks as unknown[]).length < 5) {
+      const idx = (fixed.tasks as unknown[]).length;
+      (fixed.tasks as unknown[]).push({
+        id: `task_${idx + 1}`,
+        difficulty: difficulties[idx] || 'challenge',
+        prompt: 'Дополнительное задание для практики',
+        solutionHint: 'Используй изученный материал'
+      });
+    }
+    if ((fixed.tasks as unknown[]).length > 5) {
+      fixed.tasks = (fixed.tasks as unknown[]).slice(0, 5);
+    }
+  } else {
+    // Create default tasks array
+    fixed.tasks = [
+      { id: 'task_1', difficulty: 'easy', prompt: 'Начни с простого примера', solutionHint: 'Следуй теории' },
+      { id: 'task_2', difficulty: 'easy', prompt: 'Закрепи базовые навыки', solutionHint: 'Используй примеры' },
+      { id: 'task_3', difficulty: 'medium', prompt: 'Примени знания на практике', solutionHint: 'Комбинируй концепции' },
+      { id: 'task_4', difficulty: 'hard', prompt: 'Реши более сложную задачу', solutionHint: 'Разбей на подзадачи' },
+      { id: 'task_5', difficulty: 'challenge', prompt: 'Покажи мастерство', solutionHint: 'Используй всё изученное' }
+    ];
+  }
+
+  return fixed;
+}
 
 export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   const rateLimitState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
@@ -145,8 +306,48 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     const prompt = buildPrompt(body);
 
     const systemMessage = body.locale === 'en'
-      ? 'You are an expert programming instructor with 20+ years of experience. Your task is to create EXCELLENT educational content. Generate detailed, well-structured theory (minimum 400-600 words) with code examples, and create 5 tasks with gradual difficulty increase. Respond STRICTLY in JSON format. Theory must be beginner-friendly with analogies and practical examples. All code examples must be working and self-contained.'
-      : 'Ты — эксперт-преподаватель программирования с 20+ годами опыта. Твоя задача — создать ОТЛИЧНЫЙ учебный материал. Генерируй подробную, хорошо структурированную теорию (минимум 400-600 слов) с примерами кода, создавай 5 задач с плавным нарастанием сложности. Отвечай СТРОГО в JSON формате. Теория должна быть понятной для новичков, с аналогиями и практическими примерами. Все примеры кода должны быть рабочими и самодостаточными.';
+      ? `You are an expert programming instructor with 20+ years of experience creating educational content.
+
+CRITICAL REQUIREMENTS:
+1. Generate DETAILED theory (minimum 500 words) with 4-5 working code examples
+2. Create EXACTLY 5 tasks with gradual difficulty: easy, easy, medium, hard, challenge
+3. Respond ONLY with valid JSON - no markdown, no comments, no extra text
+4. Theory must be beginner-friendly with real-world analogies
+5. All code examples must be syntactically correct and runnable
+
+JSON STRUCTURE (follow exactly):
+{
+  "theory": "detailed theory text with code examples using triple backticks",
+  "recap": "review question about previous lesson",
+  "tasks": [
+    {"id": "task_1", "difficulty": "easy", "prompt": "specific task", "solutionHint": "brief hint"},
+    {"id": "task_2", "difficulty": "easy", "prompt": "specific task", "solutionHint": "brief hint"},
+    {"id": "task_3", "difficulty": "medium", "prompt": "specific task", "solutionHint": "brief hint"},
+    {"id": "task_4", "difficulty": "hard", "prompt": "specific task", "solutionHint": "brief hint"},
+    {"id": "task_5", "difficulty": "challenge", "prompt": "specific task", "solutionHint": "brief hint"}
+  ]
+}`
+      : `Ты — эксперт-преподаватель программирования с 20+ годами опыта создания учебных материалов.
+
+КРИТИЧЕСКИЕ ТРЕБОВАНИЯ:
+1. Генерируй ПОДРОБНУЮ теорию (минимум 500 слов) с 4-5 рабочими примерами кода
+2. Создай РОВНО 5 задач с нарастающей сложностью: easy, easy, medium, hard, challenge
+3. Отвечай ТОЛЬКО валидным JSON — без markdown, без комментариев, без лишнего текста
+4. Теория должна быть понятной для новичков с аналогиями из реальной жизни
+5. Все примеры кода должны быть синтаксически корректными и запускаемыми
+
+СТРУКТУРА JSON (следуй точно):
+{
+  "theory": "подробный текст теории с примерами кода в тройных обратных кавычках",
+  "recap": "контрольный вопрос по предыдущему уроку",
+  "tasks": [
+    {"id": "task_1", "difficulty": "easy", "prompt": "конкретное задание", "solutionHint": "краткая подсказка"},
+    {"id": "task_2", "difficulty": "easy", "prompt": "конкретное задание", "solutionHint": "краткая подсказка"},
+    {"id": "task_3", "difficulty": "medium", "prompt": "конкретное задание", "solutionHint": "краткая подсказка"},
+    {"id": "task_4", "difficulty": "hard", "prompt": "конкретное задание", "solutionHint": "краткая подсказка"},
+    {"id": "task_5", "difficulty": "challenge", "prompt": "конкретное задание", "solutionHint": "краткая подсказка"}
+  ]
+}`;
 
     let parsedResponse: GeneratedContent = fallbackResponse;
     let isFallback = true;
@@ -166,11 +367,12 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
                   content: prompt
                 }
               ],
-              temperature: 0.7, // Немного снижено для более стабильного и структурированного ответа
-              maxTokens: 4000 // Увеличено для детальной теории с примерами
+              temperature: 0.5, // Снижено для более стабильного и структурированного ответа
+              maxTokens: 4500, // Увеличено для детальной теории с примерами
+              responseFormat: { type: 'json_object' } // Гарантирует JSON ответ
             }),
           {
-            timeoutMs: 120_000,
+            timeoutMs: 150_000, // Увеличен таймаут для длинной генерации
             priority: 'high',
             metadata: { endpoint: 'generate-tasks', day: body.day, languageId: body.languageId }
           }
