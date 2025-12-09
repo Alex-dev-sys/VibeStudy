@@ -179,7 +179,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  // Базовая валидация
+  // Input validation and sanitization
+  const MAX_CODE_LENGTH = 10000; // 10KB max
+  const MAX_TASK_DESCRIPTION_LENGTH = 2000;
+
   if (!body.code || body.code.trim().length < 5) {
     return NextResponse.json({
       success: false,
@@ -189,6 +192,35 @@ export async function POST(request: Request) {
       score: 0
     });
   }
+
+  if (body.code.length > MAX_CODE_LENGTH) {
+    return NextResponse.json({
+      success: false,
+      message: 'Код слишком длинный',
+      feedback: `Максимальная длина кода: ${MAX_CODE_LENGTH} символов.`,
+      suggestions: ['Разбейте решение на несколько частей', 'Удалите ненужные комментарии'],
+      score: 0
+    }, { status: 400 });
+  }
+
+  // Sanitize inputs to prevent prompt injection
+  const sanitizedCode = body.code
+    .slice(0, MAX_CODE_LENGTH)
+    .replace(/\x00/g, ''); // Remove null bytes
+
+  const sanitizedTask = {
+    title: (body.task.title || '').slice(0, 200),
+    description: (body.task.description || '').slice(0, MAX_TASK_DESCRIPTION_LENGTH),
+    difficulty: (body.task.difficulty || 'medium').slice(0, 20),
+    hints: body.task.hints?.slice(0, 5).map(h => h.slice(0, 200))
+  };
+
+  // Update body with sanitized values
+  body = {
+    ...body,
+    code: sanitizedCode,
+    task: sanitizedTask
+  };
 
   if (!isAiConfigured()) {
     if (process.env.NODE_ENV !== 'production') {

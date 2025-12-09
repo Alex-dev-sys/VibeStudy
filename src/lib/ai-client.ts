@@ -202,7 +202,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
     }
 
     const rawBody = await response.text();
-    console.log('🔍 Raw API Response (first 500 chars):', rawBody.slice(0, 500));
+    // Debug logging removed for security - raw responses may contain sensitive data
     const parsedBody = parseResponsePayload(rawBody);
 
     if (!response.ok) {
@@ -288,7 +288,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
         }
 
         const fallbackRawBody = await fallbackResponse.text();
-        console.log('🔍 Fallback API Response (first 500 chars):', fallbackRawBody.slice(0, 500));
+        // Debug logging removed for security
         const fallbackParsedBody = parseResponsePayload(fallbackRawBody);
 
         if (!fallbackResponse.ok) {

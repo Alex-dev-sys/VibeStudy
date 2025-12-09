@@ -9,6 +9,10 @@ export const TIER_LIMITS = {
     aiRequestsPerDay: 5,
     rateLimit: 10 // requests per minute
   },
+  guest: {
+    aiRequestsPerDay: 3, // More restrictive for guests
+    rateLimit: 5
+  },
   premium: {
     aiRequestsPerDay: Infinity,
     rateLimit: 30
@@ -18,6 +22,76 @@ export const TIER_LIMITS = {
     rateLimit: 100
   }
 } as const;
+
+/**
+ * In-memory store for guest rate limiting by IP
+ * In production, this should use Redis or similar
+ */
+const guestRequestStore = new Map<string, { count: number; resetAt: number }>();
+const GUEST_STORE_CLEANUP_INTERVAL = 60 * 1000; // 1 minute
+const GUEST_STORE_MAX_SIZE = 10000; // Max IPs to track
+
+// Cleanup old entries periodically
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, data] of guestRequestStore.entries()) {
+      if (data.resetAt < now) {
+        guestRequestStore.delete(ip);
+      }
+    }
+    // Prevent unbounded growth - remove oldest entries if too large
+    if (guestRequestStore.size > GUEST_STORE_MAX_SIZE) {
+      const entries = Array.from(guestRequestStore.entries());
+      entries.sort((a, b) => a[1].resetAt - b[1].resetAt);
+      const toDelete = entries.slice(0, entries.length - GUEST_STORE_MAX_SIZE / 2);
+      toDelete.forEach(([ip]) => guestRequestStore.delete(ip));
+    }
+  }, GUEST_STORE_CLEANUP_INTERVAL);
+}
+
+/**
+ * Get client IP from request
+ */
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  const realIP = request.headers.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+  return 'unknown';
+}
+
+/**
+ * Check and update guest rate limit by IP
+ */
+function checkGuestRateLimit(ip: string): { allowed: boolean; requestsToday: number } {
+  const now = Date.now();
+  const dayStart = new Date();
+  dayStart.setHours(0, 0, 0, 0);
+  const resetAt = dayStart.getTime() + 24 * 60 * 60 * 1000; // End of day
+
+  const existing = guestRequestStore.get(ip);
+
+  if (!existing || existing.resetAt < now) {
+    // New entry or expired
+    guestRequestStore.set(ip, { count: 1, resetAt });
+    return { allowed: true, requestsToday: 1 };
+  }
+
+  const newCount = existing.count + 1;
+  const limit = TIER_LIMITS.guest.aiRequestsPerDay;
+
+  if (newCount > limit) {
+    return { allowed: false, requestsToday: existing.count };
+  }
+
+  guestRequestStore.set(ip, { count: newCount, resetAt: existing.resetAt });
+  return { allowed: true, requestsToday: newCount };
+}
 
 export type UserTier = keyof typeof TIER_LIMITS;
 
@@ -42,15 +116,29 @@ export async function checkTierLimit(request: NextRequest): Promise<TierCheckRes
   // Get user session
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
-  // If no user or auth error, treat as free tier guest
+  // If no user or auth error, treat as guest with IP-based rate limiting
   if (!user || authError) {
-    // For guest users, we can't track requests across sessions
-    // Return free tier with no tracking (client-side will handle)
+    const clientIP = getClientIP(request);
+    const guestCheck = checkGuestRateLimit(clientIP);
+
+    if (!guestCheck.allowed) {
+      return {
+        allowed: false,
+        tier: 'guest',
+        requestsToday: guestCheck.requestsToday,
+        limit: TIER_LIMITS.guest.aiRequestsPerDay,
+        error: {
+          code: 'TIER_LIMIT_EXCEEDED',
+          message: `Guest users are limited to ${TIER_LIMITS.guest.aiRequestsPerDay} AI requests per day. Sign up for more!`
+        }
+      };
+    }
+
     return {
-      allowed: true, // Allow for now, client will handle guest limits
-      tier: 'free',
-      requestsToday: 0,
-      limit: TIER_LIMITS.free.aiRequestsPerDay
+      allowed: true,
+      tier: 'guest',
+      requestsToday: guestCheck.requestsToday,
+      limit: TIER_LIMITS.guest.aiRequestsPerDay
     };
   }
 

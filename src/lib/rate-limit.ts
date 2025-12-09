@@ -7,7 +7,13 @@
 interface RateLimitEntry {
   count: number;
   resetAt: number;
+  lastAccess: number;
 }
+
+// Configuration constants
+const MAX_STORE_SIZE = 50000; // Maximum entries to prevent memory leak
+const CLEANUP_THRESHOLD = 0.8; // Start cleanup when 80% full
+const CLEANUP_TARGET = 0.5; // Clean down to 50% capacity
 
 class RateLimiter {
   private store = new Map<string, RateLimitEntry>();
@@ -22,11 +28,39 @@ class RateLimiter {
 
   private cleanup(): void {
     const now = Date.now();
+
+    // First pass: remove expired entries
     for (const [key, entry] of this.store.entries()) {
       if (entry.resetAt < now) {
         this.store.delete(key);
       }
     }
+
+    // Second pass: if still too large, remove oldest entries (LRU)
+    if (this.store.size > MAX_STORE_SIZE * CLEANUP_THRESHOLD) {
+      const entries = Array.from(this.store.entries());
+      // Sort by lastAccess (oldest first)
+      entries.sort((a, b) => a[1].lastAccess - b[1].lastAccess);
+
+      // Remove oldest entries until we reach target size
+      const targetSize = Math.floor(MAX_STORE_SIZE * CLEANUP_TARGET);
+      const toRemove = entries.slice(0, entries.length - targetSize);
+
+      for (const [key] of toRemove) {
+        this.store.delete(key);
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[RateLimiter] LRU cleanup: removed ${toRemove.length} entries, ${this.store.size} remaining`);
+      }
+    }
+  }
+
+  /**
+   * Get current store size (for monitoring)
+   */
+  getStoreSize(): number {
+    return this.store.size;
   }
 
   /**
@@ -44,16 +78,19 @@ class RateLimiter {
       // Create new entry or reset expired one
       this.store.set(identifier, {
         count: 1,
-        resetAt: now + windowMs
+        resetAt: now + windowMs,
+        lastAccess: now
       });
       return true;
     }
 
     if (entry.count >= limit) {
+      entry.lastAccess = now; // Update access time even when limited
       return false;
     }
 
     entry.count++;
+    entry.lastAccess = now;
     return true;
   }
 
