@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, signOut, onAuthStateChange } from '@/lib/supabase/auth';
 import { GuestModeManager } from '@/lib/auth/guest-mode';
@@ -90,10 +91,13 @@ export function UserMenu() {
         aria-label="User menu"
       >
         {avatarUrl ? (
-          <img 
-            src={avatarUrl} 
-            alt="User avatar" 
-            className="w-8 h-8 rounded-full object-cover"
+          <Image
+            src={avatarUrl}
+            alt="User avatar"
+            width={32}
+            height={32}
+            className="rounded-full object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#ff0094] to-[#ffd200] flex items-center justify-center">

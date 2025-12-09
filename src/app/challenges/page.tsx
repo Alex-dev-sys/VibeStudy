@@ -43,56 +43,56 @@ export default function ChallengesPage() {
   const currentLanguage = LANGUAGES.find(lang => lang.id === languageId);
 
   useEffect(() => {
-    loadChallenges();
-  }, [languageId]);
+    const loadChallenges = async () => {
+      setIsLoading(true);
+      setError(null);
 
-  const loadChallenges = async () => {
-    setIsLoading(true);
-    setError(null);
+      try {
+        // Load today's challenge
+        const todayResponse = await fetch(`/api/challenges?language=${languageId}`);
 
-    try {
-      // Load today's challenge
-      const todayResponse = await fetch(`/api/challenges?language=${languageId}`);
+        if (todayResponse.ok) {
+          const todayData = await todayResponse.json();
+          setTodayChallenge(todayData.challenge);
+        } else if (todayResponse.status === 404) {
+          setTodayChallenge(null);
+        } else if (todayResponse.status === 503) {
+          setError(t.challenges.loadError);
+          return;
+        } else {
+          const errorData = await todayResponse.json();
+          console.warn('Failed to load today\'s challenge:', errorData);
+        }
 
-      if (todayResponse.ok) {
-        const todayData = await todayResponse.json();
-        setTodayChallenge(todayData.challenge);
-      } else if (todayResponse.status === 404) {
-        setTodayChallenge(null);
-      } else if (todayResponse.status === 503) {
+        // Load challenge history
+        const historyResponse = await fetch(`/api/challenges?language=${languageId}&limit=10`);
+
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setChallengeHistory(historyData.challenges || []);
+        } else if (historyResponse.status !== 503) {
+          console.warn('Failed to load challenge history');
+        }
+
+        logInfo('Challenges loaded', {
+          component: 'ChallengesPage',
+          action: 'loadChallenges',
+          metadata: { language: languageId }
+        });
+
+      } catch (err) {
+        logError('Error loading challenges', err as Error, {
+          component: 'ChallengesPage',
+          action: 'loadChallenges'
+        });
         setError(t.challenges.loadError);
-        return;
-      } else {
-        const errorData = await todayResponse.json();
-        console.warn('Failed to load today\'s challenge:', errorData);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      // Load challenge history
-      const historyResponse = await fetch(`/api/challenges?language=${languageId}&limit=10`);
-
-      if (historyResponse.ok) {
-        const historyData = await historyResponse.json();
-        setChallengeHistory(historyData.challenges || []);
-      } else if (historyResponse.status !== 503) {
-        console.warn('Failed to load challenge history');
-      }
-
-      logInfo('Challenges loaded', {
-        component: 'ChallengesPage',
-        action: 'loadChallenges',
-        metadata: { language: languageId }
-      });
-
-    } catch (err) {
-      logError('Error loading challenges', err as Error, {
-        component: 'ChallengesPage',
-        action: 'loadChallenges'
-      });
-      setError(t.challenges.loadError);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    loadChallenges();
+  }, [languageId, t.challenges.loadError]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

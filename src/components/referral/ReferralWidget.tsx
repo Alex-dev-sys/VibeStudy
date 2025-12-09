@@ -26,41 +26,41 @@ export function ReferralWidget() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadReferralData();
-  }, []);
+    const loadReferralData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const loadReferralData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
 
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        setUser(null);
+        setUser(currentUser);
+
+        // Generate referral link
+        const link = generateReferralLink(currentUser.id);
+        setReferralLink(link);
+
+        // Fetch referral stats
+        const referralStats = await getReferralStats();
+        setStats({
+          totalReferrals: referralStats.totalReferrals,
+          completedReferrals: referralStats.completedReferrals,
+          pendingReferrals: referralStats.pendingReferrals
+        });
+      } catch (err) {
+        console.error('Error loading referral data:', err);
+        setError(t.errors?.generic || 'Failed to load referral data');
+      } finally {
         setLoading(false);
-        return;
       }
+    };
 
-      setUser(currentUser);
-
-      // Generate referral link
-      const link = generateReferralLink(currentUser.id);
-      setReferralLink(link);
-
-      // Fetch referral stats
-      const referralStats = await getReferralStats();
-      setStats({
-        totalReferrals: referralStats.totalReferrals,
-        completedReferrals: referralStats.completedReferrals,
-        pendingReferrals: referralStats.pendingReferrals
-      });
-    } catch (err) {
-      console.error('Error loading referral data:', err);
-      setError(t.errors?.generic || 'Failed to load referral data');
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadReferralData();
+  }, [t.errors?.generic]);
 
   const copyToClipboard = async () => {
     try {

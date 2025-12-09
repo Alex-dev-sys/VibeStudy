@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Copy, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { clsx } from 'clsx';
 import QRCode from 'qrcode';
@@ -128,10 +129,12 @@ export function PaymentModal({
           {/* QR Code */}
           <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-6">
             {qrCodeUrl ? (
-              <img
+              <Image
                 src={qrCodeUrl}
                 alt="QR код для оплаты"
-                className="h-64 w-64"
+                width={256}
+                height={256}
+                unoptimized
               />
             ) : (
               <div className="flex h-64 w-64 items-center justify-center">

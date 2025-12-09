@@ -73,17 +73,17 @@ export default function TelegramMiniPage() {
   const { locale, setLocale } = useLocaleStore();
   const language = getLanguageById(languageId);
 
+  // Initialize Telegram WebApp (runs once)
   useEffect(() => {
-    // Initialize Telegram WebApp
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
-      
+
       // Signal that the Mini App is ready
       tg.ready();
-      
+
       // Expand to full height
       tg.expand();
-      
+
       // Set locale from Telegram user
       if (tg.initDataUnsafe.user?.language_code) {
         const userLang = tg.initDataUnsafe.user.language_code;
@@ -91,7 +91,7 @@ export default function TelegramMiniPage() {
           setLocale(userLang);
         }
       }
-      
+
       // Apply Telegram theme colors
       const colors: Record<string, string> = {};
       if (tg.themeParams.bg_color) colors['--tg-bg'] = tg.themeParams.bg_color;
@@ -100,56 +100,58 @@ export default function TelegramMiniPage() {
       if (tg.themeParams.button_color) colors['--tg-button'] = tg.themeParams.button_color;
       if (tg.themeParams.button_text_color) colors['--tg-button-text'] = tg.themeParams.button_text_color;
       if (tg.themeParams.secondary_bg_color) colors['--tg-secondary-bg'] = tg.themeParams.secondary_bg_color;
-      
+
       setThemeColors(colors);
-      
+
       // Show back button
       tg.BackButton.show();
       tg.BackButton.onClick(() => {
         tg.close();
       });
     }
-    
-    // Load tasks for current day
-    loadTasks();
-  }, []);
+  }, [setLocale]);
 
-  const loadTasks = async () => {
-    setIsLoading(true);
-    try {
-      // Fetch tasks from API
-      const response = await fetch('/api/generate-tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          day: activeDay,
-          languageId,
-          locale
-        })
-      });
+  // Load tasks when dependencies change
+  useEffect(() => {
+    const loadTasks = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch tasks from API
+        const response = await fetch('/api/generate-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            day: activeDay,
+            languageId,
+            locale
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to load tasks');
-      }
-
-      const data = await response.json();
-      setTasks(data.tasks || []);
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      // Use fallback tasks
-      setTasks([
-        {
-          id: 'fallback-1',
-          difficulty: 'easy',
-          prompt: locale === 'ru' 
-            ? 'Напишите функцию, которая возвращает "Hello, World!"'
-            : 'Write a function that returns "Hello, World!"'
+        if (!response.ok) {
+          throw new Error('Failed to load tasks');
         }
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+        const data = await response.json();
+        setTasks(data.tasks || []);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        // Use fallback tasks
+        setTasks([
+          {
+            id: 'fallback-1',
+            difficulty: 'easy',
+            prompt: locale === 'ru'
+              ? 'Напишите функцию, которая возвращает "Hello, World!"'
+              : 'Write a function that returns "Hello, World!"'
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, [activeDay, languageId, locale]);
 
   const handleTaskComplete = (taskId: string) => {
     toggleTask(activeDay, taskId);
