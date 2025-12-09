@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { getReferralStats, generateReferralLink } from '@/lib/supabase/referrals';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { useTranslations } from '@/store/locale-store';
-import { Gift, Copy, Check, Users, Trophy } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Gift, Copy, Check } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -18,7 +18,7 @@ interface ReferralStats {
 
 export function ReferralWidget() {
   const t = useTranslations();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [referralLink, setReferralLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
