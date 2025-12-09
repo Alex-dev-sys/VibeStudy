@@ -105,7 +105,7 @@ const ENV_VARIABLES: EnvVariable[] = [
     name: 'NEXT_PUBLIC_SITE_URL',
     required: false,
     description: 'Public site URL',
-    defaultValue: 'https://vibestudy.com',
+    defaultValue: 'https://vibestudy.ru',
   },
   {
     name: 'NEXT_PUBLIC_APP_URL',

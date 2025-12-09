@@ -13,7 +13,7 @@ const ICON_SVG = encodeURIComponent(
 );
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.ru'),
   title: {
     default: 'VibeStudy | 90-дневный курс программирования',
     template: '%s | VibeStudy'

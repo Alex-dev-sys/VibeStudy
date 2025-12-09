@@ -145,7 +145,7 @@ async function handleCommand(command, chatId, firstName) {
       const startKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Открыть VibeStudy', url: 'https://vibe-study-c3yn.vercel.app' }
+            { text: '🚀 Открыть VibeStudy', url: 'https://vibestudy.ru' }
           ],
           [
             { text: '📊 Моя статистика', callback_data: 'cmd_stats' },
@@ -229,7 +229,7 @@ async function handleCommand(command, chatId, firstName) {
       const statsKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Открыть VibeStudy', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Открыть VibeStudy', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -253,7 +253,7 @@ async function handleCommand(command, chatId, firstName) {
       const progressKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать обучение', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать обучение', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -275,7 +275,7 @@ async function handleCommand(command, chatId, firstName) {
       const topicsKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать обучение', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать обучение', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -327,7 +327,7 @@ async function handleCommand(command, chatId, firstName) {
       const adviceKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать обучение', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать обучение', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -379,7 +379,7 @@ async function handleCommand(command, chatId, firstName) {
       const predictKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать обучение', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать обучение', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -408,7 +408,7 @@ async function handleCommand(command, chatId, firstName) {
       const planKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать обучение', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать обучение', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '◀️ Назад', callback_data: 'cmd_start' }
@@ -460,7 +460,7 @@ async function handleCommand(command, chatId, firstName) {
       const challengeKeyboard = {
         inline_keyboard: [
           [
-            { text: '🚀 Начать на сайте', url: 'https://vibe-study-c3yn.vercel.app/learn' }
+            { text: '🚀 Начать на сайте', url: 'https://vibestudy.ru/learn' }
           ],
           [
             { text: '✅ Принять челлендж', callback_data: 'challenge_accept' },

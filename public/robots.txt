@@ -9,4 +9,4 @@ Disallow: /api/
 Disallow: /admin/
 
 # Sitemap location
-Sitemap: https://vibestudy.com/sitemap.xml
+Sitemap: https://vibestudy.ru/sitemap.xml

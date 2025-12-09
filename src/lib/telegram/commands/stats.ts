@@ -26,7 +26,7 @@ export async function handleStatsCommand(
     replyMarkup: {
       inline_keyboard: [
         [
-          { text: '🌐 Открыть VibeStudy', url: process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.com' }
+          { text: '🌐 Открыть VibeStudy', url: process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.ru' }
         ]
       ]
     }

@@ -9,7 +9,7 @@ export interface PageMetadata {
   structuredData?: object;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vibestudy.ru';
 const SITE_NAME = 'VibeStudy';
 const DEFAULT_OG_IMAGE = '/og-image.png';
 
