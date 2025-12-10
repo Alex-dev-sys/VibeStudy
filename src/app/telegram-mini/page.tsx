@@ -70,7 +70,7 @@ export default function TelegramMiniPage() {
   const [themeColors, setThemeColors] = useState<Record<string, string>>({});
   
   const { activeDay, languageId, dayStates, toggleTask } = useProgressStore();
-  const { locale, setLocale } = useLocaleStore();
+  const { locale } = useLocaleStore();
   const language = getLanguageById(languageId);
 
   // Initialize Telegram WebApp (runs once)
@@ -83,14 +83,6 @@ export default function TelegramMiniPage() {
 
       // Expand to full height
       tg.expand();
-
-      // Set locale from Telegram user
-      if (tg.initDataUnsafe.user?.language_code) {
-        const userLang = tg.initDataUnsafe.user.language_code;
-        if (userLang === 'ru' || userLang === 'en') {
-          setLocale(userLang);
-        }
-      }
 
       // Apply Telegram theme colors
       const colors: Record<string, string> = {};
@@ -109,7 +101,7 @@ export default function TelegramMiniPage() {
         tg.close();
       });
     }
-  }, [setLocale]);
+  }, []);
 
   // Load tasks when dependencies change
   useEffect(() => {
@@ -140,9 +132,7 @@ export default function TelegramMiniPage() {
           {
             id: 'fallback-1',
             difficulty: 'easy',
-            prompt: locale === 'ru'
-              ? 'Напишите функцию, которая возвращает "Hello, World!"'
-              : 'Write a function that returns "Hello, World!"'
+            prompt: 'Напишите функцию, которая возвращает "Hello, World!"'
           }
         ]);
       } finally {
@@ -188,7 +178,7 @@ export default function TelegramMiniPage() {
         <div className="text-center">
           <div className="mb-4 text-4xl">⏳</div>
           <p className="text-lg" style={{ color: themeColors['--tg-text'] || '#ffffff' }}>
-            {locale === 'ru' ? 'Загрузка...' : 'Loading...'}
+            Загрузка...
           </p>
         </div>
       </div>

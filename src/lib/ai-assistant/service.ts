@@ -18,7 +18,7 @@ import type { UserTier } from '@/types';
 interface AIAssistantServiceConfig {
   maxRetries: number;
   retryDelay: number;
-  locale: 'ru' | 'en';
+  locale: 'ru';
 }
 
 /**
@@ -64,14 +64,6 @@ export class AIAssistantService {
     this.promptBuilder = new PromptBuilder({ locale: this.config.locale });
     this.responseParser = new ResponseParser();
     this.sessionManager = new SessionManager();
-  }
-
-  /**
-   * Set locale for prompts
-   */
-  setLocale(locale: 'ru' | 'en'): void {
-    this.config.locale = locale;
-    this.promptBuilder.setLocale(locale);
   }
 
   /**
@@ -443,11 +435,9 @@ let serviceInstance: AIAssistantService | null = null;
 /**
  * Get AI Assistant Service singleton
  */
-export function getAIAssistantService(locale: 'ru' | 'en' = 'ru'): AIAssistantService {
+export function getAIAssistantService(): AIAssistantService {
   if (!serviceInstance) {
-    serviceInstance = new AIAssistantService({ locale });
-  } else {
-    serviceInstance.setLocale(locale);
+    serviceInstance = new AIAssistantService({ locale: 'ru' });
   }
   return serviceInstance;
 }
