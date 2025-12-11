@@ -727,3 +727,17 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 0, 148, 0.5) transparent;
 }
+/* ============================================
+   CUSTOM TOAST STYLES
+   ============================================ */
+
+.custom-toast {
+  background: rgba(26, 11, 46, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.custom-toast-rounded {
+  border-radius: 1rem; /* 16px */
+}

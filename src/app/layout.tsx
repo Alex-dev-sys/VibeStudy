@@ -128,13 +128,7 @@ export default function RootLayout({
               <Toaster
                 position="bottom-right"
                 toastOptions={{
-                  style: {
-                    background: 'rgba(26, 11, 46, 0.95)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(12px)',
-                  },
-                  className: 'rounded-2xl shadow-2xl',
+                  className: 'custom-toast custom-toast-rounded shadow-2xl',
                 }}
                 aria-live="polite"
                 aria-atomic="true"
