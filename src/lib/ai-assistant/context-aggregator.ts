@@ -50,14 +50,10 @@ export class ContextAggregator {
   /**
    * Get complete user context for AI assistant
    */
-  async getUserContext(userId: string, tier: UserTier, locale?: 'ru' | 'en'): Promise<AssistantContext> {
+  async getUserContext(userId: string, tier: UserTier): Promise<AssistantContext> {
     // Check cache first
     const cached = this.contextCache.get(userId);
     if (cached && !this.isCacheExpired(cached)) {
-      // Update locale if provided (locale can change without invalidating other context)
-      if (locale) {
-        cached.data.locale = locale;
-      }
       return cached.data;
     }
 
@@ -78,7 +74,7 @@ export class ContextAggregator {
     const context: AssistantContext = {
       userId,
       tier,
-      locale: locale || 'ru', // Default to Russian if not provided
+      locale: 'ru',
       currentDay,
       languageId,
       dayState,

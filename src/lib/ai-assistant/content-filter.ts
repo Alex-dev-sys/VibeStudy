@@ -21,7 +21,7 @@ interface ContentFilterConfig {
   stripHtml: boolean;
   checkInappropriate: boolean;
   checkPromptInjection: boolean;
-  locale: 'ru' | 'en';
+  locale: 'ru';
 }
 
 /**
@@ -81,13 +81,6 @@ export class ContentFilter {
 
   constructor(config: Partial<ContentFilterConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
-  }
-
-  /**
-   * Set locale for filtering
-   */
-  setLocale(locale: 'ru' | 'en'): void {
-    this.config.locale = locale;
   }
 
   /**
@@ -263,11 +256,8 @@ export function createContentFilter(
 /**
  * Quick filter function for convenience
  */
-export function filterContent(
-  content: string,
-  locale: 'ru' | 'en' = 'ru'
-): FilterResult {
-  const filter = new ContentFilter({ locale });
+export function filterContent(content: string): FilterResult {
+  const filter = new ContentFilter({ locale: 'ru' });
   return filter.filterContent(content);
 }
 

@@ -89,7 +89,7 @@ export class LeaderboardService {
             }
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .select('telegram_id, telegram_username, first_name, level, xp, tasks_solved')
             .eq('is_active', true)
@@ -173,7 +173,7 @@ export class LeaderboardService {
     }
 }
 
-// Import supabase for language leaderboard
-import { supabase } from '@/lib/db/bot-repository';
+// Import getSupabase for language leaderboard
+import { getSupabase } from '@/lib/db/bot-repository';
 
 export default new LeaderboardService();

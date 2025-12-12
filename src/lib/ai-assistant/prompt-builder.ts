@@ -26,7 +26,7 @@ interface PromptTemplates {
  */
 interface PromptBuilderConfig {
   maxPromptLength: number;
-  locale: 'ru' | 'en';
+  locale: 'ru';
 }
 
 /**
@@ -166,30 +166,14 @@ export class PromptBuilder {
   }
 
   /**
-   * Set locale for prompt generation
-   */
-  setLocale(locale: 'ru' | 'en'): void {
-    this.config.locale = locale;
-  }
-
-  /**
    * Build complete prompt for AI request
    */
   buildPrompt(request: AssistantRequest): string {
-    // Use locale from context if available, otherwise use configured locale
-    const locale = request.context.locale || this.config.locale;
-
-    // Temporarily set locale for this request
-    const originalLocale = this.config.locale;
-    this.config.locale = locale;
 
     const systemPrompt = this.buildSystemPrompt(request.context);
     const userPrompt = this.buildUserPrompt(request);
 
     const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-
-    // Restore original locale
-    this.config.locale = originalLocale;
 
     // Truncate if too long
     return this.truncatePrompt(fullPrompt);
@@ -364,8 +348,8 @@ export class PromptBuilder {
 }
 
 /**
- * Create a PromptBuilder instance with locale
+ * Create a PromptBuilder instance
  */
-export function createPromptBuilder(locale: 'ru' | 'en' = 'ru'): PromptBuilder {
-  return new PromptBuilder({ locale });
+export function createPromptBuilder(): PromptBuilder {
+  return new PromptBuilder({ locale: 'ru' });
 }

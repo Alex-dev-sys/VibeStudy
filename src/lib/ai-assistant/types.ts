@@ -52,7 +52,7 @@ export interface AssistantContext {
   // User Info
   userId: string;
   tier: UserTier;
-  locale?: 'ru' | 'en'; // User's preferred locale
+  locale?: 'ru'; // User's preferred locale
   
   // Learning Context
   currentDay: number;

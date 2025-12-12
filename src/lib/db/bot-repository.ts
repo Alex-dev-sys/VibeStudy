@@ -1,15 +1,26 @@
 /**
  * Bot Database Repository
- * 
+ *
  * Functions for interacting with bot-specific tables in Supabase
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Only create client if credentials are available
+let supabase: SupabaseClient | null = null;
+
+export function getSupabase(): SupabaseClient {
+    if (!supabase) {
+        if (!supabaseUrl || !supabaseKey) {
+            throw new Error('Supabase not configured');
+        }
+        supabase = createClient(supabaseUrl, supabaseKey);
+    }
+    return supabase;
+}
 
 // ============================================================================
 // BOT USERS Repository
@@ -17,7 +28,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const botUsersDB = {
     async getUser(telegramId: number) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .select('*')
             .eq('telegram_id', telegramId)
@@ -33,7 +44,7 @@ export const botUsersDB = {
         first_name: string;
         last_name?: string;
     }) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .insert([{
                 ...userData,
@@ -52,7 +63,7 @@ export const botUsersDB = {
     },
 
     async updateUser(telegramId: number, updates: any) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .update({
                 ...updates,
@@ -67,7 +78,7 @@ export const botUsersDB = {
     },
 
     async incrementXP(telegramId: number, xpAmount: number) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .rpc('update_user_xp', {
                 p_telegram_id: telegramId,
                 p_xp_amount: xpAmount,
@@ -78,7 +89,7 @@ export const botUsersDB = {
     },
 
     async updateStreak(telegramId: number) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .rpc('update_user_streak', {
                 p_telegram_id: telegramId,
             });
@@ -96,7 +107,7 @@ export const questsDB = {
     async getDailyQuests(telegramId: number) {
         const today = new Date().toISOString().split('T')[0];
 
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('user_quests')
             .select('*')
             .eq('telegram_id', telegramId)
@@ -117,7 +128,7 @@ export const questsDB = {
         target: number;
         xp_reward: number;
     }) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('user_quests')
             .insert([{
                 ...questData,
@@ -133,7 +144,7 @@ export const questsDB = {
     },
 
     async updateQuestProgress(telegramId: number, questId: string, progress: number) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('user_quests')
             .update({ progress })
             .eq('telegram_id', telegramId)
@@ -148,7 +159,7 @@ export const questsDB = {
 
     async completeQuest(telegramId: number, questId: string) {
         // First get the quest to know the target value
-        const { data: currentQuest } = await supabase
+        const { data: currentQuest } = await getSupabase()
             .from('user_quests')
             .select('target, xp_reward')
             .eq('telegram_id', telegramId)
@@ -161,7 +172,7 @@ export const questsDB = {
         }
 
         // Update the quest with target progress
-        const { data: quest, error } = await supabase
+        const { data: quest, error } = await getSupabase()
             .from('user_quests')
             .update({
                 completed_at: new Date(),
@@ -190,7 +201,7 @@ export const questsDB = {
 
 export const leaderboardDB = {
     async getGlobalLeaderboard(limit: number = 50) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .select('telegram_id, telegram_username, first_name, level, xp, tasks_solved, current_streak')
             .eq('is_active', true)
@@ -204,7 +215,7 @@ export const leaderboardDB = {
     async getWeeklyLeaderboard(limit: number = 25) {
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('bot_users')
             .select('telegram_id, telegram_username, first_name, level, xp, tasks_solved')
             .eq('is_active', true)
@@ -217,7 +228,7 @@ export const leaderboardDB = {
     },
 
     async getUserRank(telegramId: number) {
-        const { data: users, error } = await supabase
+        const { data: users, error } = await getSupabase()
             .from('bot_users')
             .select('telegram_id, xp')
             .eq('is_active', true)
@@ -238,7 +249,7 @@ export const leaderboardDB = {
 
 export const badgesDB = {
     async getUserBadges(telegramId: number) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('user_badges')
             .select(`
         badge_id,
@@ -259,7 +270,7 @@ export const badgesDB = {
     },
 
     async awardBadge(telegramId: number, badgeId: string) {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('user_badges')
             .insert([{
                 telegram_id: telegramId,

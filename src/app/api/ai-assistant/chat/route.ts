@@ -34,17 +34,15 @@ const postHandler = async (request: NextRequest, tierInfo: any) => {
     const validatedData = chatRequestSchema.parse(body);
 
     // Filter and sanitize content
-    const filterResult = filterContent(validatedData.message, validatedData.locale);
-    
+    const filterResult = filterContent(validatedData.message);
+
     if (!filterResult.allowed) {
       return NextResponse.json(
         {
           error: {
             code: 'CONTENT_FILTERED',
             message: filterResult.reason || 'Content not allowed',
-            userMessage: filterResult.reason || (validatedData.locale === 'ru'
-              ? 'Сообщение содержит недопустимый контент'
-              : 'Message contains inappropriate content'),
+            userMessage: filterResult.reason || 'Сообщение содержит недопустимый контент',
             retryable: false,
           },
         },
@@ -69,7 +67,7 @@ const postHandler = async (request: NextRequest, tierInfo: any) => {
     const requestLimit = tierInfo.limit || 5;
 
     // Get AI assistant service
-    const service = getAIAssistantService(validatedData.locale);
+    const service = getAIAssistantService();
 
     // Aggregate context
     const context = await service.aggregateContext(userId, tier);
@@ -220,7 +218,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const service = getAIAssistantService(locale);
+    const service = getAIAssistantService();
     const sessionManager = service.getSessionManager();
     const session = sessionManager.getSession(sessionId);
 
@@ -282,7 +280,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const service = getAIAssistantService(locale);
+    const service = getAIAssistantService();
     const sessionManager = service.getSessionManager();
     sessionManager.clearSession(sessionId);
 
