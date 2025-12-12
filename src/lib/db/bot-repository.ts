@@ -12,7 +12,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 // Only create client if credentials are available
 let supabase: SupabaseClient | null = null;
 
-function getSupabase(): SupabaseClient {
+export function getSupabase(): SupabaseClient {
     if (!supabase) {
         if (!supabaseUrl || !supabaseKey) {
             throw new Error('Supabase not configured');
