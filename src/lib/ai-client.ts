@@ -1,8 +1,6 @@
 // OpenAI API configuration
 const DEFAULT_API_BASE_URL = 'https://api.openai.com/v1';
-const FALLBACK_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const DEFAULT_MODEL = 'gpt-4o-mini';
-const FALLBACK_MODEL = 'gemini-1.5-flash';
+const DEFAULT_MODEL = 'gpt-4.1-mini';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
