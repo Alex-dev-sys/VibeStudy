@@ -3,7 +3,14 @@
  * Usage: node scripts/test-bot-local.js
  */
 
-const TELEGRAM_BOT_TOKEN = '8584552955:AAHadQf9Zr4EVEBHsV0-zkj6TREAHHksxD0';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+
+if (!TELEGRAM_BOT_TOKEN) {
+  console.error('❌ Error: TELEGRAM_BOT_TOKEN environment variable is required');
+  console.error('   Set it in .env.local or export it before running this script');
+  process.exit(1);
+}
+
 const API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 
 let lastUpdateId = 0;
@@ -15,7 +22,7 @@ async function getBotInfo() {
   try {
     const response = await fetch(`${API_URL}/getMe`);
     const data = await response.json();
-    
+
     if (data.ok) {
       console.log('🤖 Бот подключен:');
       console.log(`   Имя: ${data.result.first_name}`);
@@ -39,7 +46,7 @@ async function getUpdates() {
   try {
     const response = await fetch(`${API_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
     const data = await response.json();
-    
+
     if (data.ok && data.result.length > 0) {
       for (const update of data.result) {
         lastUpdateId = update.update_id;
@@ -141,7 +148,7 @@ async function handleCommand(command, chatId, firstName) {
 • Давать персональные советы
 
 Выбери действие ниже или используй команды! 🚀`;
-      
+
       const startKeyboard = {
         inline_keyboard: [
           [
@@ -161,7 +168,7 @@ async function handleCommand(command, chatId, firstName) {
           ]
         ]
       };
-      
+
       await sendMessage(chatId, responseText, startKeyboard);
       return;
       break;

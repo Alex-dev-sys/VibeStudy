@@ -1,7 +1,14 @@
 const https = require('https');
 
-const SUPABASE_URL = 'https://qtswuibugwuvgzppkbtq.supabase.co';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c3d1aWJ1Z3d1dmd6cHBrYnRxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjYxNzQ2NywiZXhwIjoyMDc4MTkzNDY3fQ.q3JGkniUcjC4MK6Hm7-qdkSWhcJvj9c1zGSbzvSI81Y';
+// Load from environment variables
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!SERVICE_KEY) {
+    console.error('❌ Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required');
+    console.error('   Set it in .env.local or export it before running this script');
+    process.exit(1);
+}
 
 const statements = [
     'ALTER TABLE task_attempts ADD COLUMN IF NOT EXISTS day INTEGER',

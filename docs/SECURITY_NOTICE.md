@@ -55,7 +55,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 - **Дата**: 2025-11-29
 - **Файл**: `scripts/telegram-bot-local.js:6`
-- **Токен**: `8584552955:AAHadQf9Zr4EVEBHsV0-zkj6TREAHHksxD0` (отозван)
+- **Токен**: `[REDACTED]` (отозван)
 - **Исправление**: Токен удалён из кода, использование переменных окружения
 
 ### Меры предосторожности
