@@ -1,8 +1,8 @@
-// GPT Llama API configuration
-const DEFAULT_API_BASE_URL = 'https://api.gptlama.ru/v1';
-const FALLBACK_API_BASE_URL = 'https://router.huggingface.co/v1';
-const DEFAULT_MODEL = 'gemini-1.5-flash';
-const FALLBACK_MODEL = 'MiniMaxAI/MiniMax-M2:novita';
+// OpenAI API configuration
+const DEFAULT_API_BASE_URL = 'https://api.openai.com/v1';
+const FALLBACK_API_BASE_URL = 'https://api.gptlama.ru/v1';
+const DEFAULT_MODEL = 'gpt-4o-mini';
+const FALLBACK_MODEL = 'gemini-1.5-flash';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -28,19 +28,18 @@ export interface ChatCompletionResult {
 }
 
 const resolveConfig = () => {
-  // Primary: AI_API_TOKEN for GPT Llama API
-  // Fallback: HF_TOKEN for Hugging Face
-  const apiKey = process.env.AI_API_TOKEN ?? process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
+  // Primary: OPENAI_API_KEY for OpenAI
+  // Fallback: AI_API_TOKEN for other providers
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.AI_API_TOKEN ?? '';
 
-  // Primary: AI_API_BASE_URL (GPT Llama API)
-  // Fallback: HF_API_BASE_URL (Hugging Face)
+  // Primary: OpenAI API
+  // Fallback: GPT Llama API
   const baseUrl = (
     process.env.AI_API_BASE_URL ??
-    process.env.HF_API_BASE_URL ??
     DEFAULT_API_BASE_URL
   ).replace(/\/+$/, '');
 
-  const rawModel = process.env.HF_MODEL ?? DEFAULT_MODEL;
+  const rawModel = process.env.AI_MODEL ?? DEFAULT_MODEL;
   const model = rawModel.trim();
 
   return {
