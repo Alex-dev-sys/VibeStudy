@@ -1,6 +1,6 @@
 // OpenAI API configuration
 const DEFAULT_API_BASE_URL = 'https://api.openai.com/v1';
-const DEFAULT_MODEL = 'gpt-4.1-mini';
+const DEFAULT_MODEL = 'gpt-5-mini';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
