@@ -241,7 +241,7 @@ export const callChatCompletion = async ({ messages, temperature, maxTokens, mod
     };
   } catch (error) {
     // If using premium model and it fails, try fallback to Gemini
-    const isPremiumModel = targetModel !== DEFAULT_MODEL && targetModel !== FALLBACK_MODEL;
+    const isPremiumModel = targetModel !== DEFAULT_MODEL;
 
     if (isPremiumModel) {
       console.warn(`Premium model ${targetModel} failed, attempting fallback to ${DEFAULT_MODEL}`, error);
