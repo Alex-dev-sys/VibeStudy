@@ -51,7 +51,7 @@ export class NotificationScheduler {
                 if (!bot) return;
 
                 // Mark old quests as expired
-                const { error } = await supabase
+                const { error } = await getSupabase()
                     .from('user_quests')
                     .update({ is_expired: true })
                     .eq('quest_type', 'daily')
@@ -108,7 +108,7 @@ export class NotificationScheduler {
                 // Find users inactive for 24+ hours
                 const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-                const { data: inactiveUsers, error } = await supabase
+                const { data: inactiveUsers, error } = await getSupabase()
                     .from('bot_users')
                     .select('telegram_id, first_name, current_streak, notifications_enabled')
                     .eq('is_active', true)
@@ -163,8 +163,8 @@ export class NotificationScheduler {
     }
 }
 
-// Import supabase
-import { supabase } from '@/lib/db/bot-repository';
+// Import getSupabase
+import { getSupabase } from '@/lib/db/bot-repository';
 
 // Singleton instance
 const scheduler = new NotificationScheduler();
