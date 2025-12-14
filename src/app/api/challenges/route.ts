@@ -2,19 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { logError, logInfo } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Use service role key to bypass RLS for public read access
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: 'Database service not configured' },
         { status: 503 }
       );
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { searchParams } = new URL(request.url);
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Get today's challenge for a specific language
     if (language && !date) {
       const today = new Date().toISOString().split('T')[0];
-      
+
       const { data, error } = await supabase
         .from('daily_challenges')
         .select('*')
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch challenges',
         message: error instanceof Error ? error.message : 'Unknown error'
       },
