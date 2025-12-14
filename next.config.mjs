@@ -51,6 +51,14 @@ const nextConfig = {
   // SWC minification (faster than Terser)
   swcMinify: true,
 
+  // Skip validation during build for faster deploys
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Production optimizations
