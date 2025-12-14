@@ -35,14 +35,24 @@ const TOKEN_CACHE_DURATION = 60 * 1000; // 1 minute
 
 const getSystemSetting = async (key: string): Promise<string | null> => {
   try {
-    const { createClient } = await import('./supabase/server');
-    const supabase = createClient();
+    let supabase;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // We use the service role key implicitly via the server client if available,
-    // or we might need a specific admin client. Assuming createClient uses env vars correctly.
-    // However, createClient in Next.js usually uses cookies/headers.
-    // For backend server actions we might need a direct client.
-    // Let's rely on standard supabase client but handle errors gracefully.
+    // Use service role key if available (server-side context) to bypass RLS
+    if (supabaseUrl && supabaseServiceKey) {
+      const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+      supabase = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      });
+    } else {
+      // Fallback to standard client (client-side or server without service key)
+      const { createClient } = await import('./supabase/server');
+      supabase = createClient();
+    }
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -53,11 +63,12 @@ const getSystemSetting = async (key: string): Promise<string | null> => {
     if (error) return null;
     return data?.value || null;
   } catch (e) {
+    console.warn('Error fetching system setting:', e);
     return null;
   }
 };
 
-const resolveConfigAsync = async () => {
+export const resolveConfigAsync = async () => {
   // Check memory cache first
   const now = Date.now();
   if (cachedToken && (now - tokenCacheTime < TOKEN_CACHE_DURATION)) {

@@ -57,7 +57,7 @@ cron.schedule('*/10 * * * *', async () => {
         });
 
         if (response.ok) {
-            const data = await response.json();
+            const data = await response.json() as { processed: number;[key: string]: any };
             // Log only if work was done to avoid spamming logs
             if (data.processed > 0) {
                 console.log('✅ [Payment Verification] Processed payments:', JSON.stringify(data, null, 2));
