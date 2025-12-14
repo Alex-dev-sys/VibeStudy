@@ -2,9 +2,9 @@ module.exports = {
     apps: [
         {
             name: 'vibestudy-cron',
-            script: 'scripts/cron-service.ts',
-            interpreter: 'node',
-            interpreter_args: '-r ts-node/register',
+            script: 'npm',
+            args: 'run cron:start',
+            interpreter: 'none',
             env: {
                 NODE_ENV: 'production',
             },
