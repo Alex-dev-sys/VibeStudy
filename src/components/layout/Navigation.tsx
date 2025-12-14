@@ -19,21 +19,28 @@ export function Navigation() {
   const pathname = usePathname();
   const streak = useProgressStore((state) => state.record.streak);
 
-  // Don't show navigation on landing page and auth pages
-  if (pathname === '/' || pathname === '/login' || pathname === '/register') {
+  // Don't show navigation on auth pages
+  if (pathname === '/login' || pathname === '/register') {
     return null;
   }
+
+  const isLanding = pathname === '/';
 
   return (
     <>
       {/* Desktop Navigation */}
       <nav
-        className="hidden md:flex fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl bg-[#0a0515]/80 border-b border-white/10 shadow-lg"
+        className={cn(
+          "hidden md:flex fixed top-0 left-0 right-0 z-[100] border-b border-white/10 shadow-lg transition-all duration-300",
+          isLanding
+            ? "bg-[#050505]"
+            : "backdrop-blur-2xl bg-[#0a0515]/80"
+        )}
         aria-label="Main navigation"
-        style={{
+        style={!isLanding ? {
           backgroundImage: 'linear-gradient(to bottom, rgba(10, 5, 21, 0.95), rgba(10, 5, 21, 0.8))',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.1)'
-        }}
+        } : undefined}
       >
         {/* Gradient border at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ff0094]/50 to-transparent" />
@@ -42,7 +49,7 @@ export function Navigation() {
           {/* Logo - Left */}
           <div className="flex justify-start">
             <Link
-              href="/learn"
+              href={isLanding ? "/" : "/learn"}
               className="group flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-lg relative"
             >
               {/* Animated glow background */}
@@ -56,7 +63,7 @@ export function Navigation() {
 
           {/* Nav Items - Center */}
           <div className="flex items-center justify-center gap-2">
-            {NAV_ITEMS.map((item) => {
+            {!isLanding && NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
 
@@ -96,83 +103,102 @@ export function Navigation() {
 
           {/* User Actions - Right */}
           <div className="flex items-center justify-end gap-2 lg:gap-3">
-            {/* Premium button */}
-            <Link href="/pricing" className="hidden lg:block group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#ffd200]/30 to-[#ff0094]/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Button variant="primary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
-                ⭐ Premium
-              </Button>
-            </Link>
+            {!isLanding ? (
+              <>
+                {/* Premium button */}
+                <Link href="/pricing" className="hidden lg:block group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#ffd200]/30 to-[#ff0094]/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Button variant="primary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
+                    ⭐ Premium
+                  </Button>
+                </Link>
 
-            {/* Challenges button */}
-            <Link href="/challenges" className="hidden lg:block group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#ff0094]/20 to-[#ff5bc8]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Button variant="secondary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
-                🎯 Челленджи
-              </Button>
-            </Link>
+                {/* Challenges button */}
+                <Link href="/challenges" className="hidden lg:block group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#ff0094]/20 to-[#ff5bc8]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Button variant="secondary" size="sm" className="relative text-xs whitespace-nowrap group-hover:scale-105 transition-transform duration-300">
+                    🎯 Челленджи
+                  </Button>
+                </Link>
 
-            {/* Streak indicator */}
-            {streak > 0 && <StreakIndicator streak={streak} />}
+                {/* Streak indicator */}
+                {streak > 0 && <StreakIndicator streak={streak} />}
 
-            <UserMenu />
+                <UserMenu />
+              </>
+            ) : (
+              <Link href="/login">
+                <button
+                  aria-label="Войти в аккаунт"
+                  className="rounded-full border-2 border-white/20 bg-white/5 px-6 py-2 font-semibold text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
+                >
+                  Войти
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Mobile Navigation - Bottom Bar */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-navigation backdrop-blur-2xl bg-[#0a0515]/90 safe-area-inset-bottom shadow-[0_-8px_32px_rgba(0,0,0,0.4)]"
-        aria-label="Main navigation"
-        style={{
-          backgroundImage: 'linear-gradient(to top, rgba(10, 5, 21, 0.95), rgba(10, 5, 21, 0.85))',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-        }}
-      >
-        {/* Gradient border at top */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ff0094]/50 to-transparent" />
+      {!isLanding && (
+        <nav
+          className="md:hidden fixed bottom-0 left-0 right-0 z-navigation backdrop-blur-2xl bg-[#0a0515]/90 safe-area-inset-bottom shadow-[0_-8px_32px_rgba(0,0,0,0.4)]"
+          aria-label="Main navigation"
+          style={{
+            backgroundImage: 'linear-gradient(to top, rgba(10, 5, 21, 0.95), rgba(10, 5, 21, 0.85))',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          {/* Gradient border at top */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ff0094]/50 to-transparent" />
 
-        <div className="flex items-center justify-around px-2 py-2 gap-2">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
+          <div className="flex items-center justify-around px-2 py-2 gap-2">
+            {NAV_ITEMS.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-300',
-                  'min-w-[64px] min-h-[56px]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
-                  isActive
-                    ? 'text-white bg-gradient-to-br from-accent/20 to-secondary/20 shadow-lg shadow-accent/20'
-                    : 'text-white/50 active:bg-white/10 active:scale-95'
-                )}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                {/* Active indicator glow */}
-                {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/30 rounded-xl blur-lg -z-10" />
-                )}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-300',
+                    'min-w-[64px] min-h-[56px]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
+                    isActive
+                      ? 'text-white bg-gradient-to-br from-accent/20 to-secondary/20 shadow-lg shadow-accent/20'
+                      : 'text-white/50 active:bg-white/10 active:scale-95'
+                  )}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {/* Active indicator glow */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/30 rounded-xl blur-lg -z-10" />
+                  )}
 
-                <Icon className={cn(
-                  "w-6 h-6 transition-all duration-300",
-                  isActive && "drop-shadow-[0_0_8px_rgba(255,0,148,0.6)] scale-110"
-                )} aria-hidden="true" />
-                <span className={cn(
-                  "text-[10px] font-medium leading-tight transition-all duration-300",
-                  isActive && "font-semibold"
-                )}>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+                  <Icon className={cn(
+                    "w-6 h-6 transition-all duration-300",
+                    isActive && "drop-shadow-[0_0_8px_rgba(255,0,148,0.6)] scale-110"
+                  )} aria-hidden="true" />
+                  <span className={cn(
+                    "text-[10px] font-medium leading-tight transition-all duration-300",
+                    isActive && "font-semibold"
+                  )}>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
 
-      {/* Spacer for fixed navigation */}
-      <div className="hidden md:block h-[72px]" aria-hidden="true" />
-      <div className="md:hidden h-[80px]" aria-hidden="true" />
+      {/* Spacer for fixed navigation - only for app pages */}
+      {!isLanding && (
+        <>
+          <div className="hidden md:block h-[72px]" aria-hidden="true" />
+          <div className="md:hidden h-[80px]" aria-hidden="true" />
+        </>
+      )}
     </>
   );
 }
