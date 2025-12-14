@@ -2,12 +2,17 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { AuthFlow } from '@/components/auth/AuthFlow';
+import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
+import { GuestModeManager } from '@/lib/auth/guest-mode';
 
 export function FinalCTASection() {
-  const [showAuthFlow, setShowAuthFlow] = useState(false);
+  const router = useRouter();
+
+  const handleStart = () => {
+    GuestModeManager.startAsGuest();
+    router.push('/learn');
+  };
 
   return (
     <section className="relative py-20">
@@ -22,7 +27,7 @@ export function FinalCTASection() {
           {/* Background decoration */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.1),_transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(255,255,255,0.1),_transparent_50%)]" />
-          
+
           <div className="relative z-10 text-center">
             {/* Icon */}
             <motion.div
@@ -34,49 +39,39 @@ export function FinalCTASection() {
             >
               <Sparkles className="w-8 h-8 text-white" />
             </motion.div>
-            
+
             {/* Heading */}
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Начни свой путь в IT сегодня
             </h2>
-            
+
             {/* Description */}
             <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-              Присоединяйся к 1000+ студентов, которые уже меняют свою жизнь. 
+              Присоединяйся к 1000+ студентов, которые уже меняют свою жизнь.
               Первый день — бесплатно, без регистрации.
             </p>
-            
+
             {/* CTA */}
-            {!showAuthFlow ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleStart}
+                className="text-lg px-10 py-5 shadow-2xl shadow-accent/50"
               >
-                <Button 
-                  variant="primary" 
-                  size="lg"
-                  onClick={() => setShowAuthFlow(true)}
-                  className="text-lg px-10 py-5 shadow-2xl shadow-accent/50"
-                >
-                  Начать обучение бесплатно
-                </Button>
-                
-                {/* Trust indicator */}
-                <p className="mt-4 text-sm text-white/60">
-                  ✓ Без кредитной карты • ✓ Отмена в любой момент
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="max-w-md mx-auto"
-              >
-                <AuthFlow trigger="landing" />
-              </motion.div>
-            )}
+                Начать обучение бесплатно
+              </Button>
+
+              {/* Trust indicator */}
+              <p className="mt-4 text-sm text-white/60">
+                ✓ Без кредитной карты • ✓ Отмена в любой момент
+              </p>
+            </motion.div>
           </div>
         </motion.div>
       </div>

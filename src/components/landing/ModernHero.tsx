@@ -1,14 +1,22 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { GuestModeManager } from '@/lib/auth/guest-mode';
 
 interface ModernHeroProps {
   locale?: 'ru' | 'en';
 }
 
 export function ModernHero({ locale = 'ru' }: ModernHeroProps) {
+  const router = useRouter();
+
+  const handleStart = () => {
+    GuestModeManager.startAsGuest();
+    router.push('/learn');
+  };
+
   const content = {
     ru: {
       badge: '🚀 Начни свой путь в программировании',
@@ -96,20 +104,19 @@ export function ModernHero({ locale = 'ru' }: ModernHeroProps) {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Link href="/login">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label={t.cta}
-              className="group relative overflow-hidden rounded-full bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] px-8 py-4 font-semibold text-white shadow-lg shadow-[#ff4bc1]/50 transition-all"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                {t.cta}
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#ff4bc1]/80 to-[#ffd34f]/80 opacity-0 transition-opacity group-hover:opacity-100" />
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStart}
+            aria-label={t.cta}
+            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-[#ff4bc1] to-[#ffd34f] px-8 py-4 font-semibold text-white shadow-lg shadow-[#ff4bc1]/50 transition-all"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              {t.cta}
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#ff4bc1]/80 to-[#ffd34f]/80 opacity-0 transition-opacity group-hover:opacity-100" />
+          </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
