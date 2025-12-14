@@ -19,8 +19,8 @@ const nextConfig = {
     removeConsole:
       process.env.NODE_ENV === "production"
         ? {
-            exclude: ["error", "warn"],
-          }
+          exclude: ["error", "warn"],
+        }
         : false,
   },
 
@@ -35,6 +35,7 @@ const nextConfig = {
     ],
     // Web Vitals Attribution for better performance monitoring
     webVitalsAttribution: ["CLS", "LCP", "FCP", "FID", "TTFB"],
+    instrumentationHook: true,
   },
 
   // Production optimizations
