@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { solutionCheckSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { errorHandler } from '@/lib/error-handler';
@@ -127,12 +127,12 @@ const parseAiResponse = (content: string): CheckSolutionResponse => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(sanitized) as CheckSolutionResponse;
-    
+
     // Валидация обязательных полей
     if (typeof parsed.success !== 'boolean' || !parsed.message) {
       return fallbackResponse;
     }
-    
+
     return {
       success: parsed.success,
       message: parsed.message,
@@ -204,15 +204,22 @@ export async function POST(request: Request) {
   }
 
   // Sanitize inputs to prevent prompt injection
-  const sanitizedCode = body.code
-    .slice(0, MAX_CODE_LENGTH)
-    .replace(/\x00/g, ''); // Remove null bytes
+  const sanitizeInput = (text: string) => {
+    // Remove specific AI control tokens and null bytes
+    return text
+      .replace(/<\|im_start\|>/g, '')
+      .replace(/<\|im_end\|>/g, '')
+      .replace(/<\|.*?\|>/g, '') // Generic tag removal
+      .replace(/\x00/g, '');
+  };
+
+  const sanitizedCode = sanitizeInput(body.code.slice(0, MAX_CODE_LENGTH));
 
   const sanitizedTask = {
-    title: (body.task.title || '').slice(0, 200),
-    description: (body.task.description || '').slice(0, MAX_TASK_DESCRIPTION_LENGTH),
-    difficulty: (body.task.difficulty || 'medium').slice(0, 20),
-    hints: body.task.hints?.slice(0, 5).map(h => h.slice(0, 200))
+    title: sanitizeInput((body.task.title || '').slice(0, 200)),
+    description: sanitizeInput((body.task.description || '').slice(0, MAX_TASK_DESCRIPTION_LENGTH)),
+    difficulty: sanitizeInput((body.task.difficulty || 'medium').slice(0, 20)),
+    hints: body.task.hints?.slice(0, 5).map(h => sanitizeInput(h.slice(0, 200)))
   };
 
   // Update body with sanitized values
@@ -222,7 +229,7 @@ export async function POST(request: Request) {
     task: sanitizedTask
   };
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('HF_TOKEN не задан. Возвращаем fallback для проверки кода.');
     }

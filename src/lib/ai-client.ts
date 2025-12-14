@@ -27,13 +27,74 @@ export interface ChatCompletionResult {
   usedFallback?: boolean;
 }
 
-const resolveConfig = () => {
-  // Primary: AI_API_TOKEN for GPT Llama API
-  // Fallback: HF_TOKEN for Hugging Face
-  const apiKey = process.env.AI_API_TOKEN ?? process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
 
-  // Primary: AI_API_BASE_URL (GPT Llama API)
-  // Fallback: HF_API_BASE_URL (Hugging Face)
+// Cache for the AI token to reduce DB hits
+let cachedToken: string | null = null;
+let tokenCacheTime: number = 0;
+const TOKEN_CACHE_DURATION = 60 * 1000; // 1 minute
+
+const getSystemSetting = async (key: string): Promise<string | null> => {
+  try {
+    const { createClient } = await import('./supabase/server');
+    const supabase = createClient();
+
+    // We use the service role key implicitly via the server client if available,
+    // or we might need a specific admin client. Assuming createClient uses env vars correctly.
+    // However, createClient in Next.js usually uses cookies/headers.
+    // For backend server actions we might need a direct client.
+    // Let's rely on standard supabase client but handle errors gracefully.
+
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', key)
+      .single();
+
+    if (error) return null;
+    return data?.value || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const resolveConfigAsync = async () => {
+  // Check memory cache first
+  const now = Date.now();
+  if (cachedToken && (now - tokenCacheTime < TOKEN_CACHE_DURATION)) {
+    // Determine base URL and model from env as before
+    const baseUrl = (
+      process.env.AI_API_BASE_URL ??
+      process.env.HF_API_BASE_URL ??
+      DEFAULT_API_BASE_URL
+    ).replace(/\/+$/, '');
+
+    const rawModel = process.env.HF_MODEL ?? DEFAULT_MODEL;
+    const model = rawModel.trim();
+
+    return {
+      apiKey: cachedToken,
+      baseUrl,
+      model
+    };
+  }
+
+  // Fallback / Env vars logic
+  let apiKey = process.env.AI_API_TOKEN ?? process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
+
+  // Try to fetch from DB
+  if (!apiKey) {
+    const dbToken = await getSystemSetting('AI_API_TOKEN');
+    if (dbToken) {
+      apiKey = dbToken;
+    }
+  }
+
+  // Update cache
+  if (apiKey) {
+    cachedToken = apiKey;
+    tokenCacheTime = now;
+  }
+
   const baseUrl = (
     process.env.AI_API_BASE_URL ??
     process.env.HF_API_BASE_URL ??
@@ -50,8 +111,17 @@ const resolveConfig = () => {
   };
 };
 
+// Deprecated: Use isAiConfiguredAsync
 export const isAiConfigured = () => {
-  const { apiKey } = resolveConfig();
+  // This function can no longer reliably check DB without async.
+  // We return true if Env var is set, but this might provide false negatives if only in DB.
+  // Ideally we should refactor all callers.
+  const apiKey = process.env.AI_API_TOKEN ?? process.env.HF_TOKEN ?? process.env.HF_API_KEY ?? '';
+  return apiKey.length > 0;
+};
+
+export const isAiConfiguredAsync = async () => {
+  const { apiKey } = await resolveConfigAsync();
   return apiKey.length > 0;
 };
 
@@ -149,7 +219,7 @@ const parseResponsePayload = (payload: string) => {
 };
 
 export const callChatCompletion = async ({ messages, temperature, maxTokens, model, responseFormat }: CallChatCompletionParams): Promise<ChatCompletionResult> => {
-  const { apiKey, baseUrl, model: defaultModel } = resolveConfig();
+  const { apiKey, baseUrl, model: defaultModel } = await resolveConfigAsync();
 
   if (!apiKey) {
     throw new Error('AI_API_TOKEN or HF_TOKEN is not defined');

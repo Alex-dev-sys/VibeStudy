@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getGeneratedContent, saveGeneratedContent } from '@/lib/db';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import type { Difficulty, GeneratedTask } from '@/types';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { regenerateTaskSchema } from '@/lib/validation/schemas';
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       logWarn('HF_TOKEN не задан. Перегенерация задачи недоступна.', {
         component: 'api/regenerate-task'
@@ -137,11 +137,11 @@ export async function POST(request: Request) {
           if (typeof stored.tasks === 'string') {
             try {
               return JSON.parse(stored.tasks) as GeneratedTask[];
-      } catch (error) {
-        logWarn('Не удалось распарсить сохранённые задачи, создаём заново.', {
-          component: 'api/regenerate-task',
-          metadata: { error: error instanceof Error ? error.message : 'unknown' }
-        });
+            } catch (error) {
+              logWarn('Не удалось распарсить сохранённые задачи, создаём заново.', {
+                component: 'api/regenerate-task',
+                metadata: { error: error instanceof Error ? error.message : 'unknown' }
+              });
               return [];
             }
           }

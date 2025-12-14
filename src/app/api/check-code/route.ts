@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { codeReviewSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { errorHandler } from '@/lib/error-handler';
@@ -117,7 +117,7 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('HF_TOKEN не задан. Возвращаем fallback.');
     }

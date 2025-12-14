@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { theoryExplanationSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
@@ -103,11 +103,11 @@ const parseAiResponse = (content: string): ExplainTheoryResponse | null => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(sanitized) as ExplainTheoryResponse;
-    
+
     if (!parsed.explanation) {
       return null;
     }
-    
+
     return {
       explanation: parsed.explanation,
       examples: Array.isArray(parsed.examples) ? parsed.examples : [],
@@ -232,13 +232,13 @@ function createFallbackResponse(request: ExplainTheoryRequest, reason?: string):
           : `Вопрос "${question}" сводится к делению на ноль. В классической арифметике такое действие не определено.`,
         examples: locale === 'en'
           ? [
-              'Rule: division by zero is forbidden.',
-              'Try to modify the expression so the denominator is not zero.'
-            ]
+            'Rule: division by zero is forbidden.',
+            'Try to modify the expression so the denominator is not zero.'
+          ]
           : [
-              'Правило: деление на ноль запрещено.',
-              'Постарайтесь изменить выражение, чтобы знаменатель не равнялся нулю.'
-            ],
+            'Правило: деление на ноль запрещено.',
+            'Постарайтесь изменить выражение, чтобы знаменатель не равнялся нулю.'
+          ],
         relatedTopics: locale === 'en'
           ? ['Basic Arithmetic', 'Working with Numbers']
           : ['Базовая арифметика', 'Работа с числами']
@@ -314,7 +314,7 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     });
   }
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       logWarn('HF_TOKEN не задан. Возвращаем fallback объяснение.', {
         component: 'api/explain-theory'

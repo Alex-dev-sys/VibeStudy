@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { hintRequestSchema, type HintRequestInput } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
@@ -115,11 +115,11 @@ const parseAiResponse = (content: string): GetHintResponse => {
   try {
     const sanitized = content.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(sanitized) as GetHintResponse;
-    
+
     if (!parsed.hint) {
       return fallbackResponse;
     }
-    
+
     return {
       hint: parsed.hint,
       example: parsed.example,
@@ -157,7 +157,7 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       logWarn('HF_TOKEN не задан. Возвращаем fallback подсказку.', {
         component: 'api/get-hint'

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   callChatCompletion,
   extractMessageContent,
-  isAiConfigured,
+  isAiConfiguredAsync,
 } from "@/lib/ai-client";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if AI is configured
-    if (!isAiConfigured()) {
+    if (!(await isAiConfiguredAsync())) {
       logError("AI not configured", new Error("AI_API_TOKEN not set"), {
         component: "api",
         action: "generate-challenge",

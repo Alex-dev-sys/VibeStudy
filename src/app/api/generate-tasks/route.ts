@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { saveGeneratedContent } from '@/lib/db';
-import { callChatCompletion, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { taskGenerationSchema } from '@/lib/validation/schemas';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { logWarn, logError, logInfo } from '@/lib/logger';
@@ -295,7 +295,7 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     });
   }
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfiguredAsync())) {
     if (process.env.NODE_ENV !== 'production') {
       logWarn('HF_TOKEN not configured, returning fallback', { component: 'api', action: 'generate-tasks' });
     }
