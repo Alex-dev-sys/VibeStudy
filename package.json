@@ -16,7 +16,7 @@
     "bot:webhook:check": "node scripts/setup-telegram-webhook.js check",
     "bot:webhook:info": "node scripts/setup-telegram-webhook.js info",
     "bot:webhook:delete": "node scripts/setup-telegram-webhook.js delete",
-    "cron:start": "ts-node scripts/cron-service.ts",
+    "cron:start": "node -r ts-node/register scripts/cron-service.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
