@@ -24,12 +24,12 @@ function ensureStorageInitialized() {
   }
 
   try {
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
 
-if (!fs.existsSync(contentFile)) {
-  fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
+    if (!fs.existsSync(contentFile)) {
+      fs.writeFileSync(contentFile, JSON.stringify({}), 'utf-8');
     }
 
     storageInitialized = true;
@@ -183,7 +183,7 @@ class ContentStorage {
 
   clear(key: string): void {
     this.memoryCache.delete(key);
-    
+
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(`vibestudy_content_${key}`);
@@ -191,6 +191,12 @@ class ContentStorage {
         console.warn('localStorage clear failed:', e);
       }
     }
+  }
+
+  clearAll(): void {
+    this.memoryCache.clear();
+    // Note: LocalStorage clearing on client side would require iteration or specific prefix handling
+    // We assume major cleanup happens via file system flush
   }
 }
 
@@ -252,11 +258,17 @@ export function hasGeneratedContent(day: number, languageId: string): boolean {
 export function deleteGeneratedContent(day: number, languageId: string): void {
   const key = getKey(day, languageId);
   contentStorage.clear(key);
-  
+
   // Also clear from file system
   const data = readData();
   delete data[key];
   writeData(data);
+}
+
+// Удалить ВЕСЬ сгенерированный контент
+export function deleteAllGeneratedContent(): void {
+  contentStorage.clearAll();
+  writeData({});
 }
 
 // Получить статистику

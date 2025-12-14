@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteGeneratedContent } from '@/lib/db';
+import { deleteGeneratedContent, deleteAllGeneratedContent } from '@/lib/db';
 import { logInfo, logWarn } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { day, languageId, secret } = body;
+        const { day, languageId, secret, all } = body;
 
         // Simple security check (replace with better auth if needed)
         // For now, assuming this is a developer tool
@@ -13,9 +13,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        if (all) {
+            deleteAllGeneratedContent();
+            logInfo('Admin CLEARED ALL content cache', {
+                component: 'api/admin',
+                action: 'clear-all-cache'
+            });
+            return NextResponse.json({
+                success: true,
+                message: `ALL generated content cleared successfully`
+            });
+        }
+
         if (!day || !languageId) {
             return NextResponse.json(
-                { error: 'Missing day or languageId' },
+                { error: 'Missing day or languageId (or "all" flag)' },
                 { status: 400 }
             );
         }
