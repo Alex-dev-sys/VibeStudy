@@ -8,6 +8,8 @@ import { WeeklySummary } from './WeeklySummary';
 import { useAnalyticsStore } from '@/store/analytics-store';
 import { cn } from '@/lib/utils';
 import { Lightbulb, Sparkles } from 'lucide-react';
+import { useProgressStore } from '@/store/progress-store';
+import { AdaptiveRecommendationsPanel } from '@/components/dashboard/AdaptiveRecommendationsPanel';
 
 // Reusable Bento Card Component (Local version for dashboard)
 const BentoCard = ({
@@ -51,6 +53,7 @@ const BentoCard = ({
 
 export function AnalyticsDashboard() {
   const { recommendations, isLoading, error, loadFromServer } = useAnalyticsStore();
+  const { activeDay, languageId } = useProgressStore();
 
   // Load analytics from server on mount
   React.useEffect(() => {
@@ -112,6 +115,11 @@ export function AnalyticsDashboard() {
       <BentoCard className="md:col-span-6 min-h-[300px]" glowColor="green" delay={0.4}>
         <ProgressPrediction />
       </BentoCard>
+
+      {/* Adaptive Recommendations (Moved from Learn page) */}
+      <div className="md:col-span-12">
+        <AdaptiveRecommendationsPanel currentDay={activeDay} languageId={languageId} />
+      </div>
 
       {/* Recommendations */}
       {recommendations.length > 0 && (

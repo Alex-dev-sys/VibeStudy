@@ -8,7 +8,7 @@ import { ProgressOverview } from './ProgressOverview';
 import { LanguageSelector } from './LanguageSelector';
 import { DayTimeline } from './DayTimeline';
 import { SimplifiedDayCard } from './SimplifiedDayCard';
-import { AdaptiveRecommendationsPanel } from './AdaptiveRecommendationsPanel';
+
 import { useAIAssistant } from '@/components/ai-assistant/AIAssistantContext';
 
 export default function LearningDashboard() {
@@ -36,7 +36,7 @@ export default function LearningDashboard() {
           onOpenClick();
         }
       }
-      
+
       // ESC to close
       if (event.key === 'Escape' && isAIAssistantOpen) {
         setIsAIAssistantOpen(false);
@@ -54,9 +54,8 @@ export default function LearningDashboard() {
       <LanguageSelector />
       <DayTimeline />
       <SimplifiedDayCard day={currentDay} previousDay={previousDay} languageId={languageId} />
-      
-      {/* Панель адаптивных рекомендаций */}
-      <AdaptiveRecommendationsPanel currentDay={activeDay} languageId={languageId} />
+
+
     </div>
   );
 }
