@@ -9,12 +9,7 @@ import { apiCache } from '@/lib/cache/api-cache';
 import type { AssistantRequest, AssistantContext } from '@/lib/ai-assistant/types';
 
 // Mock dependencies
-vi.mock('@/lib/ai-client', () => ({
-  callChatCompletionWithTier: vi.fn().mockResolvedValue({
-    raw: 'This is a test response from AI',
-    model: 'test-model',
-  }),
-}));
+// Note: @/lib/ai-client is mocked globally in tests/setup.ts
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => ({

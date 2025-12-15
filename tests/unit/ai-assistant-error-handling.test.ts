@@ -56,9 +56,7 @@ const assistantRequestArbitrary = fc.record({
 /**
  * Mock AI client to simulate failures
  */
-vi.mock('@/lib/ai-client', () => ({
-  callChatCompletionWithTier: vi.fn(),
-}));
+// Note: @/lib/ai-client is mocked globally in tests/setup.ts
 
 /**
  * Mock Supabase to prevent actual database calls

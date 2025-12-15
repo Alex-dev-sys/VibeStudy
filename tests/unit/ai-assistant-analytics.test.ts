@@ -68,17 +68,11 @@ describe('AI Assistant Analytics - Property Tests', () => {
     // Reset service
     resetAIAssistantService();
     service = new AIAssistantService();
-    
+
     // Mock console.log to capture analytics
     mockConsoleLog();
-    
-    // Mock the AI client to avoid actual API calls
-    vi.mock('@/lib/ai-client', () => ({
-      callChatCompletionWithTier: vi.fn().mockResolvedValue({
-        raw: 'This is a test response from the AI assistant.',
-        model: 'test-model',
-      }),
-    }));
+
+    // Note: AI client is mocked globally in tests/setup.ts
   });
 
   afterEach(() => {

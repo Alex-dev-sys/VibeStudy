@@ -8,34 +8,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 import { AIAssistantService } from '@/lib/ai-assistant/service';
 import type { AssistantRequest, AssistantContext } from '@/lib/ai-assistant/types';
+import { callChatCompletion } from '@/lib/ai-client';
 
 // Mock dependencies
-vi.mock('@/lib/ai-client', () => ({
-  callChatCompletionWithTier: vi.fn().mockImplementation(async (messages) => {
-    // Simulate AI response that provides guidance without complete solutions
-    const userMessage = messages.find((m: any) => m.role === 'user')?.content || '';
-    
-    // Check if this is a task-related question
-    const isTaskQuestion = userMessage.toLowerCase().includes('задач') || 
-                          userMessage.toLowerCase().includes('task') ||
-                          userMessage.toLowerCase().includes('решение') ||
-                          userMessage.toLowerCase().includes('solution');
-    
-    if (isTaskQuestion) {
-      // Provide hints and guidance, not complete solutions
-      return {
-        raw: `Отличный вопрос! Давай разберём это по шагам:\n\n1. Сначала подумай о структуре данных\n2. Какой алгоритм подойдёт?\n3. Попробуй написать псевдокод\n\nПодсказка: обрати внимание на условие задачи. Попробуй сам, а если застрянешь - спрашивай!`,
-        model: 'test-model',
-      };
-    }
-    
-    // For general questions, provide explanations
-    return {
-      raw: `Это концепция работает следующим образом: [объяснение]. Вот пример:\n\n\`\`\`python\n# Пример демонстрации концепции\nprint("example")\n\`\`\`\n\nТеперь попробуй применить это к своей задаче!`,
-      model: 'test-model',
-    };
-  }),
-}));
+// Note: @/lib/ai-client is mocked globally in tests/setup.ts
+// We'll override the implementation in beforeEach for this specific test
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => ({
@@ -88,6 +65,34 @@ describe('AI Assistant Solution Prevention - Property-Based Tests', () => {
   let service: AIAssistantService;
 
   beforeEach(() => {
+    // Override the global mock with custom implementation for this test
+    vi.mocked(callChatCompletion).mockImplementation(async ({ messages }) => {
+      // Simulate AI response that provides guidance without complete solutions
+      const userMessage = messages.find((m: any) => m.role === 'user')?.content || '';
+
+      // Check if this is a task-related question
+      const isTaskQuestion = userMessage.toLowerCase().includes('задач') ||
+                            userMessage.toLowerCase().includes('task') ||
+                            userMessage.toLowerCase().includes('решение') ||
+                            userMessage.toLowerCase().includes('solution');
+
+      if (isTaskQuestion) {
+        // Provide hints and guidance, not complete solutions
+        return {
+          raw: `Отличный вопрос! Давай разберём это по шагам:\n\n1. Сначала подумай о структуре данных\n2. Какой алгоритм подойдёт?\n3. Попробуй написать псевдокод\n\nПодсказка: обрати внимание на условие задачи. Попробуй сам, а если застрянешь - спрашивай!`,
+          model: 'test-model',
+          data: null,
+        };
+      }
+
+      // For general questions, provide explanations
+      return {
+        raw: `Это концепция работает следующим образом: [объяснение]. Вот пример:\n\n\`\`\`python\n# Пример демонстрации концепции\nprint("example")\n\`\`\`\n\nТеперь попробуй применить это к своей задаче!`,
+        model: 'test-model',
+        data: null,
+      };
+    });
+
     service = new AIAssistantService();
   });
 

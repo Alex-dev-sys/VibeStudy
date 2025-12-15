@@ -21,7 +21,7 @@ interface ContentFilterConfig {
   stripHtml: boolean;
   checkInappropriate: boolean;
   checkPromptInjection: boolean;
-  locale: 'ru';
+  locale: 'ru' | 'en';
 }
 
 /**
@@ -256,8 +256,8 @@ export function createContentFilter(
 /**
  * Quick filter function for convenience
  */
-export function filterContent(content: string): FilterResult {
-  const filter = new ContentFilter({ locale: 'ru' });
+export function filterContent(content: string, locale: 'ru' | 'en' = 'ru'): FilterResult {
+  const filter = new ContentFilter({ locale });
   return filter.filterContent(content);
 }
 

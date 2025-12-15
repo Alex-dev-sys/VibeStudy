@@ -51,3 +51,21 @@ vi.mock('@/components/achievements/AchievementToast', () => ({
   showAchievementToast: vi.fn(),
   AchievementToast: vi.fn(() => null),
 }));
+
+// Mock AI client globally
+vi.mock('@/lib/ai-client', () => ({
+  callChatCompletion: vi.fn().mockResolvedValue({
+    raw: 'This is a test response from AI',
+    model: 'test-model',
+    data: null,
+  }),
+  callChatCompletionWithTier: vi.fn().mockResolvedValue({
+    raw: 'This is a test response from AI',
+    model: 'test-model',
+    data: null,
+  }),
+  isAiConfigured: vi.fn().mockReturnValue(true),
+  isAiConfiguredAsync: vi.fn().mockResolvedValue(true),
+  generateCacheKey: vi.fn((language: string, dayNumber: number) => `${language}-${dayNumber}`),
+  invalidateCache: vi.fn().mockResolvedValue(0),
+}));
