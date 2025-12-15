@@ -10,6 +10,7 @@ import { render, cleanup } from '@testing-library/react';
 import { ChatInterface } from '@/components/ai-assistant/ChatInterface';
 import { FloatingChatButton } from '@/components/ai-assistant/FloatingChatButton';
 import type { UserTier } from '@/types';
+import { useLocaleStore } from '@/store/locale-store';
 
 /**
  * Mock Prism.js to avoid issues in test environment
@@ -28,6 +29,13 @@ vi.mock('prismjs/components/prism-java', () => ({}));
 vi.mock('prismjs/components/prism-cpp', () => ({}));
 vi.mock('prismjs/components/prism-csharp', () => ({}));
 vi.mock('prismjs/components/prism-go', () => ({}));
+
+// Mock locale store
+vi.mock('@/store/locale-store', () => ({
+  useLocaleStore: vi.fn(() => ({
+    locale: 'ru', // Will be updated dynamically in tests
+  })),
+}));
 
 /**
  * Arbitrary generator for UserTier
@@ -130,13 +138,13 @@ describe('AI Assistant Responsive Behavior - Property Tests', () => {
             }
 
             // Both layouts should have the essential elements
-            const header = container.querySelector('.border-b.border-gray-800');
+            const header = container.querySelector('.border-b.border-white\\/10');
             expect(header).toBeTruthy();
 
             const messagesContainer = container.querySelector('.overflow-y-auto');
             expect(messagesContainer).toBeTruthy();
 
-            const inputArea = container.querySelector('.border-t.border-gray-800');
+            const inputArea = container.querySelector('.border-t.border-white\\/10');
             expect(inputArea).toBeTruthy();
           } finally {
             unmount();
@@ -386,6 +394,12 @@ describe('AI Assistant Responsive Behavior - Property Tests', () => {
         userTierArbitrary,
         localeArbitrary,
         (tier: UserTier, locale: 'ru' | 'en') => {
+          // Set the mock locale to match test input
+          vi.mocked(useLocaleStore).mockReturnValue({
+            locale,
+            setLocale: vi.fn(),
+          } as any);
+
           const { container, unmount } = render(
             <ChatInterface
               isOpen={true}
@@ -397,11 +411,11 @@ describe('AI Assistant Responsive Behavior - Property Tests', () => {
 
           try {
             // Find the input area
-            const inputArea = container.querySelector('.border-t.border-gray-800');
+            const inputArea = container.querySelector('.border-t.border-white\\/10');
             expect(inputArea).toBeTruthy();
 
             // Should have padding
-            expect(inputArea?.classList.contains('p-4')).toBe(true);
+            expect(inputArea?.classList.contains('p-5')).toBe(true);
 
             // Find the textarea
             const textarea = container.querySelector('textarea');

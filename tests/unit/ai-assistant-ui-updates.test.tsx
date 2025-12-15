@@ -9,6 +9,7 @@ import * as fc from 'fast-check';
 import { render, screen, cleanup } from '@testing-library/react';
 import { ChatInterface } from '@/components/ai-assistant/ChatInterface';
 import type { UserTier } from '@/types';
+import { useLocaleStore } from '@/store/locale-store';
 
 /**
  * Arbitrary generator for UserTier
@@ -19,6 +20,13 @@ const userTierArbitrary = fc.constantFrom('free', 'premium', 'pro_plus') as fc.A
  * Arbitrary generator for locale
  */
 const localeArbitrary = fc.constantFrom('ru', 'en') as fc.Arbitrary<'ru' | 'en'>;
+
+// Mock locale store
+vi.mock('@/store/locale-store', () => ({
+  useLocaleStore: vi.fn(() => ({
+    locale: 'ru', // Will be updated dynamically in tests
+  })),
+}));
 
 /**
  * Mock scrollIntoView for testing
@@ -144,6 +152,12 @@ describe('AI Assistant UI Updates - Property Tests', () => {
         userTierArbitrary,
         localeArbitrary,
         (tier: UserTier, locale: 'ru' | 'en') => {
+          // Set the mock locale to match test input
+          vi.mocked(useLocaleStore).mockReturnValue({
+            locale,
+            setLocale: vi.fn(),
+          } as any);
+
           const { container, unmount } = render(
             <ChatInterface
               isOpen={true}
@@ -155,15 +169,15 @@ describe('AI Assistant UI Updates - Property Tests', () => {
 
           try {
             // Verify header exists
-            const header = container.querySelector('.border-b.border-gray-800');
+            const header = container.querySelector('.border-b.border-white\\/10');
             expect(header).toBeTruthy();
-            
+
             // Verify messages container exists
             const messagesContainer = container.querySelector('.overflow-y-auto');
             expect(messagesContainer).toBeTruthy();
-            
+
             // Verify input area exists
-            const inputArea = container.querySelector('.border-t.border-gray-800');
+            const inputArea = container.querySelector('.border-t.border-white\\/10');
             expect(inputArea).toBeTruthy();
             
             // Verify textarea exists
