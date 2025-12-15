@@ -35,7 +35,11 @@ export async function GET(request: Request) {
     const content = await getGeneratedContent(day, languageId);
 
     if (!content) {
-      return NextResponse.json({ exists: false }, { status: 404 });
+      // Return 200 OK with exists: false instead of 404 to avoid console errors
+      return NextResponse.json({ exists: false }, {
+        status: 200,
+        headers: buildRateLimitHeaders(rateState)
+      });
     }
 
     return NextResponse.json({
@@ -44,6 +48,8 @@ export async function GET(request: Request) {
       recap: content.recap,
       recapTask: content.recapTask,
       tasks: content.tasks
+    }, {
+      headers: buildRateLimitHeaders(rateState)
     });
   } catch (error) {
     logError('Ошибка при получении контента из БД', error as Error, {
