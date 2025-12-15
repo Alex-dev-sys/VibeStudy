@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -31,6 +31,7 @@ interface UserTierData {
 
 export default function PricingPage() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -58,9 +59,12 @@ export default function PricingPage() {
         if (error) throw error;
 
         if (data) {
-          setUserTier({
-            tier: (data.tier as 'free' | 'premium' | 'pro_plus') || 'free',
-            tierExpiresAt: data.tier_expires_at,
+          // Use startTransition to make this update non-blocking and prevent visual "reload"
+          startTransition(() => {
+            setUserTier({
+              tier: (data.tier as 'free' | 'premium' | 'pro_plus') || 'free',
+              tierExpiresAt: data.tier_expires_at,
+            });
           });
         }
       } catch (err) {

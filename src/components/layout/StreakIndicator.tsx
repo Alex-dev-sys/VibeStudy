@@ -10,17 +10,18 @@ interface StreakIndicatorProps {
 }
 
 export function StreakIndicator({ streak }: StreakIndicatorProps) {
-  const record = useProgressStore((state) => state.record);
-  
+  // Only subscribe to the history array, not the entire record object
+  const history = useProgressStore((state) => state.record.history);
+
   const isStreakAtRisk = useMemo(() => {
-    if (!record.history || record.history.length === 0) return false;
-    
-    const lastActivity = record.history[record.history.length - 1]?.timestamp;
+    if (!history || history.length === 0) return false;
+
+    const lastActivity = history[history.length - 1]?.timestamp;
     if (!lastActivity) return false;
-    
+
     const hoursSinceActivity = (Date.now() - lastActivity) / (1000 * 60 * 60);
     return hoursSinceActivity > 20; // Warn if no activity in 20 hours
-  }, [record.history]);
+  }, [history]);
   
   return (
     <motion.div
