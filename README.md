@@ -19,6 +19,12 @@
   <img src="https://img.shields.io/badge/Monaco-Editor-2C2C32?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="Monaco" />
 </p>
 
+<p align="center">
+  <a href="https://vibestudy.ru" target="_blank">
+    <img src="https://img.shields.io/badge/🌐_Открыть_платформу-vibestudy.ru-FF0094?style=for-the-badge&logoColor=white" alt="VibeStudy Platform" />
+  </a>
+</p>
+
 <h3>✨ Интерактивная AI-платформа для изучения программирования</h3>
 
 <p>
