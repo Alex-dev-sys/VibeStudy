@@ -56,6 +56,7 @@ export function TaskModal({
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [checkResult, setCheckResult] = useState<CheckResult | null>(null);
   const [hints, setHints] = useState<string[]>([]);
   const [isLoadingHint, setIsLoadingHint] = useState(false);
@@ -192,6 +193,60 @@ export function TaskModal({
       announceLiveRegion(t.taskModal.checkError, 'assertive');
     } finally {
       setIsChecking(false);
+    }
+  };
+
+  const handleRun = async () => {
+    if (!code.trim()) {
+      setOutput('❌ Введите код для запуска');
+      return;
+    }
+
+    setIsRunning(true);
+    setCheckResult(null);
+    setOutput('▶️ Запуск кода...');
+
+    try {
+      const response = await fetch('/api/run-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          languageId,
+          timeout: 10000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Не удалось запустить код');
+      }
+
+      const result = await response.json();
+
+      let outputText = '▶️ Результат выполнения:\n\n';
+
+      if (result.stdout) {
+        outputText += `📤 Вывод:\n${result.stdout}\n\n`;
+      }
+
+      if (result.stderr) {
+        outputText += `⚠️ Ошибки:\n${result.stderr}\n\n`;
+      }
+
+      if (result.error) {
+        outputText += `❌ Ошибка выполнения:\n${result.error}`;
+      }
+
+      if (!result.stdout && !result.stderr && !result.error) {
+        outputText += '✅ Код выполнен успешно (нет вывода)';
+      }
+
+      setOutput(outputText);
+    } catch (error) {
+      setOutput(`❌ Ошибка запуска: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+      console.error('Run error:', error);
+    } finally {
+      setIsRunning(false);
     }
   };
 
@@ -461,7 +516,7 @@ export function TaskModal({
                   size="md"
                   onClick={handleGetHint}
                   isLoading={isLoadingHint}
-                  disabled={isLoadingHint || isChecking}
+                  disabled={isLoadingHint || isChecking || isRunning}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {isLoadingHint ? t.taskModal.thinking : `💡 ${t.taskModal.getHint}`}
@@ -470,16 +525,27 @@ export function TaskModal({
                   variant="secondary"
                   size="md"
                   onClick={() => setCode('')}
+                  disabled={isChecking || isRunning}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {t.taskModal.clear}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={handleRun}
+                  isLoading={isRunning}
+                  disabled={isRunning || isChecking || !code.trim()}
+                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/30"
+                >
+                  {isRunning ? '⏳ Запуск...' : '▶️ Запустить'}
                 </Button>
                 <Button
                   variant="primary"
                   size="md"
                   onClick={handleCheck}
                   isLoading={isChecking}
-                  disabled={isChecking || !code.trim()}
+                  disabled={isChecking || isRunning || !code.trim()}
                   className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
                 >
                   {isChecking ? t.taskModal.checking : `✓ ${t.taskModal.checkSolution}`}

@@ -174,6 +174,9 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
 
       {hasGenerated && (
         <>
+          {/* Контрольный вопрос - размещаем ПЕРЕД теорией для лучшей видимости */}
+          {taskSet?.recap && <RecapQuestionCard day={day.day} question={taskSet.recap} hasPreviousDay={day.day > 1} />}
+
           {/* Блок теории */}
           <TheoryBlock theory={theory} dayNumber={day.day} topic={dayTopic.topic} languageId={languageId} />
 
@@ -187,9 +190,6 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
               <span className="text-lg">💪</span>
             </div>
           </div>
-
-          {/* Контрольный вопрос */}
-          {taskSet?.recap && <RecapQuestionCard day={day.day} question={taskSet.recap} hasPreviousDay={day.day > 1} />}
 
           {/* Контрольное задание по предыдущему дню */}
           {recapTask && day.day > 1 && (
