@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo, useRef, useEffect, useState, memo, useCallback } from 'react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useProgressStore } from '@/store/progress-store';
 import { getDayTopic } from '@/lib/curriculum';
+import { shallow } from 'zustand/shallow';
 
 const WEEK_MARKERS = [
   { week: 1, day: 1 },
@@ -14,18 +15,117 @@ const WEEK_MARKERS = [
   { week: 13, day: 85 }
 ];
 
+// Memoized day button component to prevent unnecessary re-renders
+interface DayButtonProps {
+  dayData: {
+    day: number;
+    isCompleted: boolean;
+    isCurrent: boolean;
+    isLocked: boolean;
+    topic: string;
+    progress: number;
+    completedTasksCount: number;
+    totalTasks: number;
+  };
+  isExpanded: boolean;
+  onDayClick: (day: number) => void;
+}
+
+const DayButton = memo(({ dayData, isExpanded, onDayClick }: DayButtonProps) => {
+  const handleClick = useCallback(() => {
+    if (!dayData.isLocked) {
+      onDayClick(dayData.day);
+    }
+  }, [dayData.isLocked, dayData.day, onDayClick]);
+
+  return (
+    <motion.button
+      data-day={dayData.day}
+      onClick={handleClick}
+      disabled={dayData.isLocked}
+      className={clsx(
+        'group relative w-full aspect-square rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50 bg-primary/10',
+        dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/10 border border-green-500/30 hover:bg-green-500/20',
+        !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'bg-white/5 border border-white/10 hover:bg-white/10',
+        dayData.isLocked && 'bg-white/5 border border-white/5 opacity-40 cursor-not-allowed'
+      )}
+      title={
+        dayData.isCompleted && !dayData.isCurrent
+          ? `День ${dayData.day}: ${dayData.topic} (завершён)`
+          : dayData.isLocked
+            ? 'Завершите предыдущий день чтобы разблокировать'
+            : `День ${dayData.day}: ${dayData.topic}`
+      }
+    >
+      {/* Status Indicator */}
+      <div className={clsx(
+        'absolute top-2 right-2 w-2 h-2 rounded-full',
+        dayData.isCompleted ? 'bg-green-500' :
+          dayData.isCurrent ? 'bg-primary animate-pulse' :
+            dayData.isLocked ? 'bg-white/20' : 'bg-white/40'
+      )} />
+
+      {/* Day number */}
+      <div className={clsx(
+        'font-bold mb-1 transition-all',
+        isExpanded ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl',
+        dayData.isCurrent ? 'text-white' :
+          dayData.isCompleted ? 'text-green-400' :
+            dayData.isLocked ? 'text-white/20' : 'text-white/70'
+      )}>
+        {dayData.day}
+      </div>
+
+      {/* Topic name below - Only show on hover or if current/completed */}
+      {(dayData.isCurrent || dayData.isCompleted || !dayData.isLocked) && (
+        <div className={clsx(
+          "text-center leading-tight line-clamp-2 w-full px-1 transition-all",
+          isExpanded ? 'text-[8px]' : 'text-[10px]',
+          dayData.isCurrent ? 'text-primary-foreground/80' : 'text-white/40'
+        )}>
+          {dayData.topic}
+        </div>
+      )}
+
+      {/* Lock Icon Overlay */}
+      {dayData.isLocked && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-[1px]">
+          <span className={clsx(
+            "opacity-50 transition-all",
+            isExpanded ? 'text-base' : 'text-lg'
+          )}>🔒</span>
+        </div>
+      )}
+    </motion.button>
+  );
+});
+
+DayButton.displayName = 'DayButton';
+
 export function DayTimeline() {
   const [isExpanded, setIsExpanded] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { activeDay, completedDays, dayStates, setActiveDay } = useProgressStore((state) => ({
-    activeDay: state.activeDay,
-    completedDays: state.record.completedDays,
-    dayStates: state.dayStates,
-    setActiveDay: state.setActiveDay
-  }));
+
+  // Use shallow comparison to prevent unnecessary re-renders
+  const { activeDay, completedDays, dayStates, setActiveDay } = useProgressStore(
+    (state) => ({
+      activeDay: state.activeDay,
+      completedDays: state.record.completedDays,
+      dayStates: state.dayStates,
+      setActiveDay: state.setActiveDay
+    }),
+    shallow
+  );
 
   // Track if this is the first render
   const isFirstRender = useRef(true);
+
+  // Memoize the day click handler
+  const handleDayClick = useCallback((day: number) => {
+    setActiveDay(day);
+  }, [setActiveDay]);
 
   // Auto-scroll to active day only when activeDay changes (not on initial mount)
   useEffect(() => {
@@ -145,68 +245,12 @@ export function DayTimeline() {
               )}
             >
               {displayedDays.map((dayData) => (
-                <motion.button
+                <DayButton
                   key={dayData.day}
-                  data-day={dayData.day}
-                  onClick={() => !dayData.isLocked && setActiveDay(dayData.day)}
-                  disabled={dayData.isLocked}
-                  className={clsx(
-                    'group relative w-full aspect-square rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-200',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                    dayData.isCurrent && 'ring-2 ring-primary shadow-lg shadow-primary/50 bg-primary/10',
-                    dayData.isCompleted && !dayData.isCurrent && 'bg-green-500/10 border border-green-500/30 hover:bg-green-500/20',
-                    !dayData.isCompleted && !dayData.isCurrent && !dayData.isLocked && 'bg-white/5 border border-white/10 hover:bg-white/10',
-                    dayData.isLocked && 'bg-white/5 border border-white/5 opacity-40 cursor-not-allowed'
-                  )}
-                  title={
-                    dayData.isCompleted && !dayData.isCurrent
-                      ? `День ${dayData.day}: ${dayData.topic} (завершён)`
-                      : dayData.isLocked
-                        ? 'Завершите предыдущий день чтобы разблокировать'
-                        : `День ${dayData.day}: ${dayData.topic}`
-                  }
-                >
-                  {/* Status Indicator */}
-                  <div className={clsx(
-                    'absolute top-2 right-2 w-2 h-2 rounded-full',
-                    dayData.isCompleted ? 'bg-green-500' :
-                      dayData.isCurrent ? 'bg-primary animate-pulse' :
-                        dayData.isLocked ? 'bg-white/20' : 'bg-white/40'
-                  )} />
-
-                  {/* Day number */}
-                  <div className={clsx(
-                    'font-bold mb-1 transition-all',
-                    isExpanded ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl',
-                    dayData.isCurrent ? 'text-white' :
-                      dayData.isCompleted ? 'text-green-400' :
-                        dayData.isLocked ? 'text-white/20' : 'text-white/70'
-                  )}>
-                    {dayData.day}
-                  </div>
-
-                  {/* Topic name below - Only show on hover or if current/completed */}
-                  {(dayData.isCurrent || dayData.isCompleted || !dayData.isLocked) && (
-                    <div className={clsx(
-                      "text-center leading-tight line-clamp-2 w-full px-1 transition-all",
-                      isExpanded ? 'text-[8px]' : 'text-[10px]',
-                      dayData.isCurrent ? 'text-primary-foreground/80' : 'text-white/40'
-                    )}>
-                      {dayData.topic}
-                    </div>
-                  )}
-
-                  {/* Lock Icon Overlay */}
-                  {dayData.isLocked && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-[1px]">
-                      <span className={clsx(
-                        "opacity-50 transition-all",
-                        isExpanded ? 'text-base' : 'text-lg'
-                      )}>🔒</span>
-                    </div>
-                  )}
-
-                </motion.button>
+                  dayData={dayData}
+                  isExpanded={isExpanded}
+                  onDayClick={handleDayClick}
+                />
               ))}
             </div>
           </motion.div>

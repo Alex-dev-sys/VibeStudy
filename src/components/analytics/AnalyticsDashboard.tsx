@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Lightbulb, Sparkles } from 'lucide-react';
 import { useProgressStore } from '@/store/progress-store';
 import { AdaptiveRecommendationsPanel } from '@/components/dashboard/AdaptiveRecommendationsPanel';
+import { shallow } from 'zustand/shallow';
 
 // Reusable Bento Card Component (Local version for dashboard)
 const BentoCard = ({
@@ -52,8 +53,23 @@ const BentoCard = ({
 };
 
 export function AnalyticsDashboard() {
-  const { recommendations, isLoading, error, loadFromServer } = useAnalyticsStore();
-  const { activeDay, languageId } = useProgressStore();
+  const { recommendations, isLoading, error, loadFromServer } = useAnalyticsStore(
+    (state) => ({
+      recommendations: state.recommendations,
+      isLoading: state.isLoading,
+      error: state.error,
+      loadFromServer: state.loadFromServer
+    }),
+    shallow
+  );
+
+  const { activeDay, languageId } = useProgressStore(
+    (state) => ({
+      activeDay: state.activeDay,
+      languageId: state.languageId
+    }),
+    shallow
+  );
 
   // Load analytics from server on mount
   React.useEffect(() => {

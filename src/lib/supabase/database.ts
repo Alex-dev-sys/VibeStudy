@@ -127,7 +127,7 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
   try {
     const { data, error } = await supabase
       .from('user_progress')
-      .select('*')
+      .select('topic_id, completed, last_accessed, metadata')
       .eq('user_id', userId);
 
     if (error) {
@@ -234,7 +234,7 @@ export async function fetchDayProgress(
   try {
     const { data, error } = await supabase
       .from('user_progress')
-      .select('*')
+      .select('metadata, last_accessed')
       .eq('user_id', userId)
       .eq('topic_id', `day_${day}`)
       .single();
@@ -498,7 +498,7 @@ export async function fetchProfile(userId: string): Promise<DatabaseResult<Profi
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, username, email, created_at, metadata')
       .eq('id', userId)
       .single();
 
@@ -606,7 +606,7 @@ export async function fetchTaskAttempts(
   try {
     const { data, error } = await supabase
       .from('task_attempts')
-      .select('*')
+      .select('id, user_id, task_id, topic_id, code, result, is_correct, hints_used, time_spent, attempted_at')
       .eq('user_id', userId)
       .eq('task_id', taskId)
       .order('attempted_at', { ascending: false });
@@ -657,7 +657,7 @@ export async function fetchRecentAttempts(
   try {
     const { data, error } = await supabase
       .from('task_attempts')
-      .select('*')
+      .select('id, user_id, task_id, topic_id, code, result, is_correct, hints_used, time_spent, attempted_at')
       .eq('user_id', userId)
       .order('attempted_at', { ascending: false })
       .limit(limit);
@@ -723,7 +723,7 @@ export async function updateTopicMastery(
     // Fetch current mastery
     const { data: current, error: fetchError } = await supabase
       .from('topic_mastery')
-      .select('*')
+      .select('total_attempts, successful_attempts')
       .eq('user_id', userId)
       .eq('topic', topic)
       .single();
@@ -777,7 +777,7 @@ export async function fetchTopicMastery(
   try {
     const { data, error } = await supabase
       .from('topic_mastery')
-      .select('*')
+      .select('user_id, topic, total_attempts, successful_attempts, mastery_level, last_practiced')
       .eq('user_id', userId)
       .order('mastery_level', { ascending: true });
 
@@ -823,7 +823,7 @@ export async function fetchTopicMasteryByTopic(
   try {
     const { data, error } = await supabase
       .from('topic_mastery')
-      .select('*')
+      .select('user_id, topic, total_attempts, successful_attempts, mastery_level, last_practiced')
       .eq('user_id', userId)
       .eq('topic', topic)
       .single();

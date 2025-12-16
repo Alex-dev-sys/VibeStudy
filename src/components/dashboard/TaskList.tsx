@@ -6,6 +6,7 @@ import { difficultyColorMap } from '@/lib/utils';
 import type { GeneratedTask } from '@/types';
 import { useProgressStore } from '@/store/progress-store';
 import { TaskModal } from './TaskModal';
+import { shallow } from 'zustand/shallow';
 
 interface TaskListProps {
   day: number;
@@ -31,8 +32,15 @@ export function TaskList({
   isViewMode = false
 }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<{ task: GeneratedTask; index: number } | null>(null);
-  const toggleTask = useProgressStore((state) => state.toggleTask);
-  const dayState = useProgressStore((state) => state.dayStates[day]);
+
+  const { toggleTask, dayState } = useProgressStore(
+    (state) => ({
+      toggleTask: state.toggleTask,
+      dayState: state.dayStates[day]
+    }),
+    shallow
+  );
+
   const completedTasks = dayState?.completedTasks ?? [];
 
   if (!tasks.length) {

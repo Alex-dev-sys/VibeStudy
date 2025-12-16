@@ -72,12 +72,13 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Fetch all task attempts for the user
+    // Fetch only necessary fields for analytics (instead of SELECT *)
     const { data: attempts, error } = await supabase
       .from('task_attempts')
-      .select('*')
+      .select('task_id, success, is_correct, time_spent, start_time, end_time, created_at, day, attempts')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(10000); // Safety limit to prevent excessive data loads
     
     if (error) {
       logError('Error fetching analytics from database', error, {
@@ -104,106 +105,126 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // Calculate topic mastery
-    const topicMastery: Record<string, TopicMastery> = {};
-    
+    // Single-pass calculation: topic mastery, time stats, and other metrics
+    const topicMastery: Record<string, TopicMastery & { totalTime: number; successCount: number }> = {};
+    const completedDaysSet = new Set<number>();
+    const hourCounts: Record<number, number> = {};
+    let totalTime = 0;
+    let validAttempts = 0;
+    let oldestTimestamp: number | null = null;
+    const weeklyBuckets: number[] = [0, 0, 0, 0, 0, 0, 0];
+    const now = Date.now();
+
+    // Pre-calculate day boundaries for weekly trend
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekStartTime = weekStart.getTime();
+
+    // Single loop through all attempts
     attempts.forEach((attempt: any) => {
       try {
-        // Extract topic from taskId (e.g., "python-basics-task1" -> "python-basics")
-        if (!attempt.task_id || typeof attempt.task_id !== 'string') {
-          return; // Skip invalid attempts
-        }
-        
+        // Extract topic from taskId
+        if (!attempt.task_id || typeof attempt.task_id !== 'string') return;
+
         const topic = attempt.task_id.split('-').slice(0, -1).join('-') || 'general';
-        
+        const isSuccessful = attempt.success !== undefined ? attempt.success : (attempt.is_correct || false);
+
+        // Initialize topic if needed
         if (!topicMastery[topic]) {
           topicMastery[topic] = {
             topic,
             totalTasks: 0,
             completedTasks: 0,
             successRate: 0,
-            averageTime: 0
+            averageTime: 0,
+            totalTime: 0,
+            successCount: 0
           };
         }
-        
+
+        // Update topic stats
         topicMastery[topic].totalTasks++;
-        // Use success field if available, otherwise fall back to is_correct
-        const isSuccessful = attempt.success !== undefined 
-          ? attempt.success 
-          : (attempt.is_correct || false);
         if (isSuccessful) {
           topicMastery[topic].completedTasks++;
         }
-      } catch (err) {
-        // Skip invalid attempts
-        logError('Error processing attempt', err as Error, {
-          component: 'api/analytics/insights',
-          metadata: { attempt }
-        });
-      }
-    });
-    
-    // Calculate success rates and average times
-    Object.keys(topicMastery).forEach((topic) => {
-      try {
-        const mastery = topicMastery[topic];
-        mastery.successRate = (mastery.completedTasks / mastery.totalTasks) * 100;
-        
-        // Calculate average time for successful attempts
-        const successfulAttempts = attempts.filter(
-          (a: any): boolean => {
-            if (!a.task_id || typeof a.task_id !== 'string') return false;
-            const isSuccessful = a.success !== undefined ? a.success : (a.is_correct || false);
-            return a.task_id.startsWith(topic) && isSuccessful;
+
+        // Calculate time for this attempt
+        let attemptTime = 0;
+        if (attempt.start_time && attempt.end_time) {
+          const start = new Date(attempt.start_time).getTime();
+          const end = new Date(attempt.end_time).getTime();
+          if (!isNaN(start) && !isNaN(end) && end >= start) {
+            attemptTime = end - start;
           }
-        );
-        
-        if (successfulAttempts.length > 0) {
-          const totalTime = successfulAttempts.reduce((sum: number, a: any) => {
-            try {
-              // Try to use start_time/end_time, fallback to time_spent or created_at
-              if (a.start_time && a.end_time) {
-                const start = new Date(a.start_time).getTime();
-                const end = new Date(a.end_time).getTime();
-                if (!isNaN(start) && !isNaN(end) && end >= start) {
-                  return sum + (end - start);
-                }
-              }
-              // Fallback to time_spent (in seconds, convert to milliseconds)
-              if (a.time_spent && typeof a.time_spent === 'number') {
-                return sum + (a.time_spent * 1000);
-              }
-              return sum;
-            } catch {
-              return sum;
+        } else if (attempt.time_spent && typeof attempt.time_spent === 'number' && attempt.time_spent > 0) {
+          attemptTime = attempt.time_spent * 1000;
+        }
+
+        // Accumulate time for successful attempts in topic
+        if (isSuccessful && attemptTime > 0) {
+          topicMastery[topic].totalTime += attemptTime;
+          topicMastery[topic].successCount++;
+        }
+
+        // Track overall session duration
+        if (attemptTime > 0) {
+          totalTime += attemptTime;
+          validAttempts++;
+        }
+
+        // Track completed days
+        if (attempt.day != null && !isNaN(Number(attempt.day))) {
+          completedDaysSet.add(Number(attempt.day));
+        }
+
+        // Track oldest timestamp
+        const timestamp = attempt.start_time || attempt.created_at;
+        if (timestamp) {
+          const ts = new Date(timestamp).getTime();
+          if (!isNaN(ts)) {
+            if (oldestTimestamp === null || ts < oldestTimestamp) {
+              oldestTimestamp = ts;
             }
-          }, 0);
-          mastery.averageTime = totalTime / successfulAttempts.length;
+
+            // Track productive hours
+            const hour = new Date(timestamp).getHours();
+            if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+              hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            }
+
+            // Track weekly trend (last 7 days)
+            if (ts >= weekStartTime) {
+              const dayIndex = Math.floor((ts - weekStartTime) / (24 * 60 * 60 * 1000));
+              if (dayIndex >= 0 && dayIndex < 7) {
+                weeklyBuckets[dayIndex]++;
+              }
+            }
+          }
         }
       } catch (err) {
-        logError('Error calculating mastery', err as Error, {
-          component: 'api/analytics/insights',
-          metadata: { topic }
-        });
+        // Skip invalid attempts silently
       }
     });
+
+    // Finalize topic mastery calculations
+    Object.values(topicMastery).forEach((mastery) => {
+      mastery.successRate = (mastery.completedTasks / mastery.totalTasks) * 100;
+      mastery.averageTime = mastery.successCount > 0
+        ? mastery.totalTime / mastery.successCount
+        : 0;
+    });
     
-    // Calculate weak areas
+    // Calculate weak areas using pre-calculated topic mastery
     const weakAreas = Object.values(topicMastery)
-      .filter((m: TopicMastery) => m.successRate < 70)
-      .map((m: TopicMastery) => m.topic);
-    
-    // Calculate learning velocity
-    const completedDays = new Set(
-      attempts
-        .map((a: any) => a.day)
-        .filter((day: any) => day != null && !isNaN(Number(day)))
-    ).size;
-    
-    // Find oldest attempt by start_time or created_at
-    const oldestAttempt = attempts.find((a: any) => a.start_time || a.created_at);
-    if (!oldestAttempt) {
-      // Return default if no valid attempts
+      .filter((m) => m.successRate < 70)
+      .map((m) => m.topic);
+
+    // Use pre-calculated values for learning velocity
+    const completedDays = completedDaysSet.size;
+
+    // Return default if no valid timestamps found
+    if (oldestTimestamp === null) {
       return NextResponse.json({
         topicMastery: {},
         learningVelocity: defaultVelocity,
@@ -212,105 +233,26 @@ export async function GET(request: NextRequest) {
         predictedCompletionDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
       });
     }
-    
-    let daysSinceStart = 1;
-    try {
-      // Use start_time if available, otherwise use created_at
-      const timestamp = oldestAttempt.start_time || oldestAttempt.created_at;
-      if (timestamp) {
-        const startTime = new Date(timestamp).getTime();
-        if (!isNaN(startTime)) {
-          daysSinceStart = Math.max(
-            Math.ceil((Date.now() - startTime) / (24 * 60 * 60 * 1000)),
-            1
-          );
-        }
-      }
-    } catch {
-      // Use default value
-    }
-    
+
+    // Calculate days since start
+    const daysSinceStart = Math.max(
+      Math.ceil((now - oldestTimestamp) / (24 * 60 * 60 * 1000)),
+      1
+    );
+
     const tasksPerDay = attempts.length / daysSinceStart;
-    
-    // Calculate average session duration
-    let totalTime = 0;
-    let validAttempts = 0;
-    attempts.forEach((a: any) => {
-      try {
-        // Try start_time/end_time first
-        if (a.start_time && a.end_time) {
-          const start = new Date(a.start_time).getTime();
-          const end = new Date(a.end_time).getTime();
-          if (!isNaN(start) && !isNaN(end) && end >= start) {
-            totalTime += (end - start);
-            validAttempts++;
-            return;
-          }
-        }
-        // Fallback to time_spent (in seconds, convert to milliseconds)
-        if (a.time_spent && typeof a.time_spent === 'number' && a.time_spent > 0) {
-          totalTime += (a.time_spent * 1000);
-          validAttempts++;
-        }
-      } catch {
-        // Skip invalid attempts
-      }
-    });
     const averageSessionDuration = validAttempts > 0 ? totalTime / validAttempts : 0;
-    
-    // Calculate most productive hour
-    const hourCounts: Record<number, number> = {};
-    attempts.forEach((a: any) => {
-      try {
-        // Use start_time if available, otherwise use created_at
-        const timestamp = a.start_time || a.created_at;
-        if (!timestamp) {
-          return;
-        }
-        const hour = new Date(timestamp).getHours();
-        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
-          hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-        }
-      } catch {
-        // Skip invalid attempts
-      }
-    });
+
+    // Find most productive hour from pre-calculated counts
     const mostProductiveHour = Object.keys(hourCounts).length > 0
       ? Number(Object.entries(hourCounts).sort(([, a], [, b]) => b - a)[0]?.[0]) || 14
       : 14;
-    
-    // Calculate weekly trend (last 7 days)
-    const weeklyTrend: number[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      
-      const dayStart = date.getTime();
-      const dayEnd = dayStart + 24 * 60 * 60 * 1000;
-      
-      const dayAttempts = attempts.filter((a: any) => {
-        try {
-          // Use start_time if available, otherwise use created_at
-          const timestamp = a.start_time || a.created_at;
-          if (!timestamp) {
-            return false;
-          }
-          const attemptTime = new Date(timestamp).getTime();
-          return !isNaN(attemptTime) && attemptTime >= dayStart && attemptTime < dayEnd;
-        } catch {
-          return false;
-        }
-      });
-      
-      weeklyTrend.push(dayAttempts.length);
-    }
     
     const learningVelocity: LearningVelocity = {
       tasksPerDay,
       averageSessionDuration,
       mostProductiveHour: Number(mostProductiveHour),
-      weeklyTrend
+      weeklyTrend: weeklyBuckets
     };
     
     // Generate recommendations
