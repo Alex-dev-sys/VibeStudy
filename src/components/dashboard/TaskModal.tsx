@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyMonacoEditor, LazyConfetti } from '@/lib/performance/lazy-components';
 import { Button } from '@/components/ui/button';
@@ -302,10 +303,13 @@ export function TaskModal({
 
   if (!isOpen) return null;
 
-  return (
+  // Проверяем, что мы на клиенте
+  if (typeof document === 'undefined') return null;
+
+  const modalContent = (
     <AnimatePresence>
-      <div 
-        className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6"
+      <div
+        className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-y-auto"
         style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
         onClick={(e) => {
           // Закрываем модальное окно при клике на фон
@@ -557,5 +561,8 @@ export function TaskModal({
       </div>
     </AnimatePresence>
   );
+
+  // Рендерим модальное окно в body через портал для правильного z-index
+  return createPortal(modalContent, document.body);
 }
 
