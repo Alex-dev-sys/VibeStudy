@@ -12,6 +12,7 @@ import { withTierCheck } from '@/middleware/with-tier-check';
 import { buildPrompt, ExtendedRequestBody } from '@/lib/ai/prompts';
 import { withRetry } from '@/lib/ai/retry-service';
 import { generatedContentSchema, GeneratedContent } from '@/lib/ai/schemas';
+import { getDayTheme } from '@/data/themes';
 
 const fallbackResponse: GeneratedContent = {
   theory: `# Основы программирования
@@ -274,6 +275,10 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
     );
   }
 
+  // Получаем тему дня из наших файлов с темами ДО создания кеш ключа
+  const dayTheme = getDayTheme(body.languageId, body.day);
+  const dayTopic = dayTheme?.topic || '';
+
   const cacheFingerprint = createHash('sha256')
     .update(
       JSON.stringify({
@@ -281,7 +286,8 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
         languageId: body.languageId,
         theorySummary: body.theorySummary,
         previousDaySummary: body.previousDaySummary ?? '',
-        locale: body.locale ?? 'ru'
+        locale: body.locale ?? 'ru',
+        dayTopic: dayTopic // Добавляем тему в кеш для правильного кеширования
       })
     )
     .digest('hex');
@@ -303,6 +309,22 @@ export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
   }
 
   try {
+    // Добавляем тему в body для передачи в промпт (тема уже получена выше)
+    if (dayTopic) {
+      body.dayTopic = dayTopic;
+      logInfo('Using theme for day generation', {
+        component: 'api',
+        action: 'generate-tasks',
+        metadata: { day: body.day, language: body.languageId, theme: dayTopic }
+      });
+    } else {
+      logWarn('No theme found for day, using default generation', {
+        component: 'api',
+        action: 'generate-tasks',
+        metadata: { day: body.day, language: body.languageId }
+      });
+    }
+
     const prompt = buildPrompt(body);
 
     const systemMessage = body.locale === 'en'
