@@ -9,7 +9,7 @@ import { LANGUAGES } from '@/lib/languages';
 export function Breadcrumbs() {
   const { languageId, activeDay } = useProgressStore();
   const language = LANGUAGES.find(l => l.id === languageId);
-  const dayTopic = getDayTopic(activeDay);
+  const dayTopic = getDayTopic(activeDay, languageId);
   
   return (
     <nav 

@@ -40,7 +40,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
 
   const formattedContent = useCallback(
     (content: TaskGenerationResponse): TaskGenerationResponse => {
-      const dayTopic = getDayTopic(currentDay.day);
+      const dayTopic = getDayTopic(currentDay.day, languageId);
       return {
         ...content,
         theory: formatTheoryContent(content.theory, { topic: dayTopic.topic, languageId }),
@@ -60,8 +60,8 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
       setContentSource('pending');
 
       const { locale } = useLocaleStore.getState();
-      const dayTopic = getDayTopic(currentDay.day);
-      const previousDayTopic = previousDay ? getDayTopic(previousDay.day) : undefined;
+      const dayTopic = getDayTopic(currentDay.day, languageId);
+      const previousDayTopic = previousDay ? getDayTopic(previousDay.day, languageId) : undefined;
       const MAX_ATTEMPTS = 3;
 
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
@@ -243,7 +243,7 @@ export const useTaskGenerator = ({ currentDay, previousDay, languageId, autoLoad
         setRegeneratingTaskId(taskId);
         setError(null);
 
-        const dayTopic = getDayTopic(currentDay.day);
+        const dayTopic = getDayTopic(currentDay.day, languageId);
         const response = await fetch('/api/regenerate-task', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

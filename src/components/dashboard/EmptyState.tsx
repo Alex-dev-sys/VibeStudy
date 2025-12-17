@@ -8,14 +8,15 @@ import { getDayTopic } from '@/lib/curriculum';
 interface EmptyStateProps {
   day: number;
   onStart: () => void;
+  languageId?: string;
 }
 
 /**
  * EmptyState component for day cards without generated content
  * Follows UX requirements: 6.1, 6.2, 6.3, 6.4, 6.5
  */
-export function EmptyState({ day, onStart }: EmptyStateProps) {
-  const dayTopic = getDayTopic(day);
+export function EmptyState({ day, onStart, languageId = 'python' }: EmptyStateProps) {
+  const dayTopic = getDayTopic(day, languageId);
 
   return (
     <Card className="text-center py-section border-dashed border-white/15 bg-[rgba(255,255,255,0.08)]">

@@ -38,8 +38,9 @@ export function ContentState({
   const completedDays = useProgressStore((state) => state.record.completedDays);
   const completedTasks = useProgressStore((state) => state.dayStates[day.day]?.completedTasks ?? []);
   const markDayComplete = useProgressStore((state) => state.markDayComplete);
-  
-  const dayTopic = getDayTopic(day.day);
+  const languageId = useProgressStore((state) => state.languageId);
+
+  const dayTopic = getDayTopic(day.day, languageId);
   const isDayCompleted = completedDays.includes(day.day);
   
   const tasks = taskSet.tasks ?? [];

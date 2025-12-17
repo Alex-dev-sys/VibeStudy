@@ -35,7 +35,7 @@ export function DayCard({ day, previousDay, languageId }: DayCardProps) {
   const completedDays = useProgressStore((state) => state.record.completedDays);
   const completedTasks = useProgressStore((state) => state.dayStates[day.day]?.completedTasks ?? []);
   const language = useMemo(() => LANGUAGES.find((item) => item.id === languageId)!, [languageId]);
-  const dayTopic = getDayTopic(day.day);
+  const dayTopic = getDayTopic(day.day, languageId);
   const isDayCompleted = completedDays.includes(day.day);
 
   const tasks = useMemo(() => taskSet?.tasks ?? [], [taskSet]);

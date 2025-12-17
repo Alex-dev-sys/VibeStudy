@@ -47,9 +47,10 @@ export function SimplifiedDayCard({ day, previousDay, languageId }: SimplifiedDa
 
   if (isPending) {
     return (
-      <EmptyState 
-        day={day.day} 
+      <EmptyState
+        day={day.day}
         onStart={requestInitialGeneration}
+        languageId={languageId}
       />
     );
   }

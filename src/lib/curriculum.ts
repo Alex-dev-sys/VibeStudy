@@ -118,7 +118,24 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 90, topic: 'План дальнейшего развития', description: 'Roadmap junior разработчика' }
 ];
 
-export const getDayTopic = (day: number): DayTopic => {
+/**
+ * Получить тему дня для конкретного языка
+ * @param day - День обучения (1-90)
+ * @param languageId - ID языка программирования
+ * @returns Объект с темой дня
+ */
+export const getDayTopic = (day: number, languageId: string): DayTopic => {
+  const themeData = getDayTheme(languageId, day);
+
+  if (themeData) {
+    return {
+      day: themeData.day,
+      topic: themeData.topic,
+      description: `Изучение темы: ${themeData.topic}`
+    };
+  }
+
+  // Fallback к старым данным если тема не найдена
   return DAY_TOPICS[day - 1] ?? DAY_TOPICS[0];
 };
 

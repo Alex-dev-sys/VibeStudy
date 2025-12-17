@@ -113,7 +113,7 @@ export class ContextAggregator {
 
     if (!dayContent) {
       // Fallback to day topic if curriculum doesn't have content
-      const dayTopic = getDayTopic(day);
+      const dayTopic = getDayTopic(day, languageId);
       const fallbackContent: DayContent = {
         day,
         title: dayTopic.topic,

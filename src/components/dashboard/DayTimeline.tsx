@@ -109,12 +109,13 @@ export function DayTimeline() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Use shallow comparison to prevent unnecessary re-renders
-  const { activeDay, completedDays, dayStates, setActiveDay } = useProgressStore(
+  const { activeDay, completedDays, dayStates, setActiveDay, languageId } = useProgressStore(
     (state) => ({
       activeDay: state.activeDay,
       completedDays: state.record.completedDays,
       dayStates: state.dayStates,
-      setActiveDay: state.setActiveDay
+      setActiveDay: state.setActiveDay,
+      languageId: state.languageId
     }),
     shallow
   );
@@ -155,7 +156,7 @@ export function DayTimeline() {
       const isCurrent = day === activeDay;
       const lastCompletedDay = completedDays.length > 0 ? Math.max(...completedDays) : 0;
       const isLocked = day > 1 && day > lastCompletedDay + 1;
-      const dayTopic = getDayTopic(day);
+      const dayTopic = getDayTopic(day, languageId);
 
       // Get task progress for this day
       const dayState = dayStates[day];
@@ -173,7 +174,7 @@ export function DayTimeline() {
         totalTasks
       };
     });
-  }, [activeDay, completedDays, dayStates]);
+  }, [activeDay, completedDays, dayStates, languageId]);
 
   // Calculate current week (7 days around active day)
   const currentWeekDays = useMemo(() => {
