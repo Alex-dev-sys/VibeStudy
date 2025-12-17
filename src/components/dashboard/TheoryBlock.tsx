@@ -12,10 +12,20 @@ interface TheoryBlockProps {
   languageId?: string;
 }
 
+interface ParsedBlock {
+  type: string;
+  content: string;
+  metadata?: {
+    language?: string;
+    level?: number;
+    [key: string]: unknown;
+  };
+}
+
 // Парсинг markdown для улучшенного отображения
 function parseTheory(content: string) {
   const lines = content.split('\n');
-  const blocks: Array<{ type: string; content: string; metadata?: any }> = [];
+  const blocks: ParsedBlock[] = [];
   let currentCodeBlock: string[] = [];
   let inCodeBlock = false;
   let codeLanguage = '';
@@ -157,7 +167,7 @@ function parseTheory(content: string) {
 export function TheoryBlock({ theory, dayNumber, topic, languageId = 'unknown' }: TheoryBlockProps) {
   const parsedBlocks = useMemo(() => parseTheory(theory), [theory]);
 
-  const renderBlock = (block: { type: string; content: string; metadata?: any }, index: number) => {
+  const renderBlock = (block: ParsedBlock, index: number) => {
     switch (block.type) {
       case 'h2':
         return (

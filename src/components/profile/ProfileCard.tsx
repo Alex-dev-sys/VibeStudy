@@ -9,6 +9,7 @@ import { useAchievementsStore } from '@/store/achievements-store';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { User, Mail, Github, Calendar, Edit2, Camera, Save, X, Trophy, Flame, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/store/profile-store';
 
 export function ProfileCard() {
   const { profile, updateProfile } = useProfileStore();
@@ -20,7 +21,7 @@ export function ProfileCard() {
   const [editedBio, setEditedBio] = useState(profile.bio || '');
 
   // Stable reference to updateProfile
-  const updateProfileCallback = useCallback((updates: any) => {
+  const updateProfileCallback = useCallback((updates: Partial<UserProfile>) => {
     updateProfile(updates);
   }, [updateProfile]);
 
@@ -29,7 +30,7 @@ export function ProfileCard() {
     const loadUserData = async () => {
       const user = await getCurrentUser();
       if (user) {
-        const updates: any = {};
+        const updates: Partial<UserProfile> = {};
         
         // Set email if available
         if (user.email && !profile.email) {

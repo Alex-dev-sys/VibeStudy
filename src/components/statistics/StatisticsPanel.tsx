@@ -53,7 +53,15 @@ export function StatisticsPanel() {
     return <EmptyStatistics onStartLearning={() => router.push('/learn')} />;
   }
 
-  const StatCard = ({ icon: Icon, label, value, subtext, color }: any) => (
+  interface StatCardProps {
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    value: number | string;
+    subtext?: string;
+    color?: string;
+  }
+
+  const StatCard = ({ icon: Icon, label, value, subtext, color }: StatCardProps) => (
     <div className="relative overflow-hidden rounded-xl bg-[#1e1e1e] p-4 shadow-lg ring-1 ring-white/5 transition-all hover:ring-white/10">
       <div className={cn("absolute right-2 top-2 opacity-10", color)}>
         <Icon className="h-16 w-16" />
