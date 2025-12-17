@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { logError } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
+import type { TaskAttemptAnalytics } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
     const weekStartTime = weekStart.getTime();
 
     // Single loop through all attempts
-    attempts.forEach((attempt: any) => {
+    attempts.forEach((attempt: TaskAttemptAnalytics) => {
       try {
         // Extract topic from taskId
         if (!attempt.task_id || typeof attempt.task_id !== 'string') return;
@@ -274,7 +275,7 @@ export async function GET(request: NextRequest) {
       `Твоё самое продуктивное время: ${mostProductiveHour}:00. Планируй сложные задачи на это время.`
     );
     
-    const highAttemptTasks = attempts.filter((a: any) => a.attempts > 3);
+    const highAttemptTasks = attempts.filter((a: TaskAttemptAnalytics) => (a.attempts ?? 0) > 3);
     if (highAttemptTasks.length > 0) {
       recommendations.push(
         'Некоторые задачи требуют много попыток. Попроси помощи у AI или пересмотри теорию.'

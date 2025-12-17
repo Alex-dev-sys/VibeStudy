@@ -4,27 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
 import { logError } from '@/lib/logger';
 import { errorHandler } from '@/lib/error-handler';
+import type { GDPRExportData } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
-
-interface UserDataExport {
-  exportDate: string;
-  userId: string;
-  profile: any;
-  progress: any[];
-  taskAttempts: any[];
-  achievements: any[];
-  topicMastery: any[];
-  telegramProfile: any | null;
-  reminderSchedules: any[];
-  telegramMessages: any[];
-  learningAnalytics: any[];
-  botConversations: any[];
-  aiQuestionTracking: any[];
-  payments: any[];
-  referrals: any[];
-  aiFeedback: any[];
-}
 
 /**
  * GDPR Data Export API
@@ -58,7 +40,7 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
 
     // Initialize export data structure
-    const exportData: UserDataExport = {
+    const exportData: GDPRExportData = {
       exportDate: new Date().toISOString(),
       userId,
       profile: null,

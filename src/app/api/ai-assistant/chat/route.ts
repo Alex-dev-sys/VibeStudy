@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAIAssistantService } from '@/lib/ai-assistant/service';
 import { filterContent } from '@/lib/ai-assistant/content-filter';
-import { withTierCheck } from '@/middleware/with-tier-check';
+import { withTierCheck, type TierCheckResult } from '@/middleware/with-tier-check';
 import type { UserTier } from '@/types';
 import type { AssistantRequest } from '@/lib/ai-assistant/types';
 
@@ -27,7 +27,7 @@ const chatRequestSchema = z.object({
  * POST /api/ai-assistant/chat
  * Send message to AI assistant
  */
-const postHandler = async (request: NextRequest, tierInfo: any) => {
+const postHandler = async (request: NextRequest, tierInfo: TierCheckResult) => {
   try {
     // Parse and validate request body
     const body = await request.json();

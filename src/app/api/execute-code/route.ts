@@ -4,6 +4,7 @@ import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rat
 import { errorHandler } from '@/lib/error-handler';
 import { retryWithBackoff, isRetryableError } from '@/lib/sync/retry-logic';
 import { logWarn, logError } from '@/lib/logger';
+import type { PistonExecutionResult } from '@/types/database';
 
 /**
  * API endpoint for executing code in a secure sandbox
@@ -24,7 +25,7 @@ const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
 };
 
 interface ExecutionResult {
-  result: any;
+  result: PistonExecutionResult;
   executionTime: number;
 }
 

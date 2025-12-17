@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { logError, logInfo } from '@/lib/logger';
+import type { DailyChallenge } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
 
 // In-memory cache for challenges
-const challengeCache = new Map<string, { data: any; timestamp: number }>();
+const challengeCache = new Map<string, { data: DailyChallenge | DailyChallenge[]; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
-function getCachedData(key: string): any | null {
+function getCachedData(key: string): DailyChallenge | DailyChallenge[] | null {
   const cached = challengeCache.get(key);
   if (!cached) return null;
 
@@ -21,7 +22,7 @@ function getCachedData(key: string): any | null {
   return cached.data;
 }
 
-function setCachedData(key: string, data: any): void {
+function setCachedData(key: string, data: DailyChallenge | DailyChallenge[]): void {
   challengeCache.set(key, { data, timestamp: Date.now() });
 }
 

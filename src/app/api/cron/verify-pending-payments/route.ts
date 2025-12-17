@@ -6,6 +6,7 @@ import {
   type TierType,
 } from "@/lib/ton-client";
 import { logInfo, logError } from "@/lib/logger";
+import type { Payment } from "@/types/database";
 
 // Force dynamic rendering for this route
 export const dynamic = "force-dynamic";
@@ -62,7 +63,7 @@ function createSupabaseAdminClient() {
  */
 async function verifyPendingPayment(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
-  payment: any,
+  payment: Payment,
 ): Promise<VerificationResult> {
   const result: VerificationResult = {
     paymentId: payment.id,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireSupabaseClient } from '@/lib/supabase/client';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { logError, logInfo } from '@/lib/logger';
+import type { TestResult } from '@/types/database';
 
 interface SubmitChallengeRequest {
   challengeId: string;
@@ -9,7 +10,7 @@ interface SubmitChallengeRequest {
   language: string;
   status: 'pending' | 'passed' | 'failed';
   executionTimeMs?: number;
-  testResults?: any;
+  testResults?: TestResult[];
 }
 
 export async function POST(request: NextRequest) {
