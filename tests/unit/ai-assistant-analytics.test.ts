@@ -36,14 +36,17 @@ function restoreConsoleLog() {
  */
 const assistantContextArbitrary = fc.record({
   userId: fc.string({ minLength: 1, maxLength: 50 }),
-  tier: fc.constantFrom('free', 'premium', 'pro') as fc.Arbitrary<UserTier>,
+  tier: fc.constantFrom('free', 'premium', 'pro_plus') as fc.Arbitrary<UserTier>,
   currentDay: fc.integer({ min: 1, max: 90 }),
   languageId: fc.constantFrom('python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'),
   completedDays: fc.array(fc.integer({ min: 1, max: 90 }), { minLength: 0, maxLength: 30 }),
   currentStreak: fc.integer({ min: 0, max: 90 }),
   totalTasksCompleted: fc.integer({ min: 0, max: 300 }),
   dayTheory: fc.string({ minLength: 10, maxLength: 500 }),
-  recentMessages: fc.constant([]),
+  recentMessages: fc.array(fc.record({
+    role: fc.constantFrom('user', 'assistant') as fc.Arbitrary<'user' | 'assistant'>,
+    content: fc.string({ minLength: 1, maxLength: 200 }),
+  }), { maxLength: 0 }) as fc.Arbitrary<never[]>,
 });
 
 /**
@@ -53,8 +56,8 @@ const assistantRequestArbitrary = fc.record({
   message: fc.string({ minLength: 1, maxLength: 500 }),
   context: assistantContextArbitrary,
   requestType: fc.constantFrom('question', 'code-help', 'advice', 'general') as fc.Arbitrary<'question' | 'code-help' | 'advice' | 'general'>,
-  code: fc.option(fc.string({ minLength: 10, maxLength: 200 })),
-  taskId: fc.option(fc.uuid()),
+  code: fc.option(fc.string({ minLength: 10, maxLength: 200 }), { nil: undefined }),
+  taskId: fc.option(fc.uuid(), { nil: undefined }),
 });
 
 describe('AI Assistant Analytics - Property Tests', () => {

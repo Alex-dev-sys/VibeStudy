@@ -51,12 +51,14 @@ const nextConfig = {
   // SWC minification (faster than Terser)
   swcMinify: true,
 
-  // Skip validation during build for faster deploys
+  // Enable validation during build for code quality
+  // TODO: Fix 46 TypeScript errors in tests (mostly fc.option null vs undefined)
+  // See tests/helpers/test-arbitraries.ts for helper functions
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true, // Temporarily true due to test type errors
   },
 
   // Webpack optimizations

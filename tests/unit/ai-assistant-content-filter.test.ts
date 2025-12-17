@@ -260,15 +260,15 @@ describe('AI Assistant Content Filter - Property Tests', () => {
         fc.constantFrom('lower', 'upper', 'mixed'),
         (word, caseType) => {
           // Transform word case
-          let transformedWord = word;
+          let transformedWord: string = word;
           if (caseType === 'upper') {
-            transformedWord = word.toUpperCase();
+            transformedWord = word.toUpperCase() as typeof word;
           } else if (caseType === 'mixed') {
-            transformedWord = word.split('').map((c, i) => 
+            transformedWord = word.split('').map((c, i) =>
               i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()
-            ).join('');
+            ).join('') as typeof word;
           }
-          
+
           const content = `Hello ${transformedWord} world`;
           
           // Filter with Russian locale

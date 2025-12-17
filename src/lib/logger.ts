@@ -14,6 +14,7 @@ export interface LogContext {
   component?: string;
   action?: string;
   userId?: string;
+  languageId?: string;
   metadata?: Record<string, unknown>;
 }
 

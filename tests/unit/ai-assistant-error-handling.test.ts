@@ -75,7 +75,7 @@ describe('AI Assistant Error Handling - Property Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetAIAssistantService();
-    aiService = getAIAssistantService('en');
+    aiService = getAIAssistantService();
   });
 
   afterEach(() => {

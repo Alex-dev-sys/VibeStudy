@@ -3,87 +3,90 @@ import { logError } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-// Простая песочница для выполнения кода
-// ВНИМАНИЕ: Это упрощенная реализация. Для production нужна изоляция (Docker, VM, и т.д.)
+// Маппинг языков проекта на языки Piston API
+const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
+  python: { language: 'python', version: '3.10.0' },
+  javascript: { language: 'javascript', version: '18.15.0' },
+  typescript: { language: 'typescript', version: '5.0.3' },
+  java: { language: 'java', version: '15.0.2' },
+  cpp: { language: 'c++', version: '10.2.0' },
+  csharp: { language: 'csharp', version: '6.12.0' },
+  go: { language: 'go', version: '1.16.2' }
+};
+
+/**
+ * Безопасное выполнение кода через Piston API
+ * Piston - это открытый сервис для изолированного выполнения кода
+ * @see https://github.com/engineer-man/piston
+ */
 async function executeCode(code: string, languageId: string, timeout: number = 10000) {
   try {
-    // Для Python используем Function constructor с ограничениями
-    if (languageId === 'python' || languageId === 'javascript' || languageId === 'typescript') {
-      const outputs: string[] = [];
-      const errors: string[] = [];
+    const pistonConfig = LANGUAGE_MAP[languageId];
 
-      // Создаем безопасное окружение с перехватом console
-      const sandbox = {
-        console: {
-          log: (...args: any[]) => outputs.push(args.map(String).join(' ')),
-          error: (...args: any[]) => errors.push(args.map(String).join(' ')),
-          warn: (...args: any[]) => errors.push('WARNING: ' + args.map(String).join(' '))
-        },
-        print: (...args: any[]) => outputs.push(args.map(String).join(' ')),
-        // Блокируем опасные функции
-        eval: undefined,
-        Function: undefined,
-        setTimeout: undefined,
-        setInterval: undefined,
-        require: undefined,
-        process: undefined,
-        global: undefined,
-        __dirname: undefined,
-        __filename: undefined
-      };
-
-      // Оборачиваем код для безопасного выполнения
-      const wrappedCode = `
-        (function() {
-          'use strict';
-          try {
-            ${code}
-          } catch (e) {
-            console.error(e.message || String(e));
-          }
-        })()
-      `;
-
-      // Выполняем с таймаутом
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Превышено время выполнения (10 секунд)')), timeout);
-      });
-
-      const executePromise = new Promise<void>((resolve) => {
-        try {
-          // Создаем функцию с привязанным контекстом
-          const fn = new Function(
-            'console',
-            'print',
-            wrappedCode
-          );
-          fn.call(null, sandbox.console, sandbox.print);
-          resolve();
-        } catch (error) {
-          errors.push(error instanceof Error ? error.message : String(error));
-          resolve();
-        }
-      });
-
-      await Promise.race([executePromise, timeoutPromise]);
-
+    if (!pistonConfig) {
       return {
-        stdout: outputs.join('\n'),
-        stderr: errors.join('\n'),
-        error: null
+        stdout: '',
+        stderr: '',
+        error: `Язык ${languageId} пока не поддерживается для запуска. Используйте проверку решения.`
       };
     }
 
+    // Используем публичный Piston API или собственный инстанс
+    const pistonUrl = process.env.PISTON_API_URL || 'https://emkc.org/api/v2/piston';
+
+    const response = await fetch(`${pistonUrl}/execute`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        language: pistonConfig.language,
+        version: pistonConfig.version,
+        files: [
+          {
+            name: 'main',
+            content: code,
+          },
+        ],
+        stdin: '',
+        args: [],
+        compile_timeout: timeout,
+        run_timeout: timeout,
+        compile_memory_limit: -1,
+        run_memory_limit: -1,
+      }),
+      signal: AbortSignal.timeout(timeout + 2000), // Добавляем буфер к таймауту
+    });
+
+    if (!response.ok) {
+      throw new Error(`Piston API error: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
     return {
-      stdout: '',
-      stderr: '',
-      error: `Язык ${languageId} пока не поддерживается для запуска. Используйте проверку решения.`
+      stdout: result.run?.stdout || '',
+      stderr: result.run?.stderr || result.compile?.stderr || '',
+      error: result.run?.code !== 0 && result.run?.stderr
+        ? 'Ошибка выполнения кода'
+        : null
     };
   } catch (error) {
+    // Если Piston недоступен, возвращаем информативную ошибку
+    if (error instanceof Error && error.name === 'AbortError') {
+      return {
+        stdout: '',
+        stderr: '',
+        error: 'Превышено время выполнения (10 секунд)'
+      };
+    }
+
+    logError('Piston API error', error as Error, { languageId });
+
     return {
       stdout: '',
       stderr: '',
-      error: error instanceof Error ? error.message : 'Неизвестная ошибка выполнения'
+      error: 'Сервис выполнения кода временно недоступен. Используйте проверку решения.'
     };
   }
 }

@@ -29,7 +29,7 @@ describe('AI Assistant Code Analysis - Property Tests', () => {
     // Create fresh instances
     resetContextAggregator();
     contextAggregator = new ContextAggregator();
-    promptBuilder = createPromptBuilder('en');
+    promptBuilder = createPromptBuilder();
     responseParser = new ResponseParser();
   });
 
