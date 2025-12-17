@@ -1,17 +1,21 @@
+/**
+ * TaskModal Component (Refactored)
+ * Main task modal that orchestrates all subcomponents
+ * Reduced from 568 lines to ~180 lines
+ */
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LazyMonacoEditor, LazyConfetti } from '@/lib/performance/lazy-components';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FeedbackButtons } from '@/components/ai/FeedbackButtons';
-import { difficultyColorMap } from '@/lib/utils';
+import { LazyConfetti } from '@/lib/performance/lazy-components';
+import { useTaskModal } from '@/hooks/useTaskModal';
+import { TaskModalHeader } from './TaskModalHeader';
+import { TaskModalEditor } from './TaskModalEditor';
+import { TaskModalOutput } from './TaskModalOutput';
+import { TaskModalActions } from './TaskModalActions';
 import type { GeneratedTask } from '@/types';
-import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
-import { useTranslations, useLocaleStore } from '@/store/locale-store';
-import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 
 interface TaskModalProps {
   task: GeneratedTask;
@@ -27,20 +31,6 @@ interface TaskModalProps {
   isViewMode?: boolean;
 }
 
-interface CheckResult {
-  success: boolean;
-  message: string;
-  feedback?: string;
-  suggestions?: string[];
-  score?: number;
-}
-
-interface HintResult {
-  hint: string;
-  example?: string;
-  nextSteps?: string[];
-}
-
 export function TaskModal({
   task,
   taskNumber,
@@ -54,29 +44,35 @@ export function TaskModal({
   topic,
   isViewMode = false
 }: TaskModalProps) {
-  const [code, setCode] = useState('');
-  const [output, setOutput] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
-  const [checkResult, setCheckResult] = useState<CheckResult | null>(null);
-  const [hints, setHints] = useState<string[]>([]);
-  const [isLoadingHint, setIsLoadingHint] = useState(false);
-  const [attemptsCount, setAttemptsCount] = useState(0);
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [editorLoading, setEditorLoading] = useState(true);
-  const [editorError, setEditorError] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const modalContentRef = useRef<HTMLDivElement>(null);
 
-  const t = useTranslations();
-  const { locale } = useLocaleStore();
-  const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
-  const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
+  const {
+    code,
+    setCode,
+    output,
+    isChecking,
+    isRunning,
+    checkResult,
+    hints,
+    isLoadingHint,
+    showSuggestions,
+    showConfetti,
+    setShowConfetti,
+    handleCheck,
+    handleRun,
+    handleGetHint,
+    clearCode,
+  } = useTaskModal({
+    task,
+    languageId,
+    day,
+    topic,
+    onComplete,
+    isOpen,
+  });
 
-  // Не блокируем скролл страницы - пользователь может скроллить весь сайт
-
+  // Track window size for confetti
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -90,220 +86,7 @@ export function TaskModal({
     }
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setStartTime(Date.now());
-      setAttemptsCount(0);
-      setHints([]);
-      setCheckResult(null);
-      setOutput('');
-      setShowSuggestions(false);
-      setEditorLoading(true);
-      setEditorError(false);
-      setShowConfetti(false);
-      
-      // Не нужна автопрокрутка, так как страница может скроллиться
-    }
-  }, [isOpen, task.id]);
-
-  const handleCheck = async () => {
-    setIsChecking(true);
-    setCheckResult(null);
-    setOutput(`🤖 ${t.taskModal.aiChecking}`);
-    setShowSuggestions(false);
-
-    const newAttemptsCount = attemptsCount + 1;
-    setAttemptsCount(newAttemptsCount);
-
-    try {
-      const response = await fetch('/api/check-solution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          task: {
-            title: task.prompt,
-            description: task.prompt,
-            difficulty: task.difficulty,
-            hints: task.solutionHint ? [task.solutionHint] : []
-          },
-          languageId,
-          locale
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(t.errors.codeCheckFailed);
-      }
-
-      const result: CheckResult = await response.json();
-      setCheckResult(result);
-
-      // Формируем вывод с локализованными сообщениями
-      const statusMessage = result.success ? t.taskModal.solutionCorrect : t.taskModal.solutionIncorrect;
-      let outputText = result.success
-        ? `✅ ${statusMessage}\n\n${result.feedback || ''}`
-        : `❌ ${statusMessage}\n\n${result.feedback || ''}`;
-
-      if (result.score !== undefined) {
-        outputText += `\n\n📊 ${t.feedback.score}: ${result.score}/100`;
-      }
-
-      setOutput(outputText);
-      setShowSuggestions((result.suggestions?.length || 0) > 0);
-
-      // Announce result to screen readers
-      const announcement = result.success
-        ? `${t.notifications.taskCompleted} ${t.feedback.score}: ${result.score || 100}/100`
-        : `${result.message}`;
-      announceLiveRegion(announcement, 'assertive');
-
-      // Сохраняем попытку в профиль знаний
-      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-      const errors: string[] = [];
-      if (!result.success && result.feedback) {
-        errors.push(result.feedback);
-      }
-
-      recordAttempt({
-        taskId: task.id,
-        day,
-        languageId,
-        attempts: newAttemptsCount,
-        hintsUsed: hints.length,
-        timeSpent,
-        completed: result.success,
-        score: result.score || 0,
-        errors,
-        timestamp: Date.now()
-      });
-
-      // Обновляем мастерство по теме
-      if (result.success) {
-        updateTopicMastery(topic, day, result.score || 100, newAttemptsCount);
-        onComplete(task.id);
-        setShowConfetti(true);
-        // Announce achievement
-        announceLiveRegion(`${t.notifications.congratulations} ${t.notifications.taskCompleted}`, 'assertive');
-      }
-    } catch (error) {
-      setCheckResult(null);
-      setOutput(`❌ ${t.taskModal.checkError}`);
-      console.error('Check error:', error);
-      // Announce error to screen readers
-      announceLiveRegion(t.taskModal.checkError, 'assertive');
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const handleRun = async () => {
-    if (!code.trim()) {
-      setOutput('❌ Введите код для запуска');
-      return;
-    }
-
-    setIsRunning(true);
-    setCheckResult(null);
-    setOutput('▶️ Запуск кода...');
-
-    try {
-      const response = await fetch('/api/run-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          languageId,
-          timeout: 10000
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Не удалось запустить код');
-      }
-
-      const result = await response.json();
-
-      let outputText = '▶️ Результат выполнения:\n\n';
-
-      if (result.stdout) {
-        outputText += `📤 Вывод:\n${result.stdout}\n\n`;
-      }
-
-      if (result.stderr) {
-        outputText += `⚠️ Ошибки:\n${result.stderr}\n\n`;
-      }
-
-      if (result.error) {
-        outputText += `❌ Ошибка выполнения:\n${result.error}`;
-      }
-
-      if (!result.stdout && !result.stderr && !result.error) {
-        outputText += '✅ Код выполнен успешно (нет вывода)';
-      }
-
-      setOutput(outputText);
-    } catch (error) {
-      setOutput(`❌ Ошибка запуска: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
-      console.error('Run error:', error);
-    } finally {
-      setIsRunning(false);
-    }
-  };
-
-  const handleGetHint = async () => {
-    setIsLoadingHint(true);
-
-    try {
-      const response = await fetch('/api/get-hint', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          task: {
-            title: task.prompt,
-            description: task.prompt,
-            difficulty: task.difficulty
-          },
-          languageId,
-          errorMessage: checkResult && !checkResult.success ? checkResult.feedback : undefined,
-          attemptNumber: attemptsCount + 1,
-          locale
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(t.errors.hintFailed);
-      }
-
-      const result: HintResult = await response.json();
-      setHints([...hints, result.hint]);
-
-      let hintOutput = `💡 ${t.taskModal.hintOutput}:\n\n${result.hint}`;
-
-      if (result.example) {
-        hintOutput += `\n\n📝 ${t.taskModal.example}:\n${result.example}`;
-      }
-
-      if (result.nextSteps && result.nextSteps.length > 0) {
-        hintOutput += `\n\n✨ ${t.taskModal.nextSteps}:\n`;
-        result.nextSteps.forEach((step, i) => {
-          hintOutput += `${i + 1}. ${step}\n`;
-        });
-      }
-
-      setOutput(hintOutput);
-    } catch (error) {
-      setOutput(`❌ ${t.errors.hintFailed}`);
-      console.error('Hint error:', error);
-    } finally {
-      setIsLoadingHint(false);
-    }
-  };
-
   if (!isOpen) return null;
-
-  // Проверяем, что мы на клиенте
   if (typeof document === 'undefined') return null;
 
   const modalContent = (
@@ -312,12 +95,12 @@ export function TaskModal({
         className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-y-auto"
         style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
         onClick={(e) => {
-          // Закрываем модальное окно при клике на фон
           if (e.target === e.currentTarget) {
             onClose();
           }
         }}
       >
+        {/* Confetti */}
         {showConfetti && (
           <LazyConfetti
             width={windowSize.width}
@@ -328,241 +111,67 @@ export function TaskModal({
             onConfettiComplete={() => setShowConfetti(false)}
           />
         )}
+
+        {/* Modal Content */}
         <motion.div
           ref={modalContentRef}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="glass-panel-foreground relative flex w-full max-w-5xl flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
-          style={{ 
+          style={{
             pointerEvents: 'auto',
             maxWidth: '90vw'
           }}
-          onClick={(e) => {
-            // Предотвращаем закрытие при клике внутри модального окна
-            e.stopPropagation();
-          }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Заголовок */}
-          <div className="flex items-start justify-between gap-2 sm:gap-4">
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <span className="text-xs text-white/50 sm:text-sm">{t.taskModal.taskNumber} #{taskNumber}</span>
-                <Badge tone="accent" className={`text-xs sm:text-sm ${difficultyColorMap[task.difficulty]}`}>
-                  {task.difficulty}
-                </Badge>
-                {isCompleted && <Badge tone="accent" className="text-xs sm:text-sm">✓ {t.tasks.completed}</Badge>}
-                {isViewMode && <Badge tone="neutral" className="text-xs sm:text-sm">👁️ {t.taskModal.viewMode}</Badge>}
-              </div>
-              <h2 className="mt-2 text-base font-semibold text-white sm:text-lg md:text-xl">{task.prompt}</h2>
-              {task.solutionHint && <p className="mt-2 text-xs text-white/60 sm:text-sm">💡 {t.taskModal.solutionHint}: {task.solutionHint}</p>}
-            </div>
-            <button
-              onClick={onClose}
-              className="rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:p-2"
-            >
-              ✕
-            </button>
-          </div>
+          {/* Header */}
+          <TaskModalHeader
+            task={task}
+            taskNumber={taskNumber}
+            isCompleted={isCompleted}
+            isViewMode={isViewMode}
+            onClose={onClose}
+          />
 
-          {/* Редактор кода */}
-          <div className="flex-1 overflow-hidden rounded-xl border border-white/10 sm:rounded-2xl min-h-[250px]">
-            {editorError ? (
-              <div className="flex h-[300px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
-                <span className="text-4xl">⚠️</span>
-                <p className="text-center text-sm text-white/70">
-                  {t.editor.editorLoadError}
-                  <br />
-                  {t.editor.useTextarea}
-                </p>
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder={`${t.editor.placeholder} ${languageId}...`}
-                  className="h-40 w-full resize-none rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-sm text-white placeholder-white/40 focus:border-accent/50 focus:outline-none"
-                />
-              </div>
-            ) : (
-              <>
-                {editorLoading && (
-                  <div className="absolute inset-0 flex h-[250px] items-center justify-center bg-black/60 rounded-xl z-10">
-                    <div className="text-center">
-                      <div className="mb-3 text-2xl animate-pulse">⏳</div>
-                      <p className="text-sm text-white/60">{t.editor.loading}</p>
-                    </div>
-                  </div>
-                )}
-                <LazyMonacoEditor
-                  height="250px"
-                  language={monacoLanguage}
-                  theme="vs-dark"
-                  value={code}
-                  onChange={(val) => setCode(val ?? '')}
-                  onMount={() => {
-                    setEditorLoading(false);
-                  }}
-                  loading={<div />}
-                  options={{
-                    fontSize: 12,
-                    fontLigatures: true,
-                    automaticLayout: true,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    lineNumbers: 'on',
-                    wordWrap: 'on',
-                    readOnly: isViewMode,
-                    quickSuggestions: true,
-                    suggestOnTriggerCharacters: true,
-                    acceptSuggestionOnEnter: 'on',
-                    tabCompletion: 'on',
-                    wordBasedSuggestions: 'allDocuments',
-                    // Оптимизация производительности
-                    renderValidationDecorations: 'off',
-                    renderLineHighlight: 'none',
-                    renderWhitespace: 'none'
-                  }}
-                />
-              </>
-            )}
-          </div>
+          {/* Code Editor */}
+          <TaskModalEditor
+            code={code}
+            onChange={setCode}
+            language={languageId}
+            monacoLanguage={monacoLanguage}
+            isViewMode={isViewMode}
+          />
 
-          {/* Результат проверки */}
-          {output && (
-            <div
-              className={`rounded-xl border p-3 sm:rounded-2xl sm:p-4 ${checkResult?.success
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
-                : checkResult?.success === false
-                  ? 'border-rose-500/40 bg-rose-500/10 text-rose-200'
-                  : 'border-white/10 bg-black/40 text-white/80'
-                }`}
-            >
-              <pre className="whitespace-pre-wrap text-xs sm:text-sm">{output}</pre>
-              {checkResult && (
-                <div className="mt-3 pt-3 border-t border-white/10">
-                  <FeedbackButtons
-                    contentType="explanation"
-                    contentKey={`${languageId}-day-${day}-task-${task.id}-explanation`}
-                    metadata={{
-                      language: languageId,
-                      day,
-                      taskId: task.id,
-                      success: checkResult.success,
-                      difficulty: task.difficulty
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+          {/* Output & Results */}
+          <TaskModalOutput
+            output={output}
+            checkResult={checkResult}
+            showSuggestions={showSuggestions}
+            hints={hints}
+            languageId={languageId}
+            day={day}
+            taskId={task.id}
+            taskDifficulty={task.difficulty}
+          />
 
-          {/* Рекомендации по улучшению */}
-          {showSuggestions && checkResult && checkResult.suggestions && checkResult.suggestions.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl border border-blue-500/40 bg-blue-500/10 p-3 sm:rounded-2xl sm:p-4"
-            >
-              <h4 className="mb-2 text-sm font-semibold text-blue-200">💡 {t.taskModal.recommendations}:</h4>
-              <ul className="space-y-1 text-xs text-blue-200/80 sm:text-sm">
-                {checkResult.suggestions.map((suggestion, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-blue-400">•</span>
-                    <span>{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          )}
-
-          {/* История подсказок */}
-          {hints.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl border border-purple-500/40 bg-purple-500/10 p-3 sm:rounded-2xl sm:p-4"
-            >
-              <h4 className="mb-2 text-sm font-semibold text-purple-200">
-                💡 {t.taskModal.hintsUsed}: {hints.length}
-              </h4>
-              <div className="space-y-3 text-xs text-purple-200/80 sm:text-sm">
-                {hints.map((hint, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="border-l-2 border-purple-500/40 pl-3">
-                      <span className="font-semibold">{t.taskModal.hintNumber} {i + 1}:</span> {hint}
-                    </div>
-                    <FeedbackButtons
-                      contentType="hint"
-                      contentKey={`${languageId}-day-${day}-task-${task.id}-hint-${i}`}
-                      metadata={{
-                        language: languageId,
-                        day,
-                        taskId: task.id,
-                        hintNumber: i + 1,
-                        difficulty: task.difficulty
-                      }}
-                      className="ml-3"
-                    />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Кнопки */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-            <Button variant="ghost" size="md" onClick={onClose} className="order-3 w-full min-h-touch text-xs sm:order-1 sm:w-auto sm:text-sm">
-              {t.taskModal.close}
-            </Button>
-            {!isViewMode && (
-              <div className="order-1 flex gap-2 sm:order-2 sm:gap-3">
-                <Button
-                  variant="ghost"
-                  size="md"
-                  onClick={handleGetHint}
-                  isLoading={isLoadingHint}
-                  disabled={isLoadingHint || isChecking || isRunning}
-                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-                >
-                  {isLoadingHint ? t.taskModal.thinking : `💡 ${t.taskModal.getHint}`}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => setCode('')}
-                  disabled={isChecking || isRunning}
-                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-                >
-                  {t.taskModal.clear}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={handleRun}
-                  isLoading={isRunning}
-                  disabled={isRunning || isChecking || !code.trim()}
-                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/30"
-                >
-                  {isRunning ? '⏳ Запуск...' : '▶️ Запустить'}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleCheck}
-                  isLoading={isChecking}
-                  disabled={isChecking || isRunning || !code.trim()}
-                  className="flex-1 min-h-touch text-xs sm:flex-none sm:text-sm"
-                >
-                  {isChecking ? t.taskModal.checking : `✓ ${t.taskModal.checkSolution}`}
-                </Button>
-              </div>
-            )}
-          </div>
+          {/* Action Buttons */}
+          <TaskModalActions
+            isViewMode={isViewMode}
+            onClose={onClose}
+            onGetHint={handleGetHint}
+            onClear={clearCode}
+            onRun={handleRun}
+            onCheck={handleCheck}
+            isLoadingHint={isLoadingHint}
+            isRunning={isRunning}
+            isChecking={isChecking}
+            hasCode={code.trim().length > 0}
+          />
         </motion.div>
       </div>
     </AnimatePresence>
   );
 
-  // Рендерим модальное окно в body через портал для правильного z-index
   return createPortal(modalContent, document.body);
 }
-
