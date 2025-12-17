@@ -1,5 +1,6 @@
 import { CurriculumDay } from '@/types';
 import { getLanguageById } from './languages';
+import { getDayTheme } from '@/data/themes';
 
 interface DayTopic {
   day: number;
@@ -27,7 +28,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 8, topic: 'Логические операторы', description: 'AND, OR, NOT, комбинирование условий' },
   { day: 9, topic: 'Цикл while', description: 'Циклы с предусловием, управление итерациями, бесконечные циклы' },
   { day: 10, topic: 'Цикл for и range', description: 'Итерация по последовательностям, функция range, счётчики' },
-  
+
   { day: 11, topic: 'Списки (массивы)', description: 'Создание списков, индексация, срезы' },
   { day: 12, topic: 'Методы списков', description: 'Добавление, удаление, сортировка элементов' },
   { day: 13, topic: 'Кортежи', description: 'Неизменяемые последовательности, распаковка' },
@@ -38,7 +39,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 18, topic: 'List comprehensions', description: 'Генераторы списков, фильтрация данных' },
   { day: 19, topic: 'Работа с индексами и enumerate', description: 'Получение индексов при итерации' },
   { day: 20, topic: 'Функции zip и map', description: 'Объединение и преобразование коллекций' },
-  
+
   { day: 21, topic: 'Определение функций', description: 'Создание функций, параметры, возвращаемые значения' },
   { day: 22, topic: 'Аргументы функций', description: 'Позиционные и именованные аргументы, значения по умолчанию' },
   { day: 23, topic: 'Область видимости переменных', description: 'Локальные и глобальные переменные, nonlocal' },
@@ -49,7 +50,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 28, topic: 'Работа с файлами - чтение', description: 'Открытие файлов, чтение содержимого' },
   { day: 29, topic: 'Работа с файлами - запись', description: 'Запись в файлы, режимы открытия' },
   { day: 30, topic: 'Обработка исключений', description: 'Try-except, обработка ошибок' },
-  
+
   { day: 31, topic: 'Основы ООП - классы', description: 'Создание классов, атрибуты' },
   { day: 32, topic: 'Методы класса', description: 'Определение методов, self' },
   { day: 33, topic: 'Конструктор __init__', description: 'Инициализация объектов' },
@@ -60,7 +61,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 38, topic: 'Статические методы и методы класса', description: '@staticmethod, @classmethod' },
   { day: 39, topic: 'Абстрактные классы', description: 'ABC, абстрактные методы' },
   { day: 40, topic: 'Композиция vs Наследование', description: 'Проектирование классов' },
-  
+
   { day: 41, topic: 'Работа со строками - продвинутое', description: 'Регулярные выражения, re модуль' },
   { day: 42, topic: 'Работа с датами и временем', description: 'datetime модуль' },
   { day: 43, topic: 'Работа с JSON', description: 'Сериализация и десериализация' },
@@ -71,7 +72,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 48, topic: 'Итераторы', description: '__iter__ и __next__' },
   { day: 49, topic: 'Функциональное программирование', description: 'map, filter, reduce' },
   { day: 50, topic: 'Работа с путями - pathlib', description: 'Кроссплатформенная работа с путями' },
-  
+
   { day: 51, topic: 'Основы алгоритмов - поиск', description: 'Линейный и бинарный поиск' },
   { day: 52, topic: 'Алгоритмы сортировки', description: 'Пузырьковая, быстрая сортировка' },
   { day: 53, topic: 'Сложность алгоритмов', description: 'Big O нотация' },
@@ -82,7 +83,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 58, topic: 'Графы - основы', description: 'Представление графов' },
   { day: 59, topic: 'Обход графов', description: 'BFS и DFS' },
   { day: 60, topic: 'Динамическое программирование', description: 'Мемоизация, табуляция' },
-  
+
   { day: 61, topic: 'Тестирование - unittest', description: 'Написание юнит-тестов' },
   { day: 62, topic: 'Тестирование - pytest', description: 'Современный фреймворк тестирования' },
   { day: 63, topic: 'Отладка кода', description: 'Использование отладчика, pdb' },
@@ -93,7 +94,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 68, topic: 'Git - ветвление', description: 'Создание веток, merge' },
   { day: 69, topic: 'Документирование кода', description: 'Docstrings, генерация документации' },
   { day: 70, topic: 'Линтеры и форматтеры', description: 'pylint, black, flake8' },
-  
+
   { day: 71, topic: 'Работа с API - requests', description: 'HTTP запросы, REST API' },
   { day: 72, topic: 'Парсинг HTML - BeautifulSoup', description: 'Web scraping' },
   { day: 73, topic: 'Работа с базами данных - SQL', description: 'Основы SQL, sqlite3' },
@@ -104,7 +105,7 @@ const DAY_TOPICS: DayTopic[] = [
   { day: 78, topic: 'Работа с изображениями - Pillow', description: 'Обработка изображений' },
   { day: 79, topic: 'Работа с Excel - openpyxl', description: 'Чтение и запись Excel файлов' },
   { day: 80, topic: 'Создание CLI приложений', description: 'argparse, click' },
-  
+
   { day: 81, topic: 'Проект: Консольное приложение', description: 'Планирование архитектуры' },
   { day: 82, topic: 'Проект: Реализация основного функционала', description: 'Разработка core логики' },
   { day: 83, topic: 'Проект: Работа с данными', description: 'Интеграция хранилища' },
@@ -222,9 +223,12 @@ export const buildCurriculum = (languageId: string): CurriculumDay[] => {
       const focusPoint = module.focus[i % module.focus.length];
       const theory = `${module.theorySnippet} Сегодняшняя тема: ${focusPoint}${descriptionEnhancer}. Дополнительное внимание уделяем практическим приёмам и читаем код коллег.`;
 
+      const themeData = getDayTheme(languageId, dayCounter);
+      const displayTitle = themeData ? themeData.topic : `${module.title}: день ${i + 1}`;
+
       days.push({
         day: dayCounter,
-        title: `${module.title}: день ${i + 1}`,
+        title: displayTitle,
         theory,
         focus: module.focus,
         recapQuestion: module.recap,
