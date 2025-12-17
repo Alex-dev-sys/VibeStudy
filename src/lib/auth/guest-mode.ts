@@ -9,6 +9,7 @@ import { useProfileStore } from '@/store/profile-store';
 import { useAnalyticsStore } from '@/store/analytics-store';
 import { usePlaygroundStore } from '@/store/playground-store';
 import { logInfo, logError } from '@/lib/logger';
+import type { DayStateSnapshot, ProgressRecord, UserStats, Profile } from '@/types';
 
 const GUEST_ID_KEY = 'vibestudy_guest_id';
 const GUEST_DATA_MIGRATED_KEY = 'vibestudy_guest_data_migrated';
@@ -18,16 +19,16 @@ export interface GuestData {
   progress: {
     activeDay: number;
     languageId: string;
-    dayStates: Record<number, any>;
-    record: any;
+    dayStates: Record<number, DayStateSnapshot>;
+    record: ProgressRecord;
   };
   achievements: {
     unlockedAchievements: string[];
-    stats: any;
+    stats: UserStats;
   };
-  profile: any;
-  analytics: any;
-  playground: any;
+  profile: Profile;
+  analytics: Record<string, unknown>;
+  playground: Record<string, unknown>;
   createdAt: number;
 }
 

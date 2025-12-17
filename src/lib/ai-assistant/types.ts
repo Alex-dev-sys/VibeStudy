@@ -2,7 +2,7 @@
  * Core types for AI Learning Assistant
  */
 
-import { UserTier } from '@/types';
+import type { UserTier, DayStateSnapshot, Task } from '@/types';
 
 /**
  * Message in a chat conversation
@@ -57,16 +57,16 @@ export interface AssistantContext {
   // Learning Context
   currentDay: number;
   languageId: string;
-  dayState?: any; // DayStateSnapshot from types
-  
+  dayState?: DayStateSnapshot;
+
   // Progress Data
   completedDays: number[];
   currentStreak: number;
   totalTasksCompleted: number;
-  
+
   // Current Day Content
   dayTheory?: string;
-  dayTasks?: any[]; // Task[] from types
+  dayTasks?: Task[];
   
   // Conversation History
   recentMessages: Message[];

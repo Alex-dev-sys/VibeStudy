@@ -22,7 +22,7 @@ export interface ProgressData {
 }
 
 async function getTimeSpentMap(
-  supabase: any,
+  supabase: ReturnType<typeof getSupabaseClient>,
   userId: string,
   dayKeys: number[]
 ): Promise<Map<number, number>> {

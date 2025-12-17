@@ -7,22 +7,23 @@ import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { useProfileStore } from '@/store/profile-store';
 import type { TaskAttempt, TopicMastery } from '@/lib/supabase/database';
+import type { DayStateSnapshot, ProgressRecord, Achievement, UserStats, Profile } from '@/types';
 
 export interface ExportData {
   version: string;
   exportedAt: number;
   userId: string;
   progress: {
-    dayStates: any;
-    record: any;
+    dayStates: Record<number, DayStateSnapshot>;
+    record: ProgressRecord;
     languageId: string;
     activeDay: number;
   };
   achievements: {
-    unlocked: any[];
-    stats: any;
+    unlocked: Achievement[];
+    stats: UserStats;
   };
-  profile: any;
+  profile: Profile;
   taskAttempts?: TaskAttempt[];
   topicMastery?: TopicMastery[];
 }
