@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
+import { evaluateRateLimit, buildRateLimitHeaders, RATE_LIMITS } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,23 @@ async function executeCode(code: string, languageId: string, timeout: number = 1
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 20 code executions per minute
+    const rateLimit = evaluateRateLimit(request, { limit: 20, windowMs: 60 * 1000 }, { bucketId: 'code-execution' });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: `Превышен лимит запросов. Попробуйте через ${rateLimit.retryAfterSeconds} секунд.`,
+          stdout: '',
+          stderr: ''
+        },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(rateLimit)
+        }
+      );
+    }
+
     const { code, languageId, timeout = 10000 } = await request.json();
 
     if (!code || !languageId) {
