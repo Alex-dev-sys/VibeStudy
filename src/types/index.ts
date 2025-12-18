@@ -63,3 +63,8 @@ export interface ProgressRecord {
     notes?: string;
   }>;
 }
+
+// Re-export types from other modules
+export type { Achievement, UserStats } from './achievements';
+export type { UserProfile as Profile } from './database';
+export type { GeneratedTask as Task };
