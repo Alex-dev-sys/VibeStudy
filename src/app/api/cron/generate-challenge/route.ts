@@ -5,8 +5,8 @@ import {
   isAiConfiguredAsync,
 } from "@/lib/ai-client";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { LANGUAGES } from "@/lib/languages";
-import { logError, logInfo, logWarn } from "@/lib/logger";
+import { LANGUAGES } from "@/lib/content/languages";
+import { logError, logInfo, logWarn } from "@/lib/core/logger";
 
 interface ChallengeTask {
   description: string;

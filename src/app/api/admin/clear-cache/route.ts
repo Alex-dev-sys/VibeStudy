@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteGeneratedContent, deleteAllGeneratedContent } from '@/lib/db';
-import { logInfo, logWarn } from '@/lib/logger';
+import { deleteGeneratedContent, deleteAllGeneratedContent } from '@/lib/database/db';
+import { logInfo, logWarn } from '@/lib/core/logger';
 
 export async function POST(request: NextRequest) {
     try {

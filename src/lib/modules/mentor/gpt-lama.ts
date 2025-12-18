@@ -5,7 +5,7 @@
  */
 
 import botEnv from '@/lib/config/bot-env';
-import { logError } from '@/lib/logger';
+import { logError } from '@/lib/core/logger';
 
 export interface GptLamaConfig {
     model: string;

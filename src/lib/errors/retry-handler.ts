@@ -5,7 +5,7 @@
  * jitter, and configurable retry strategies.
  */
 
-import { logInfo, logWarn } from '@/lib/logger';
+import { logInfo, logWarn } from '@/lib/core/logger';
 import { identifyErrorType } from './user-friendly-errors';
 import type { ErrorType } from './user-friendly-errors';
 

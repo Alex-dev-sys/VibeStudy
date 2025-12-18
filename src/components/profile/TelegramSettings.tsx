@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProfileStore } from '@/store/profile-store';
-import { isTelegramConnected } from '@/lib/telegram-db';
+import { isTelegramConnected } from '@/lib/database/telegram-db';
 import { Smartphone, Bell, Clock, Check, X, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

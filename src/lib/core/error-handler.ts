@@ -3,9 +3,9 @@
  * Provides logging, reporting, retry hints and user-friendly messaging.
  */
 
-import { logError, logWarn, logInfo } from '@/lib/logger';
+import { logError, logWarn, logInfo } from './logger';
 import { isRetryableError } from '@/lib/sync/retry-logic';
-import type { LogContext } from '@/lib/logger';
+import type { LogContext } from './logger';
 
 export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 

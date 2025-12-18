@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { AIRouter, createAIRouter, getModelForUserTier } from '@/lib/ai-router';
-import { getModelForTier, getModelNameForTier, hasPremiumAccess } from '@/lib/ai-models.config';
+import { AIRouter, createAIRouter, getModelForUserTier } from '@/lib/routing/ai-router';
+import { getModelForTier, getModelNameForTier, hasPremiumAccess } from '@/lib/config/ai-models.config';
 
 describe('AI Models Config', () => {
   it('should return correct model for free tier', () => {

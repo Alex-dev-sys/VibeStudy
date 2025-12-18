@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
-import { saveGeneratedContent } from '@/lib/db';
+import { saveGeneratedContent } from '@/lib/database/db';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { taskGenerationSchema } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { logWarn, logError, logInfo } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
+import { logWarn, logError, logInfo } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 import { aiQueue } from '@/lib/ai/pipeline';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
 import { withTierCheck } from '@/middleware/with-tier-check';
@@ -240,7 +240,7 @@ function tryFixValidationIssues(content: Record<string, unknown>): Record<string
 }
 
 export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
-  const rateLimitState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
+  const rateLimitState = await evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
     bucketId: 'generate-tasks'
   });
 

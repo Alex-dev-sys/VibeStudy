@@ -6,7 +6,7 @@
  */
 
 import { AIRouter, createAIRouter } from './ai-router';
-import type { UserTier } from './ai-models.config';
+import type { UserTier } from '@/lib/config/ai-models.config';
 
 // Example 1: Create router for a specific tier
 async function exampleBasicUsage() {

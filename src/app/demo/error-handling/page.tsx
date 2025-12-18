@@ -25,7 +25,7 @@ import {
   useErrorTracking,
   type ErrorType
 } from '@/lib/errors';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 
 export default function ErrorHandlingDemo() {
   const [loading, setLoading] = useState(false);

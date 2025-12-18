@@ -3,7 +3,7 @@
  * Provides retry functionality for failed operations
  */
 
-import { logInfo, logWarn } from '@/lib/logger';
+import { logInfo, logWarn } from '@/lib/core/logger';
 
 export interface RetryConfig {
   maxRetries: number;

@@ -6,7 +6,7 @@ import { TaskCompletionAnimation } from './TaskCompletionAnimation';
 import { Skeleton, SkeletonCard, SkeletonButton, SkeletonAvatar } from './skeleton';
 import { LoadingState, useLoadingState } from './LoadingState';
 import { Pulse, Shake, Bounce, SuccessPulse, triggerHaptic } from './VisualFeedback';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 
 /**
  * Demo component showcasing all micro-interactions

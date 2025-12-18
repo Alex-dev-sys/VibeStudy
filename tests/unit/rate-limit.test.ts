@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rateLimiter, evaluateRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { rateLimiter, evaluateRateLimit, RATE_LIMITS } from '@/lib/core/rate-limit';
 
 describe('rate limiter', () => {
   it('allows requests under limit', () => {

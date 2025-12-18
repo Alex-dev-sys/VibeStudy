@@ -5,7 +5,7 @@
  * Provides insights into error patterns and helps identify issues.
  */
 
-import { logInfo, logWarn } from '@/lib/logger';
+import { logInfo, logWarn } from '@/lib/core/logger';
 import type { ErrorType } from './user-friendly-errors';
 
 export interface ErrorEvent {

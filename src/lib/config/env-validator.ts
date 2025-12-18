@@ -3,7 +3,7 @@
  * Validates required environment variables at startup
  */
 
-import { logError, logWarn, logInfo } from './logger';
+import { logError, logWarn, logInfo } from '@/lib/core/logger';
 
 interface EnvVariable {
   name: string;

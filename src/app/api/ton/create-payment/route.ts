@@ -6,7 +6,8 @@ import {
   createPaymentData,
   isTonConfigured,
   type TierType,
-} from '@/lib/ton-client';
+} from '@/lib/core/ton-client';
+import { log } from '@/lib/logger/structured-logger';
 
 /**
  * API Route: Create TON Payment
@@ -152,7 +153,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreatePay
       .single();
 
     if (dbError) {
-      console.error('[create-payment] Database error:', dbError);
+      log.error('Failed to create payment record', dbError as Error, {
+        component: 'create-payment',
+        userId: user.id,
+        tier,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -177,7 +182,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreatePay
       },
     });
   } catch (error) {
-    console.error('[create-payment] Unexpected error:', error);
+    log.error('Unexpected error in create-payment', error as Error, {
+      component: 'create-payment',
+    });
     return NextResponse.json(
       {
         success: false,

@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { createClient } from '@/lib/supabase/server';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 import { analyticsTrackingSchema } from '@/lib/validation/schemas';
-import { logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const rateState = evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
+    const rateState = await evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
       bucketId: 'analytics-track'
     });
 

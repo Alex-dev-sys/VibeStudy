@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { logInfo, logError } from "@/lib/logger";
+import { logInfo, logError } from "@/lib/core/logger";
 
 export interface PrivacySettings {
   showOnLeaderboard: boolean;

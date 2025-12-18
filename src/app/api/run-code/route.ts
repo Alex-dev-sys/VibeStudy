@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/logger';
-import { evaluateRateLimit, buildRateLimitHeaders, RATE_LIMITS } from '@/lib/rate-limit';
+import { z } from 'zod';
+import { logError } from '@/lib/core/logger';
+import { evaluateRateLimit, buildRateLimitHeaders, RATE_LIMITS } from '@/lib/core/rate-limit';
 
 export const dynamic = 'force-dynamic';
+
+// Request validation schema
+const runCodeSchema = z.object({
+  code: z.string().min(1, 'Code is required').max(50000, 'Code is too large (max 50KB)'),
+  languageId: z.enum(['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'], {
+    errorMap: () => ({ message: 'Invalid language' })
+  }),
+  timeout: z.number().int().min(1000).max(30000).optional().default(10000),
+});
 
 // Маппинг языков проекта на языки Piston API
 const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
@@ -95,7 +105,7 @@ async function executeCode(code: string, languageId: string, timeout: number = 1
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting: 20 code executions per minute
-    const rateLimit = evaluateRateLimit(request, { limit: 20, windowMs: 60 * 1000 }, { bucketId: 'code-execution' });
+    const rateLimit = await evaluateRateLimit(request, { limit: 20, windowMs: 60 * 1000 }, { bucketId: 'code-execution' });
 
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -111,22 +121,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { code, languageId, timeout = 10000 } = await request.json();
+    // Validate request body
+    const body = await request.json();
+    const validationResult = runCodeSchema.safeParse(body);
 
-    if (!code || !languageId) {
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       return NextResponse.json(
-        { error: 'Требуется код и язык программирования' },
+        {
+          error: firstError.message,
+          stdout: '',
+          stderr: ''
+        },
         { status: 400 }
       );
     }
 
-    // Проверка размера кода
-    if (code.length > 50000) {
-      return NextResponse.json(
-        { error: 'Код слишком большой (макс. 50KB)' },
-        { status: 400 }
-      );
-    }
+    const { code, languageId, timeout } = validationResult.data;
 
     const result = await executeCode(code, languageId, timeout);
 

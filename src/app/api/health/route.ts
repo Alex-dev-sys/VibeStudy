@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { logError } from '@/lib/logger';
+import { logError } from '@/lib/core/logger';
 
 export async function GET() {
   try {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useHelpStore } from '@/store/help-store';
 import { useCosmicTheme } from '@/store/cosmic-theme-store';
 import { HelpCircle, Trash2, Settings, AlertTriangle } from 'lucide-react';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 import { Modal } from '@/components/ui/modal';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';

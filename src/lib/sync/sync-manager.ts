@@ -7,7 +7,7 @@ import { syncQueue } from "./sync-queue";
 import { SyncOperationType, SyncAction } from "./types";
 import { DebounceManager, DEBOUNCE_DELAYS } from "./debounce";
 import { getSupabaseClient } from "../supabase/client";
-import { logWarn, logError, logInfo } from "../logger";
+import { logWarn, logError, logInfo } from "@/lib/core/logger";
 
 class SyncManager {
   private debounceManager = new DebounceManager();

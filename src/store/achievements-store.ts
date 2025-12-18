@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Achievement, UserStats } from "@/types/achievements";
-import { ACHIEVEMENTS, checkNewAchievements } from "@/lib/achievements";
-import { logInfo, logError } from "@/lib/logger";
+import { ACHIEVEMENTS, checkNewAchievements } from "@/lib/core/achievements";
+import { logInfo, logError } from "@/lib/core/logger";
 
 interface AchievementsStore {
   unlockedAchievements: Achievement[];

@@ -3,8 +3,8 @@
  * Serialises heavy HuggingFace calls to avoid spikes and support retries.
  */
 
-import { errorHandler } from '@/lib/error-handler';
-import { logInfo, logWarn } from '@/lib/logger';
+import { errorHandler } from '@/lib/core/error-handler';
+import { logInfo, logWarn } from '@/lib/core/logger';
 
 interface AIJob<T> {
   id: string;

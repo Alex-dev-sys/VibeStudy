@@ -1,6 +1,6 @@
 'use client';
 
-import { LANGUAGES } from '@/lib/languages';
+import { LANGUAGES } from '@/lib/content/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { useTranslations } from '@/store/locale-store';
 import { motion } from 'framer-motion';

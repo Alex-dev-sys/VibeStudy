@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { adaptiveRecommendationsSchema } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
-import { logWarn, logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { logWarn, logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 
 interface AdaptiveRecommendationsRequest {
   knowledgeProfile: {
@@ -141,7 +141,7 @@ const fallbackResponse: AdaptiveRecommendationsResponse = {
 };
 
 export async function POST(request: Request) {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
     bucketId: 'adaptive-recommendations'
   });
 

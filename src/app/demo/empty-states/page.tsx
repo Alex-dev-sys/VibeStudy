@@ -10,7 +10,7 @@ import { EmptySnippets } from '@/components/playground/EmptySnippets';
 import { EmptyAnalytics } from '@/components/analytics/EmptyAnalytics';
 import { GradientBackdrop } from '@/components/layout/GradientBackdrop';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 
 export default function EmptyStatesDemo() {
   const handleAction = (action: string) => {

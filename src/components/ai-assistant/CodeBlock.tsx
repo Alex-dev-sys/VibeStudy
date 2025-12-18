@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 // Temporarily disabled Prism.js due to build issues
 // import Prism from 'prismjs';
 import { Copy, Check } from 'lucide-react';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 
 // Import Prism themes and languages
 // import 'prismjs/themes/prism-tomorrow.css';

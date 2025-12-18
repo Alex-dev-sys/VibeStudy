@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProgressStore } from '@/store/progress-store';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 import { cn } from '@/lib/utils';
 import type { CurriculumDay, TaskGenerationResponse, ProgrammingLanguage } from '@/types';
 import { TheoryBlock } from './TheoryBlock';
@@ -15,7 +15,7 @@ import { TaskList } from './TaskList';
 import { RecapQuestionCard } from './RecapQuestionCard';
 import { ProgressIndicator } from '@/components/dashboard/ProgressIndicator';
 import { TaskCompletionAnimation } from '@/components/ui/TaskCompletionAnimation';
-import { toast } from '@/lib/toast';
+import { toast } from '@/lib/ui/toast';
 
 interface ContentStateProps {
   day: CurriculumDay;

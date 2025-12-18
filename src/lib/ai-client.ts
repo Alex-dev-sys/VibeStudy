@@ -499,7 +499,7 @@ export const callChatCompletionWithTier = async (
   const { tier = 'free', ...chatOptions } = options;
 
   // Import AIRouter dynamically to avoid circular dependencies
-  const { createAIRouter } = await import('./ai-router');
+  const { createAIRouter } = await import('@/lib/routing/ai-router');
   const router = createAIRouter(tier);
 
   try {

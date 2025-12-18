@@ -4,8 +4,8 @@ import {
   verifyPayment,
   getPricingForTier,
   type TierType,
-} from "@/lib/ton-client";
-import { logInfo, logError } from "@/lib/logger";
+} from "@/lib/core/ton-client";
+import { logInfo, logError } from "@/lib/core/logger";
 import type { Payment } from "@/types/database";
 
 // Force dynamic rendering for this route

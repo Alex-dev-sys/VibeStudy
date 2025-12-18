@@ -5,6 +5,8 @@
 
 import { Address } from '@ton/core';
 import TonWeb from 'tonweb';
+import { createHmac, randomBytes } from 'crypto';
+import { retryBlockchain } from '@/lib/utils/retry';
 
 // Pricing configuration in TON
 export const TON_PRICING = {
@@ -78,11 +80,58 @@ export function getWalletAddress(): string {
 }
 
 /**
- * Generate a unique payment comment for tracking
+ * Generate a cryptographically secure payment comment for tracking
+ * Includes HMAC signature to prevent comment reuse attacks
  */
-export function generatePaymentComment(userId: string): string {
+export function generatePaymentComment(userId: string, paymentId?: string): string {
   const timestamp = Date.now();
-  return `user_${userId}_payment_${timestamp}`;
+  const nonce = randomBytes(8).toString('hex'); // 16 char random string
+
+  // Use payment secret from env or generate one
+  const secret = process.env.TON_PAYMENT_SECRET || 'default-secret-change-in-production';
+
+  // Create data string to sign
+  const dataToSign = `${userId}:${timestamp}:${nonce}:${paymentId || ''}`;
+
+  // Generate HMAC signature
+  const signature = createHmac('sha256', secret)
+    .update(dataToSign)
+    .digest('hex')
+    .slice(0, 16); // Use first 16 chars for brevity
+
+  return `vs_${userId}_${timestamp}_${nonce}_${signature}`;
+}
+
+/**
+ * Verify payment comment signature to prevent reuse
+ */
+export function verifyPaymentCommentSignature(comment: string, userId: string): boolean {
+  try {
+    // Parse comment format: vs_userId_timestamp_nonce_signature
+    const parts = comment.split('_');
+    if (parts.length !== 5 || parts[0] !== 'vs') {
+      return false;
+    }
+
+    const [, commentUserId, timestamp, nonce, providedSignature] = parts;
+
+    // Verify user ID matches
+    if (commentUserId !== userId) {
+      return false;
+    }
+
+    // Recreate signature
+    const secret = process.env.TON_PAYMENT_SECRET || 'default-secret-change-in-production';
+    const dataToSign = `${commentUserId}:${timestamp}:${nonce}:`;
+    const expectedSignature = createHmac('sha256', secret)
+      .update(dataToSign)
+      .digest('hex')
+      .slice(0, 16);
+
+    return providedSignature === expectedSignature;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -141,12 +190,12 @@ interface TonApiTransaction {
 }
 
 /**
- * Get transactions for the wallet address
+ * Get transactions for the wallet address with automatic retries
  */
 export async function getWalletTransactions(
   limit: number = 100
 ): Promise<TonTransaction[]> {
-  try {
+  return retryBlockchain(async () => {
     const tonweb = getTonWebClient();
     const walletAddress = getWalletAddress();
 
@@ -164,14 +213,14 @@ export async function getWalletTransactions(
       comment: tx.in_msg?.message || '',
       timestamp: tx.utime || 0,
     }));
-  } catch (error) {
-    console.error('Error fetching TON transactions:', error);
-    throw new Error('Failed to fetch transactions from TON blockchain');
-  }
+  }, {
+    maxRetries: 5,
+    initialDelay: 2000
+  });
 }
 
 /**
- * Find a transaction by payment comment
+ * Find a transaction by payment comment with retries
  */
 export async function findTransactionByComment(
   comment: string,
@@ -190,7 +239,7 @@ export async function findTransactionByComment(
 
     return transaction || null;
   } catch (error) {
-    console.error('Error finding transaction by comment:', error);
+    // Return null on failure to allow graceful degradation
     return null;
   }
 }
@@ -223,7 +272,6 @@ export async function verifyPayment(
       transaction,
     };
   } catch (error) {
-    console.error('Error verifying payment:', error);
     return {
       verified: false,
       error: error instanceof Error ? error.message : 'Unknown error',

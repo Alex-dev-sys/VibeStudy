@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { botController } from "@/lib/telegram/bot-controller";
 import type { TelegramUpdate } from "@/types/telegram";
-import { logWarn, logError } from "@/lib/logger";
+import { logWarn, logError } from "@/lib/core/logger";
 import {
   RATE_LIMIT_REQUESTS_PER_MINUTE,
   RATE_LIMIT_WINDOW_MS
@@ -59,21 +59,44 @@ function checkRateLimit(userId: number): boolean {
 
 /**
  * Verify webhook request is from Telegram
+ * Uses constant-time comparison to prevent timing attacks
  */
 function verifyWebhook(request: NextRequest): boolean {
   const secretToken = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
   const expectedToken = process.env.TELEGRAM_WEBHOOK_SECRET;
 
+  // Always require secret token, even in development
   if (!expectedToken) {
-    logWarn("TELEGRAM_WEBHOOK_SECRET not set, skipping verification");
-    // Only allow in development
-    if (process.env.NODE_ENV === "production") {
-      return false;
-    }
-    return true;
+    logError(
+      "TELEGRAM_WEBHOOK_SECRET not configured",
+      new Error("Missing webhook secret"),
+      { environment: process.env.NODE_ENV }
+    );
+    return false;
   }
 
-  return secretToken === expectedToken;
+  if (!secretToken) {
+    logWarn("Webhook request missing X-Telegram-Bot-Api-Secret-Token header");
+    return false;
+  }
+
+  // Use constant-time comparison to prevent timing attacks
+  if (secretToken.length !== expectedToken.length) {
+    return false;
+  }
+
+  let isValid = true;
+  for (let i = 0; i < secretToken.length; i++) {
+    if (secretToken[i] !== expectedToken[i]) {
+      isValid = false;
+    }
+  }
+
+  if (!isValid) {
+    logWarn("Invalid webhook secret token provided");
+  }
+
+  return isValid;
 }
 
 /**

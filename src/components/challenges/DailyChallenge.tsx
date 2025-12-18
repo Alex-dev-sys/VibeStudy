@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { difficultyColorMap } from '@/lib/utils';
 import { useTranslations } from '@/store/locale-store';
 import { getCurrentUser } from '@/lib/supabase/auth';
-import { logError, logInfo } from '@/lib/logger';
+import { logError, logInfo } from '@/lib/core/logger';
 import { ArrowLeft, Play, RotateCcw, CheckCircle, AlertCircle, Clock, Code2, FileText, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

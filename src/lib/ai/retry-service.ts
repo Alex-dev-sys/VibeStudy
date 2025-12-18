@@ -1,4 +1,4 @@
-import { logWarn } from '@/lib/logger';
+import { logWarn } from '@/lib/core/logger';
 
 interface RetryOptions {
     maxRetries?: number;

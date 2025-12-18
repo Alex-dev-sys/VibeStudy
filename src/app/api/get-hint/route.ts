@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { hintRequestSchema, type HintRequestInput } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
-import { logWarn, logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { logWarn, logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 import { withTierCheck } from '@/middleware/with-tier-check';
 
 type GetHintRequest = HintRequestInput;
@@ -132,7 +132,7 @@ const parseAiResponse = (content: string): GetHintResponse => {
 };
 
 export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
     bucketId: 'get-hint'
   });
 

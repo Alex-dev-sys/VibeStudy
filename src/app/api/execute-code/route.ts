@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { codeExecutionSchema } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { errorHandler } from '@/lib/error-handler';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
+import { errorHandler } from '@/lib/core/error-handler';
 import { retryWithBackoff, isRetryableError } from '@/lib/sync/retry-logic';
-import { logWarn, logError } from '@/lib/logger';
+import { logWarn, logError } from '@/lib/core/logger';
 import type { PistonExecutionResult } from '@/types/database';
 
 /**
@@ -31,7 +31,7 @@ interface ExecutionResult {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateState = evaluateRateLimit(request, RATE_LIMITS.API_GENERAL, {
+    const rateState = await evaluateRateLimit(request, RATE_LIMITS.API_GENERAL, {
       bucketId: 'execute-code'
     });
 

@@ -6,7 +6,7 @@ import { AuthFlow } from './AuthFlow';
 import { GuestModeManager } from '@/lib/auth/guest-mode';
 import { getCurrentUser } from '@/lib/supabase/auth';
 import { useProgressStore } from '@/store/progress-store';
-import { logInfo } from '@/lib/logger';
+import { logInfo } from '@/lib/core/logger';
 
 /**
  * Component that handles:

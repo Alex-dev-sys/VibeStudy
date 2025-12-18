@@ -76,7 +76,7 @@ export const viewport: Viewport = {
 
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { AutoMigrationGate } from '@/components/migration/AutoMigrationGate';
 import { Navigation } from '@/components/layout/Navigation';
 import { FloatingButtonsContainer } from '@/components/layout/FloatingButtonsContainer';

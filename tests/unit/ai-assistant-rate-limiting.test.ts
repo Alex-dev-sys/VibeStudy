@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fc from 'fast-check';
-import { rateLimiter, evaluateRateLimit, type RateLimitBucket } from '@/lib/rate-limit';
+import { rateLimiter, evaluateRateLimit, type RateLimitBucket } from '@/lib/core/rate-limit';
 import { NextRequest } from 'next/server';
 
 /**

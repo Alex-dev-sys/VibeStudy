@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { GuestModeManager } from '@/lib/auth/guest-mode';
 import { signInWithGoogle, signInWithEmail } from '@/lib/supabase/auth';
-import { logInfo } from '@/lib/logger';
+import { logInfo } from '@/lib/core/logger';
 
 export interface AuthFlowProps {
   trigger: 'landing' | 'first-day-complete' | 'manual';

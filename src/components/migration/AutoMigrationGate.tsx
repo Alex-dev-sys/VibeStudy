@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useProfileStore } from '@/store/profile-store';
-import { logInfo, logWarn } from '@/lib/logger';
+import { logInfo, logWarn } from '@/lib/core/logger';
 
 export function AutoMigrationGate() {
   const isAuthenticated = useProfileStore((state) => state.profile.isAuthenticated);

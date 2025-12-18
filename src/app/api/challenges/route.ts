@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { logError, logInfo } from '@/lib/logger';
+import { logError, logInfo } from '@/lib/core/logger';
 import type { DailyChallenge } from '@/types/database';
 
 export const dynamic = 'force-dynamic';

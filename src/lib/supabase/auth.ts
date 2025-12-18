@@ -7,7 +7,7 @@ import type {
   Session,
   ProfileUpdates,
 } from "./types";
-import { logWarn, logError } from "../logger";
+import { logWarn, logError } from "@/lib/core/logger";
 
 /**
  * Authentication Service

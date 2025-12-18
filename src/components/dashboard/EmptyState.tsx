@@ -3,7 +3,7 @@
 import { BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 
 interface EmptyStateProps {
   day: number;

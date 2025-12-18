@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AchievementCard } from './AchievementCard';
 import { EmptyAchievements } from '@/components/profile/EmptyAchievements';
 import { useAchievementsStore } from '@/store/achievements-store';
-import { ACHIEVEMENTS } from '@/lib/achievements';
+import { ACHIEVEMENTS } from '@/lib/core/achievements';
 import type { AchievementCategory } from '@/types/achievements';
 import { Trophy, Star, Target, Crown, Grid, Flame, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';

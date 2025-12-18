@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { DayStateSnapshot, ProgressRecord } from '@/types';
 import { useAchievementsStore } from './achievements-store';
 import { showAchievementToast } from '@/components/achievements/AchievementToast';
-import { logInfo, logError } from '@/lib/logger';
-import { triggerSync, syncTaskCompletion, syncCode, syncNotes, syncRecapAnswer, syncDayCompletion } from '@/lib/progress-sync';
+import { logInfo, logError } from '@/lib/core/logger';
+import { triggerSync, syncTaskCompletion, syncCode, syncNotes, syncRecapAnswer, syncDayCompletion } from '@/lib/sync/progress-sync';
 
 interface ProgressStore {
   activeDay: number;

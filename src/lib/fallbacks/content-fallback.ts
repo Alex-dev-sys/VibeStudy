@@ -9,7 +9,7 @@
  * Ensures users always get content even when AI is unavailable.
  */
 
-import { logInfo, logWarn, logError } from '@/lib/logger';
+import { logInfo, logWarn, logError } from '@/lib/core/logger';
 import { handleError } from '@/lib/errors/user-friendly-errors';
 import type { GeneratedTask } from '@/types';
 

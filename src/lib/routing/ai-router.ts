@@ -9,8 +9,8 @@
  * All models are accessed through GPT Llama API
  */
 
-import { callChatCompletion, ChatMessage, extractMessageContent, isAiConfigured } from './ai-client';
-import { getModelForTier, getModelNameForTier, type UserTier, type AIModelConfig } from './ai-models.config';
+import { callChatCompletion, ChatMessage, extractMessageContent, isAiConfigured } from '@/lib/ai-client';
+import { getModelForTier, getModelNameForTier, type UserTier, type AIModelConfig } from '@/lib/config/ai-models.config';
 
 export interface AIRouterOptions {
   temperature?: number;

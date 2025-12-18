@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { solutionCheckSchema } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { errorHandler } from '@/lib/error-handler';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
+import { errorHandler } from '@/lib/core/error-handler';
 import { aiQueue } from '@/lib/ai/pipeline';
-import { logWarn, logError } from '@/lib/logger';
+import { logWarn, logError } from '@/lib/core/logger';
 
 interface CheckSolutionRequest {
   code: string;
@@ -150,7 +150,7 @@ const parseAiResponse = (content: string): CheckSolutionResponse => {
 };
 
 export async function POST(request: Request) {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_CHECK, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.AI_CHECK, {
     bucketId: 'check-solution'
   });
 

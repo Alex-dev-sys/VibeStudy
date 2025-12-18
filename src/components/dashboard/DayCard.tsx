@@ -9,9 +9,9 @@ import { TaskList } from './TaskList';
 import { TheoryBlock } from './TheoryBlock';
 import { useTaskGenerator } from '@/hooks/useTaskGenerator';
 import type { CurriculumDay } from '@/types';
-import { LANGUAGES } from '@/lib/languages';
+import { LANGUAGES } from '@/lib/content/languages';
 import { useProgressStore } from '@/store/progress-store';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 import { RecapQuestionCard } from './RecapQuestionCard';
 
 interface DayCardProps {

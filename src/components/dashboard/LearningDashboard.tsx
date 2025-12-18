@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { Toaster } from 'sonner';
-import { buildCurriculum } from '@/lib/curriculum';
+import { buildCurriculum } from '@/lib/content/curriculum';
 import { useProgressStore } from '@/store/progress-store';
 import { ProgressOverview } from './ProgressOverview';
 import { LanguageSelector } from './LanguageSelector';

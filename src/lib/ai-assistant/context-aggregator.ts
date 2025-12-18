@@ -7,7 +7,7 @@ import { AssistantContext } from './types';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { useLocaleStore } from '@/store/locale-store';
-import { buildCurriculum, getDayTopic } from '@/lib/curriculum';
+import { buildCurriculum, getDayTopic } from '@/lib/content/curriculum';
 import type { DayContent, UserTier } from '@/types';
 
 /**

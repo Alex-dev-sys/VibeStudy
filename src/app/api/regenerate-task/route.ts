@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getGeneratedContent, saveGeneratedContent } from '@/lib/db';
+import { getGeneratedContent, saveGeneratedContent } from '@/lib/database/db';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import type { Difficulty, GeneratedTask } from '@/types';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 import { regenerateTaskSchema } from '@/lib/validation/schemas';
 import { aiQueue } from '@/lib/ai/pipeline';
-import { logWarn, logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { logWarn, logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 
 interface RequestBody {
   day: number;
@@ -64,7 +64,7 @@ const parseTask = (content: string): GeneratedTask => {
 };
 
 export async function POST(request: Request) {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.AI_GENERATION, {
     bucketId: 'regenerate-task'
   });
 

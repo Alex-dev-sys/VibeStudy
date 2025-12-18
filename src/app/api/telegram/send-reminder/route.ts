@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 // DEPRECATED: This import is from old bot structure
 // import { sendTelegramMessage, generateMotivationalMessage, generatePersonalizedAdvice } from '@/telegram/bot';
-// import { getUsersForReminder } from '@/lib/telegram-db';
+// import { getUsersForReminder } from '@/lib/database/telegram-db';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';

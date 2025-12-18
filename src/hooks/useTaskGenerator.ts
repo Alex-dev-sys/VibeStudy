@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDayContent } from '@/data/curriculum-content';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 import { useProgressStore } from '@/store/progress-store';
 import { useLocaleStore } from '@/store/locale-store';
 import type { CurriculumDay, GeneratedTask, TaskGenerationResponse } from '@/types';
-import { formatTheoryContent, trimPrompt } from '@/lib/content-formatting';
+import { formatTheoryContent, trimPrompt } from '@/lib/content/content-formatting';
 
 interface UseTaskGeneratorParams {
   currentDay: CurriculumDay;

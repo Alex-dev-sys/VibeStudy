@@ -8,7 +8,7 @@ import { useAchievementsStore } from '@/store/achievements-store';
 import { useProfileStore } from '@/store/profile-store';
 import { useAnalyticsStore } from '@/store/analytics-store';
 import { usePlaygroundStore } from '@/store/playground-store';
-import { logInfo, logError } from '@/lib/logger';
+import { logInfo, logError } from '@/lib/core/logger';
 import type { DayStateSnapshot, ProgressRecord, UserStats, Profile } from '@/types';
 
 const GUEST_ID_KEY = 'vibestudy_guest_id';

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { LazyMonacoEditor } from '@/lib/performance/lazy-components';
 import { Button } from '@/components/ui/button';
-import { LANGUAGES } from '@/lib/languages';
+import { LANGUAGES } from '@/lib/content/languages';
 import { useProgressStore } from '@/store/progress-store';
 import { usePlaygroundStore } from '@/store/playground-store';
 import { useTranslations, useLocaleStore } from '@/store/locale-store';

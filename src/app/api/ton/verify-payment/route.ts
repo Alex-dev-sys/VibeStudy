@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import {
   verifyPayment,
   getPricingForTier,
+  verifyPaymentCommentSignature,
   type TierType,
-} from '@/lib/ton-client';
+} from '@/lib/core/ton-client';
+import { log } from '@/lib/logger/structured-logger';
+
+// Payment verification schema
+const verifyPaymentSchema = z.object({
+  paymentId: z.string().min(1, 'Payment ID is required').uuid('Invalid payment ID format'),
+});
 
 /**
  * API Route: Verify TON Payment
@@ -77,8 +85,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       );
     }
 
-    // Parse request body
-    let body: VerifyPaymentRequest;
+    // Parse and validate request body
+    let body;
     try {
       body = await request.json();
     } catch (error) {
@@ -91,16 +99,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       );
     }
 
-    const { paymentId } = body;
-    if (!paymentId) {
+    // Validate with Zod
+    const validationResult = verifyPaymentSchema.safeParse(body);
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       return NextResponse.json(
         {
           success: false,
-          error: 'Payment ID is required',
+          error: firstError.message,
         },
         { status: 400 }
       );
     }
+
+    const { paymentId } = validationResult.data;
 
     // Create Supabase client
     const supabase = createSupabaseServerClient();
@@ -153,6 +165,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       );
     }
 
+    // Verify payment comment signature (prevents comment reuse attacks)
+    if (!verifyPaymentCommentSignature(payment.payment_comment, user.id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          verified: false,
+          error: 'Invalid payment comment signature',
+        },
+        { status: 400 }
+      );
+    }
+
     // Verify payment on TON blockchain
     const pricing = getPricingForTier(payment.tier as TierType);
     const verificationResult = await verifyPayment(
@@ -168,13 +192,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       });
     }
 
-    // Payment verified! Update payment status and user tier
+    // Payment verified! Update payment status and user tier atomically
     const now = new Date();
     const tierExpiresAt = new Date(now);
     tierExpiresAt.setDate(tierExpiresAt.getDate() + pricing.duration);
 
-    // Start a transaction to update both payment and user
-    const { error: updatePaymentError } = await supabase
+    // Atomic update: only update if status is still 'pending' (prevents race conditions)
+    const { data: updatedPayment, error: updatePaymentError } = await supabase
       .from('payments')
       .update({
         status: 'completed',
@@ -182,10 +206,23 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
         transaction_hash: verificationResult.transaction?.hash,
         ton_sender_address: verificationResult.transaction?.from,
       })
-      .eq('id', paymentId);
+      .eq('id', paymentId)
+      .eq('status', 'pending') // Critical: only update if still pending
+      .select()
+      .single();
 
-    if (updatePaymentError) {
-      console.error('[verify-payment] Failed to update payment:', updatePaymentError);
+    if (updatePaymentError || !updatedPayment) {
+      // Payment was already processed by another request (race condition prevented)
+      if (updatePaymentError?.code === 'PGRST116') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Payment already processed',
+          },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
@@ -195,7 +232,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       );
     }
 
-    // Update user tier
+    // Update user tier (now safe from race conditions)
     const { error: updateUserError } = await supabase
       .from('users')
       .update({
@@ -205,8 +242,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       .eq('id', user.id);
 
     if (updateUserError) {
-      console.error('[verify-payment] Failed to update user tier:', updateUserError);
-      // Rollback payment status
+      // Rollback payment status if user update fails
       await supabase
         .from('payments')
         .update({ status: 'pending' })
@@ -220,8 +256,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
         { status: 500 }
       );
     }
-
-    console.log(`[verify-payment] Successfully upgraded user ${user.id} to ${payment.tier}`);
 
     return NextResponse.json({
       success: true,

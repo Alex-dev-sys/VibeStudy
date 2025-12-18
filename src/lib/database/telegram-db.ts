@@ -25,7 +25,7 @@ export {
   upsertTelegramProfile,
   getReminderSchedules,
   upsertReminderSchedule
-} from './telegram/database';
+} from '@/lib/telegram/database';
 
 interface TelegramUserData {
   telegramUsername: string;

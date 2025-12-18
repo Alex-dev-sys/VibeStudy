@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import botEnv from '@/lib/config/bot-env';
-import { logError } from '@/lib/logger';
+import { logError } from '@/lib/core/logger';
 
 let botInstance: TelegramBot | null = null;
 

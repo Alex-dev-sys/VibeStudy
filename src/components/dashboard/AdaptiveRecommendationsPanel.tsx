@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 
 interface AdaptiveRecommendationsPanelProps {
   currentDay: number;

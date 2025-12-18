@@ -95,7 +95,7 @@ function checkGuestRateLimit(ip: string): { allowed: boolean; requestsToday: num
 
 export type UserTier = keyof typeof TIER_LIMITS;
 
-interface TierCheckResult {
+export interface TierCheckResult {
   allowed: boolean;
   tier: UserTier;
   requestsToday: number;
@@ -198,21 +198,77 @@ export async function checkTierLimit(request: NextRequest): Promise<TierCheckRes
   let currentRequests = requestsToday;
 
   if (resetDate < today) {
-    // Reset counter for new day
-    currentRequests = 0;
-    await supabase
+    // Reset counter for new day atomically
+    const { data: resetResult } = await supabase
       .from('users')
-      .update({ 
+      .update({
         ai_requests_today: 0,
         ai_requests_reset_at: now.toISOString()
       })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select('ai_requests_today')
+      .single();
+
+    currentRequests = resetResult?.ai_requests_today ?? 0;
   }
 
   const limit = TIER_LIMITS[tier].aiRequestsPerDay;
 
-  // Check if limit exceeded
-  if (currentRequests >= limit) {
+  // Atomic increment with optimistic locking
+  // Only increment if current value is still what we expect (prevents race conditions)
+  const { data: incrementResult, error: incrementError } = await supabase
+    .from('users')
+    .update({
+      ai_requests_today: currentRequests + 1
+    })
+    .eq('id', user.id)
+    .eq('ai_requests_today', currentRequests) // Critical: only update if value hasn't changed
+    .select('ai_requests_today')
+    .single();
+
+  // If update failed or returned null, someone else incremented first (race condition)
+  if (incrementError || !incrementResult) {
+    // Retry: fetch current value and check limit again
+    const { data: retryData } = await supabase
+      .from('users')
+      .select('ai_requests_today')
+      .eq('id', user.id)
+      .single();
+
+    const actualRequests = retryData?.ai_requests_today ?? currentRequests + 1;
+
+    if (actualRequests > limit) {
+      return {
+        allowed: false,
+        tier,
+        requestsToday: actualRequests,
+        limit,
+        error: {
+          code: 'TIER_LIMIT_EXCEEDED',
+          message: `You've reached your daily limit of ${limit} AI requests. Upgrade to Premium for unlimited access.`
+        }
+      };
+    }
+
+    // If still under limit, allow the request (another process already incremented)
+    return {
+      allowed: true,
+      tier,
+      requestsToday: actualRequests,
+      limit
+    };
+  }
+
+  const newRequestCount = incrementResult.ai_requests_today;
+
+  // Check if limit exceeded after increment
+  if (newRequestCount > limit) {
+    // Rollback increment if over limit
+    await supabase
+      .from('users')
+      .update({ ai_requests_today: currentRequests })
+      .eq('id', user.id);
+
     return {
       allowed: false,
       tier,
@@ -225,18 +281,10 @@ export async function checkTierLimit(request: NextRequest): Promise<TierCheckRes
     };
   }
 
-  // Increment request counter
-  await supabase
-    .from('users')
-    .update({ 
-      ai_requests_today: currentRequests + 1
-    })
-    .eq('id', user.id);
-
   return {
     allowed: true,
     tier,
-    requestsToday: currentRequests + 1,
+    requestsToday: newRequestCount,
     limit
   };
 }

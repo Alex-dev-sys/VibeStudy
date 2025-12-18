@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import type { Achievement } from '@/types/achievements';
-import { getAchievementProgress, ACHIEVEMENTS } from '@/lib/achievements';
+import { getAchievementProgress, ACHIEVEMENTS } from '@/lib/core/achievements';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';

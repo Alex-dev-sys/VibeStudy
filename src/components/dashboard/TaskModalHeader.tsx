@@ -26,44 +26,46 @@ export function TaskModalHeader({
   const t = useTranslations();
 
   return (
-    <div className="flex items-start justify-between gap-2 sm:gap-4">
+    <div className="flex items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-white/10">
       <div className="flex-1">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <span className="text-xs text-white/50 sm:text-sm">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+          <span className="text-sm font-medium text-white/50 sm:text-base">
             {t.taskModal.taskNumber} #{taskNumber}
           </span>
           <Badge
             tone="accent"
-            className={`text-xs sm:text-sm ${difficultyColorMap[task.difficulty]}`}
+            className={`text-sm sm:text-base font-semibold ${difficultyColorMap[task.difficulty]}`}
           >
             {task.difficulty}
           </Badge>
           {isCompleted && (
-            <Badge tone="accent" className="text-xs sm:text-sm">
+            <Badge tone="accent" className="text-sm sm:text-base bg-green-500/20 text-green-300 border-green-500/30">
               ✓ {t.tasks.completed}
             </Badge>
           )}
           {isViewMode && (
-            <Badge tone="neutral" className="text-xs sm:text-sm">
+            <Badge tone="neutral" className="text-sm sm:text-base">
               👁️ {t.taskModal.viewMode}
             </Badge>
           )}
         </div>
-        <h2 className="mt-2 text-base font-semibold text-white sm:text-lg md:text-xl">
+        <h2 className="text-lg font-bold text-white leading-relaxed sm:text-xl md:text-2xl">
           {task.prompt}
         </h2>
         {task.solutionHint && (
-          <p className="mt-2 text-xs text-white/60 sm:text-sm">
-            💡 {t.taskModal.solutionHint}: {task.solutionHint}
+          <p className="mt-3 text-sm text-white/70 bg-white/5 rounded-lg p-3 border border-white/10 sm:text-base">
+            💡 <span className="font-medium">{t.taskModal.solutionHint}:</span> {task.solutionHint}
           </p>
         )}
       </div>
       <button
         onClick={onClose}
-        className="rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:p-2"
+        className="rounded-xl p-2 text-white/60 transition-all hover:bg-white/10 hover:text-white hover:scale-110 sm:p-2.5"
         aria-label={t.taskModal.close}
       >
-        ✕
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M15 5L5 15M5 5l10 10"/>
+        </svg>
       </button>
     </div>
   );

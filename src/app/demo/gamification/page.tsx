@@ -9,7 +9,7 @@ import {
 } from '@/components/gamification';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ACHIEVEMENTS } from '@/lib/achievements';
+import { ACHIEVEMENTS } from '@/lib/core/achievements';
 
 export default function GamificationDemoPage() {
   const [showDayCompletion, setShowDayCompletion] = useState(false);

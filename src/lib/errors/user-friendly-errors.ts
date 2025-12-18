@@ -5,9 +5,9 @@
  * actions and recovery steps. Integrates with toast notifications.
  */
 
-import { toast } from '@/lib/toast';
-import { logError, logWarn } from '@/lib/logger';
-import type { LogContext } from '@/lib/logger';
+import { toast } from '@/lib/ui/toast';
+import { logError, logWarn } from '@/lib/core/logger';
+import type { LogContext } from '@/lib/core/logger';
 
 export type ErrorType =
   | 'NETWORK_ERROR'

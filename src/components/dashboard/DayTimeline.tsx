@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useProgressStore } from '@/store/progress-store';
-import { getDayTopic } from '@/lib/curriculum';
+import { getDayTopic } from '@/lib/content/curriculum';
 import { shallow } from 'zustand/shallow';
 
 const WEEK_MARKERS = [

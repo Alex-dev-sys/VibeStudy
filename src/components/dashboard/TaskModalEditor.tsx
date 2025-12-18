@@ -27,9 +27,9 @@ export function TaskModalEditor({
   const t = useTranslations();
 
   return (
-    <div className="flex-1 overflow-hidden rounded-xl border border-white/10 sm:rounded-2xl min-h-[250px]">
+    <div className="flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/20 backdrop-blur-sm min-h-[350px]">
       {editorError ? (
-        <div className="flex h-[300px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
+        <div className="flex h-[350px] flex-col items-center justify-center gap-4 bg-black/60 p-6">
           <span className="text-4xl">⚠️</span>
           <p className="text-center text-sm text-white/70">
             {t.editor.editorLoadError}
@@ -46,7 +46,7 @@ export function TaskModalEditor({
       ) : (
         <>
           {editorLoading && (
-            <div className="absolute inset-0 flex h-[250px] items-center justify-center bg-black/60 rounded-xl z-10">
+            <div className="absolute inset-0 flex h-[350px] items-center justify-center bg-black/60 rounded-2xl z-10">
               <div className="text-center">
                 <div className="mb-3 text-2xl animate-pulse">⏳</div>
                 <p className="text-sm text-white/60">{t.editor.loading}</p>
@@ -54,7 +54,7 @@ export function TaskModalEditor({
             </div>
           )}
           <LazyMonacoEditor
-            height="250px"
+            height="350px"
             language={monacoLanguage}
             theme="vs-dark"
             value={code}
@@ -62,8 +62,9 @@ export function TaskModalEditor({
             onMount={() => setEditorLoading(false)}
             loading={<div />}
             options={{
-              fontSize: 12,
+              fontSize: 14,
               fontLigatures: true,
+              fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace",
               automaticLayout: true,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
@@ -76,8 +77,11 @@ export function TaskModalEditor({
               tabCompletion: 'on',
               wordBasedSuggestions: 'allDocuments',
               renderValidationDecorations: 'off',
-              renderLineHighlight: 'none',
-              renderWhitespace: 'none'
+              renderLineHighlight: 'gutter',
+              renderWhitespace: 'none',
+              padding: { top: 16, bottom: 16 },
+              cursorBlinking: 'smooth',
+              cursorSmoothCaretAnimation: 'on'
             }}
           />
         </>

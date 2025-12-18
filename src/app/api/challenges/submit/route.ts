@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSupabaseClient } from '@/lib/supabase/client';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
-import { logError, logInfo } from '@/lib/logger';
+import { logError, logInfo } from '@/lib/core/logger';
 import type { TestResult } from '@/types/database';
 
 interface SubmitChallengeRequest {

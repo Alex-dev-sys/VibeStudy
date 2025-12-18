@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { MiniCodeChallenge } from '@/components/telegram/MiniCodeChallenge';
 import { useProgressStore } from '@/store/progress-store';
 import { useLocaleStore } from '@/store/locale-store';
-import { getLanguageById } from '@/lib/languages';
+import { getLanguageById } from '@/lib/content/languages';
 import type { GeneratedTask } from '@/types';
 
 // Telegram WebApp types

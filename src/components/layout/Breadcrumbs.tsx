@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { useProgressStore } from '@/store/progress-store';
-import { getDayTopic } from '@/lib/curriculum';
-import { LANGUAGES } from '@/lib/languages';
+import { getDayTopic } from '@/lib/content/curriculum';
+import { LANGUAGES } from '@/lib/content/languages';
 
 export function Breadcrumbs() {
   const { languageId, activeDay } = useProgressStore();

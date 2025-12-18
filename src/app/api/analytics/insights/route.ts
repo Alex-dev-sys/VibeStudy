@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/supabase/server-auth';
 import { createClient } from '@/lib/supabase/server';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
+import { logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 import type { TaskAttemptAnalytics } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +40,7 @@ const defaultVelocity: LearningVelocity = {
 
 export async function GET(request: NextRequest) {
   try {
-    const rateState = evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
+    const rateState = await evaluateRateLimit(request, RATE_LIMITS.ANALYTICS, {
       bucketId: 'analytics-insights'
     });
 

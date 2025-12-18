@@ -203,3 +203,45 @@ export async function fetchWithRetry(
     }
   );
 }
+
+/**
+ * Specialized retry wrapper for blockchain operations
+ * Configured with higher retry counts and longer delays suitable for blockchain RPCs
+ *
+ * @example
+ * ```ts
+ * const transaction = await retryBlockchain(
+ *   () => tonClient.getTransaction(address, hash)
+ * );
+ * ```
+ */
+export async function retryBlockchain<T>(
+  operation: () => Promise<T>,
+  retryOptions: RetryOptions = {}
+): Promise<T> {
+  return withRetry(operation, {
+    maxRetries: 5,
+    initialDelay: 2000,
+    maxDelay: 60000,
+    backoffMultiplier: 2,
+    jitter: true,
+    isRetryable: (error) => {
+      // Retry network errors
+      if (isNetworkError(error)) return true;
+
+      // Retry specific blockchain errors
+      const message = error.message.toLowerCase();
+      if (message.includes('timeout') ||
+          message.includes('rate limit') ||
+          message.includes('too many requests')) {
+        return true;
+      }
+
+      return false;
+    },
+    onRetry: (error, attempt, delay) => {
+      console.warn(`[retryBlockchain] Attempt ${attempt} failed, retrying in ${delay}ms:`, error.message);
+    },
+    ...retryOptions
+  });
+}

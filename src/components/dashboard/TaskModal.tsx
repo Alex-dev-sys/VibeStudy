@@ -92,8 +92,7 @@ export function TaskModal({
   const modalContent = (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/80 p-2 sm:p-4 md:p-6 overflow-y-auto"
-        style={{ paddingTop: '2rem', paddingBottom: '2rem' }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 sm:p-6 md:p-8 overflow-y-auto"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -115,13 +114,16 @@ export function TaskModal({
         {/* Modal Content */}
         <motion.div
           ref={modalContentRef}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="glass-panel-foreground relative flex w-full max-w-5xl flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6 md:p-8"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="glass-panel-foreground relative flex w-full max-w-6xl flex-col gap-4 rounded-3xl p-6 shadow-2xl sm:gap-5 sm:p-8 md:gap-6 md:p-10"
           style={{
             pointerEvents: 'auto',
-            maxWidth: '90vw'
+            maxWidth: 'min(95vw, 1400px)',
+            maxHeight: 'min(90vh, 900px)',
+            minHeight: '500px'
           }}
           onClick={(e) => e.stopPropagation()}
         >

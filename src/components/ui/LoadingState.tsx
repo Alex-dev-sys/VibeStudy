@@ -104,7 +104,7 @@ export function useLoadingState(initialState = false) {
   const startLoading = (message?: string) => {
     setIsLoading(true);
     if (message) {
-      const { toast } = require('@/lib/toast');
+      const { toast } = require('@/lib/ui/toast');
       const id = toast.loading(message);
       setLoadingToastId(id);
     }
@@ -113,7 +113,7 @@ export function useLoadingState(initialState = false) {
   const stopLoading = () => {
     setIsLoading(false);
     if (loadingToastId) {
-      const { toast } = require('@/lib/toast');
+      const { toast } = require('@/lib/ui/toast');
       toast.dismiss(loadingToastId);
       setLoadingToastId(null);
     }

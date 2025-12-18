@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getGeneratedContent } from '@/lib/db';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
-import { logError } from '@/lib/logger';
-import { errorHandler } from '@/lib/error-handler';
+import { getGeneratedContent } from '@/lib/database/db';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
+import { logError } from '@/lib/core/logger';
+import { errorHandler } from '@/lib/core/error-handler';
 
 interface RequestQuery {
   day: string;
@@ -10,7 +10,7 @@ interface RequestQuery {
 }
 
 export async function GET(request: Request) {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.API_GENERAL, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.API_GENERAL, {
     bucketId: 'get-content'
   });
 

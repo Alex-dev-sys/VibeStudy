@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callChatCompletion, extractMessageContent, isAiConfiguredAsync } from '@/lib/ai-client';
 import { theoryExplanationSchema } from '@/lib/validation/schemas';
-import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/rate-limit';
+import { RATE_LIMITS, evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 import { aiQueue } from '@/lib/ai/pipeline';
-import { errorHandler } from '@/lib/error-handler';
-import { logWarn, logError } from '@/lib/logger';
+import { errorHandler } from '@/lib/core/error-handler';
+import { logWarn, logError } from '@/lib/core/logger';
 import { apiCache, CACHE_TTL, generateCacheKey } from '@/lib/cache/api-cache';
 import { createHash } from 'crypto';
 import { withTierCheck } from '@/middleware/with-tier-check';
@@ -277,7 +277,7 @@ function createFallbackResponse(request: ExplainTheoryRequest, reason?: string):
 }
 
 export const POST = withTierCheck(async (request: NextRequest, tierInfo) => {
-  const rateState = evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
+  const rateState = await evaluateRateLimit(request, RATE_LIMITS.AI_EXPLAIN, {
     bucketId: 'explain-theory'
   });
 
