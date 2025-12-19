@@ -6,10 +6,9 @@ import { csharpThemes } from './csharp';
 import { pythonThemes } from './python';
 import { typescriptThemes } from './typescript';
 
-export interface DayTheme {
-  day: number;
-  topic: string;
-}
+// Re-export types from types.ts
+export type { DayTheme, DayCategory, PracticeType, Difficulty } from './types';
+import type { DayTheme, DayCategory, Difficulty } from './types';
 
 // Маппинг языков на их темы
 const languageThemesMap: Record<string, DayTheme[]> = {
@@ -61,6 +60,38 @@ export function getAllThemes(languageId: string): DayTheme[] {
  */
 export function hasThemes(languageId: string): boolean {
   return !!languageThemesMap[languageId.toLowerCase()];
+}
+
+/**
+ * Получить темы по категории
+ * @param languageId - ID языка программирования
+ * @param category - Категория тем
+ * @returns Массив тем в категории
+ */
+export function getThemesByCategory(languageId: string, category: DayCategory): DayTheme[] {
+  const themes = getAllThemes(languageId);
+  return themes.filter((t) => t.category === category);
+}
+
+/**
+ * Получить темы по сложности
+ * @param languageId - ID языка программирования
+ * @param difficulty - Уровень сложности (1-5)
+ * @returns Массив тем с указанной сложностью
+ */
+export function getThemesByDifficulty(languageId: string, difficulty: Difficulty): DayTheme[] {
+  const themes = getAllThemes(languageId);
+  return themes.filter((t) => t.difficulty === difficulty);
+}
+
+/**
+ * Получить проектные дни
+ * @param languageId - ID языка программирования
+ * @returns Массив проектных тем
+ */
+export function getProjectDays(languageId: string): DayTheme[] {
+  const themes = getAllThemes(languageId);
+  return themes.filter((t) => t.practiceType === 'project');
 }
 
 // Экспортируем все темы

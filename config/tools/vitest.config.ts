@@ -1,17 +1,21 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 
+// Resolve paths relative to project root (two levels up from config/tools/)
+const projectRoot = path.resolve(__dirname, '../..');
+
 export default defineConfig({
+  root: projectRoot,
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(projectRoot, 'src')
     }
   },
   test: {
     globals: true,
     environment: 'jsdom',
     include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],
-    setupFiles: [path.resolve(__dirname, './tests/setup.ts')],
+    setupFiles: ['tests/setup.ts'],
     environmentOptions: {
       jsdom: {
         resources: 'usable',
