@@ -7,7 +7,6 @@
   "rules": {
     "react/no-unescaped-entities": "off",
     "@next/next/no-img-element": "warn",
-    "storybook/no-renderer-packages": "warn",
     "import/no-anonymous-default-export": "warn",
     "react-hooks/exhaustive-deps": "warn"
   }
