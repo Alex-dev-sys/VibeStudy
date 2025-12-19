@@ -69,24 +69,26 @@ export const ExtraLarge: Story = {
     render: () => <ModalExample size="xl" title="Extra Large Modal" />,
 };
 
-export const LongContent: Story = {
-    render: () => {
-        const [isOpen, setIsOpen] = useState(false);
+function LongContentExample() {
+    const [isOpen, setIsOpen] = useState(false);
 
-        return (
-            <div>
-                <Button onClick={() => setIsOpen(true)}>Open Long Content Modal</Button>
-                <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Long Content Example">
-                    <div className="p-6 space-y-4">
-                        {Array.from({ length: 20 }, (_, i) => (
-                            <p key={i} className="text-white/70">
-                                Paragraph {i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            </p>
-                        ))}
-                    </div>
-                </Modal>
-            </div>
-        );
-    },
+    return (
+        <div>
+            <Button onClick={() => setIsOpen(true)}>Open Long Content Modal</Button>
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Long Content Example">
+                <div className="p-6 space-y-4">
+                    {Array.from({ length: 20 }, (_, i) => (
+                        <p key={i} className="text-white/70">
+                            Paragraph {i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        </p>
+                    ))}
+                </div>
+            </Modal>
+        </div>
+    );
+}
+
+export const LongContent: Story = {
+    render: () => <LongContentExample />,
 };
