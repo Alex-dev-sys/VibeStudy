@@ -24,6 +24,7 @@
     "test:lighthouse": "lighthouse http://localhost:3000 --quiet --chrome-flags=\"--headless\"",
     "health": "node scripts/health-check.js",
     "grant:proplus": "node scripts/grant-proplus.js",
+    "generate:curriculum": "tsx scripts/generate-curriculum.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
