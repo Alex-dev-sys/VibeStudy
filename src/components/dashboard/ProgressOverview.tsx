@@ -7,14 +7,22 @@ import { Button } from '@/components/ui/button';
 import { useProgressStore } from '@/store/progress-store';
 import { useAchievementsStore } from '@/store/achievements-store';
 import { useTranslations } from '@/store/locale-store';
-
-const TOTAL_DAYS = 90;
+import { getPathById } from '@/data/paths';
 
 export function ProgressOverview() {
-  const { record, resetProgress } = useProgressStore((state) => ({ record: state.record, resetProgress: state.resetProgress }));
+  const { record, resetProgress, activePathId } = useProgressStore((state) => ({
+    record: state.record,
+    resetProgress: state.resetProgress,
+    activePathId: state.activePathId
+  }));
   const unlockedAchievements = useAchievementsStore((state) => state.unlockedAchievements.length);
   const t = useTranslations();
-  const completionRate = (record.completedDays.length / TOTAL_DAYS) * 100;
+
+  // Get path-specific total days
+  const activePath = activePathId ? getPathById(activePathId) : null;
+  const totalDays = activePath?.duration ?? 90;
+
+  const completionRate = (record.completedDays.length / totalDays) * 100;
 
   const streakMessage = useMemo(() => {
     if (record.streak === 0) return 'Только начинаем — впереди мощный прогресс!';
@@ -36,8 +44,12 @@ export function ProgressOverview() {
     <section className="relative glass-panel-soft flex flex-col gap-3 rounded-2xl p-4 sm:gap-4 sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-white/95 sm:text-xl md:text-2xl">{t.dashboard.title}</h1>
-          <p className="mt-1 text-xs text-white/65 sm:text-sm">{t.dashboard.subtitle}</p>
+          <h1 className="text-lg font-semibold text-white/95 sm:text-xl md:text-2xl">
+            {activePath ? `${activePath.icon} ${activePath.name}` : t.dashboard.title}
+          </h1>
+          <p className="mt-1 text-xs text-white/65 sm:text-sm">
+            {activePath?.description || t.dashboard.subtitle}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="ghost" size="sm" onClick={handleResetClick} className="text-xs sm:text-sm hover:text-white">
@@ -47,7 +59,7 @@ export function ProgressOverview() {
       </div>
       <div>
         <div className="mb-2 flex items-center justify-between text-xs text-white/65 sm:text-sm">
-          <span>{t.dashboard.completed}: {record.completedDays.length} / {TOTAL_DAYS}</span>
+          <span>{t.dashboard.completed}: {record.completedDays.length} / {totalDays}</span>
           <span>{completionRate.toFixed(0)}%</span>
         </div>
         <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10 sm:h-4">
@@ -69,4 +81,3 @@ export function ProgressOverview() {
     </section>
   );
 }
-

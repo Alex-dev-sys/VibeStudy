@@ -9,6 +9,8 @@ import { triggerSync, syncTaskCompletion, syncCode, syncNotes, syncRecapAnswer, 
 interface ProgressStore {
   activeDay: number;
   languageId: string;
+  activePathId: string | null;
+  completedPathIds: string[];
   dayStates: Record<number, DayStateSnapshot>;
   record: ProgressRecord;
 
@@ -29,6 +31,10 @@ interface ProgressStore {
   replaceTask: (day: number, previousTaskId: string, newTaskId: string) => void;
   markDayComplete: (day: number) => void;
   resetProgress: () => void;
+
+  // Path methods
+  setActivePath: (pathId: string) => void;
+  markPathComplete: (pathId: string) => void;
 
   // Sync methods
   syncToCloud: () => Promise<void>;
@@ -58,6 +64,8 @@ export const useProgressStore = create<ProgressStore>()(
     (set, get) => ({
       activeDay: 1,
       languageId: 'python',
+      activePathId: 'python-beginner',
+      completedPathIds: [],
       dayStates: { 1: defaultDayState },
       record: defaultRecord,
 
@@ -269,6 +277,29 @@ export const useProgressStore = create<ProgressStore>()(
           record: defaultRecord
         }),
 
+      // Path methods
+      setActivePath: (pathId) => {
+        // Reset day progress when switching paths
+        set({
+          activePathId: pathId,
+          activeDay: 1,
+          dayStates: { 1: defaultDayState },
+          record: defaultRecord
+        });
+        logInfo(`Active path changed to ${pathId}`, { component: 'progress-store' });
+      },
+
+      markPathComplete: (pathId) =>
+        set((state) => {
+          if (state.completedPathIds.includes(pathId)) {
+            return state;
+          }
+          logInfo(`Path ${pathId} completed`, { component: 'progress-store' });
+          return {
+            completedPathIds: [...state.completedPathIds, pathId]
+          };
+        }),
+
       // Sync methods
       syncToCloud: async () => {
         const state = get();
@@ -387,6 +418,8 @@ export const useProgressStore = create<ProgressStore>()(
       partialize: (state) => ({
         activeDay: state.activeDay,
         languageId: state.languageId,
+        activePathId: state.activePathId,
+        completedPathIds: state.completedPathIds,
         dayStates: state.dayStates,
         record: state.record
       })

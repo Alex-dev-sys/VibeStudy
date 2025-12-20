@@ -6,16 +6,23 @@ import { buildCurriculum } from '@/lib/content/curriculum';
 import { useProgressStore } from '@/store/progress-store';
 import { ProgressOverview } from './ProgressOverview';
 import { LanguageSelector } from './LanguageSelector';
+import { PathSelector } from './PathSelector';
 import { DayTimeline } from './DayTimeline';
 import { SimplifiedDayCard } from './SimplifiedDayCard';
 
 import { useAIAssistant } from '@/components/ai-assistant/AIAssistantContext';
+import { getPathById } from '@/data/paths';
 
 export default function LearningDashboard() {
-  const { activeDay, languageId } = useProgressStore((state) => ({
+  const { activeDay, languageId, activePathId } = useProgressStore((state) => ({
     activeDay: state.activeDay,
-    languageId: state.languageId
+    languageId: state.languageId,
+    activePathId: state.activePathId
   }));
+
+  // Get path info for duration
+  const activePath = activePathId ? getPathById(activePathId) : null;
+  const maxDays = activePath?.duration ?? 90;
 
   const curriculum = useMemo(() => buildCurriculum(languageId), [languageId]);
   const currentDay = curriculum.find((day) => day.day === activeDay) ?? curriculum[0];
@@ -52,11 +59,9 @@ export default function LearningDashboard() {
       <Toaster richColors position="top-right" />
       <ProgressOverview />
       <LanguageSelector />
-      <DayTimeline />
+      <PathSelector />
+      <DayTimeline maxDays={maxDays} />
       <SimplifiedDayCard day={currentDay} previousDay={previousDay} languageId={languageId} />
-
-
     </div>
   );
 }
-

@@ -104,7 +104,11 @@ const DayButton = memo(({ dayData, isExpanded, onDayClick }: DayButtonProps) => 
 
 DayButton.displayName = 'DayButton';
 
-export function DayTimeline() {
+interface DayTimelineProps {
+  maxDays?: number;
+}
+
+export function DayTimeline({ maxDays = 90 }: DayTimelineProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -150,7 +154,7 @@ export function DayTimeline() {
 
   // Calculate progress for each day
   const daysWithProgress = useMemo(() => {
-    return Array.from({ length: 90 }, (_, i) => {
+    return Array.from({ length: maxDays }, (_, i) => {
       const day = i + 1;
       const isCompleted = completedDays.includes(day);
       const isCurrent = day === activeDay;
@@ -174,14 +178,14 @@ export function DayTimeline() {
         totalTasks
       };
     });
-  }, [activeDay, completedDays, dayStates, languageId]);
+  }, [activeDay, completedDays, dayStates, languageId, maxDays]);
 
   // Calculate current week (7 days around active day)
   const currentWeekDays = useMemo(() => {
     const weekStart = Math.floor((activeDay - 1) / 7) * 7 + 1;
-    const weekEnd = Math.min(weekStart + 6, 90);
+    const weekEnd = Math.min(weekStart + 6, maxDays);
     return daysWithProgress.filter(d => d.day >= weekStart && d.day <= weekEnd);
-  }, [activeDay, daysWithProgress]);
+  }, [activeDay, daysWithProgress, maxDays]);
 
   const displayedDays = isExpanded ? daysWithProgress : currentWeekDays;
 
@@ -195,7 +199,7 @@ export function DayTimeline() {
         <div>
           <h2 className="text-base font-semibold text-white/95 sm:text-lg">Твой путь</h2>
           <p className="mt-1 text-xs text-white/60 sm:text-sm">
-            {completedDays.length} из 90 дней завершено
+            {completedDays.length} из {maxDays} дней завершено
           </p>
         </div>
         <motion.div
