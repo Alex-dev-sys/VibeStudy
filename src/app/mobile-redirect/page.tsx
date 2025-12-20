@@ -90,7 +90,8 @@ export default function MobileRedirectPage() {
           onClick={() => {
             // Если это Telegram Mini App - открываем в браузере
             if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-              window.Telegram.WebApp.openLink(window.location.origin);
+              // @ts-expect-error - openLink exists in Telegram WebApp API but not in types
+              window.Telegram.WebApp.openLink?.(window.location.origin);
             } else {
               // Иначе просто показываем уведомление
               alert('Скопируйте адрес и откройте его на ПК');

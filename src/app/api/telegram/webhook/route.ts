@@ -69,8 +69,7 @@ function verifyWebhook(request: NextRequest): boolean {
   if (!expectedToken) {
     logError(
       "TELEGRAM_WEBHOOK_SECRET not configured",
-      new Error("Missing webhook secret"),
-      { environment: process.env.NODE_ENV }
+      new Error("Missing webhook secret")
     );
     return false;
   }

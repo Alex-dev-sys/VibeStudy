@@ -90,7 +90,17 @@ export async function exportAllData(userId: string): Promise<ExportData> {
       unlocked: achievementsStore.unlockedAchievements,
       stats: achievementsStore.stats,
     },
-    profile: profileStore.profile,
+    profile: {
+      id: profileStore.profile.id,
+      username: profileStore.profile.name || 'User',
+      email: profileStore.profile.email,
+      created_at: new Date(profileStore.profile.joinedAt).toISOString(),
+      metadata: {
+        avatar: profileStore.profile.avatar,
+        bio: profileStore.profile.bio,
+        preferredLanguage: profileStore.profile.preferredLanguage,
+      },
+    },
     taskAttempts,
     topicMastery,
   };
@@ -215,7 +225,27 @@ export async function importData(data: ExportData): Promise<ImportResult> {
     // Import profile
     if (data.profile) {
       useProfileStore.setState({
-        profile: data.profile,
+        profile: {
+          id: data.profile.id,
+          name: data.profile.username,
+          email: data.profile.email,
+          avatar: data.profile.metadata?.avatar,
+          bio: data.profile.metadata?.bio,
+          joinedAt: new Date(data.profile.created_at).getTime(),
+          preferredLanguage: data.profile.metadata?.preferredLanguage || 'python',
+          interfaceLanguage: 'ru',
+          goal: data.profile.metadata?.bio, // legacy compatibility
+          githubUsername: undefined,
+          telegramNotifications: true,
+          reminderTime: '19:00',
+          isAuthenticated: false,
+          privacySettings: {
+            showOnLeaderboard: true,
+            showProfile: true,
+            showProgress: true,
+            allowMessages: true,
+          },
+        },
       });
       result.imported.profile = true;
     }

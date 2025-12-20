@@ -105,10 +105,13 @@ export class GuestModeManager {
           stats: achievementsState.stats,
         },
         profile: {
-          name: profileState.profile.name,
-          bio: profileState.profile.bio,
-          goal: profileState.profile.goal,
-          preferredLanguage: profileState.profile.preferredLanguage,
+          id: profileState.profile.id,
+          username: profileState.profile.name || 'Guest',
+          created_at: new Date(profileState.profile.joinedAt).toISOString(),
+          metadata: {
+            bio: profileState.profile.bio,
+            preferredLanguage: profileState.profile.preferredLanguage,
+          },
         },
         analytics: {
           taskAttempts: analyticsState.taskAttempts,

@@ -244,11 +244,11 @@ export class PromptBuilder {
 
     // Add task context if provided
     if (taskId && context.dayTasks) {
-      const task = context.dayTasks.find((t: any) => t.id === taskId);
+      const task = context.dayTasks.find((t) => t.id === taskId);
       if (task) {
         const taskSection = this.config.locale === 'ru'
-          ? `\n\nТекущая задача: ${task.title}\n${task.description}`
-          : `\n\nCurrent Task: ${task.title}\n${task.description}`;
+          ? `\n\nТекущая задача (${task.difficulty}):\n${task.prompt}`
+          : `\n\nCurrent Task (${task.difficulty}):\n${task.prompt}`;
         prompt = prompt.replace(/{taskContext}/g, taskSection);
       } else {
         prompt = prompt.replace(/{taskContext}/g, '');

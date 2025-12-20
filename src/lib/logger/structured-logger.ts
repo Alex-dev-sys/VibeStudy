@@ -148,16 +148,20 @@ class StructuredLogger {
     duration: number,
     context?: LogContext
   ): void {
-    const level = statusCode >= 500 ? 'ERROR' : statusCode >= 400 ? 'WARN' : 'INFO';
-    this[level.toLowerCase() as 'info' | 'warn' | 'error'](
-      `${method} ${url}`,
-      {
-        ...context,
-        statusCode,
-        duration,
-        component: 'api',
-      }
-    );
+    const requestContext: LogContext = {
+      ...context,
+      statusCode,
+      duration,
+      component: 'api',
+    };
+
+    if (statusCode >= 500) {
+      this.error(`${method} ${url}`, undefined, requestContext);
+    } else if (statusCode >= 400) {
+      this.warn(`${method} ${url}`, requestContext);
+    } else {
+      this.info(`${method} ${url}`, requestContext);
+    }
   }
 
   /**

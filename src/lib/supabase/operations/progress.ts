@@ -25,6 +25,10 @@ async function getTimeSpentMap(
   const map = new Map<number, number>();
   const daySet = new Set(dayKeys);
 
+  if (!supabase) {
+    return map;
+  }
+
   try {
     const { data, error } = await supabase
       .from('task_attempts')
@@ -142,7 +146,7 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
     let languageId = 'python';
     const historyMap = new Map<number, { day: number; timestamp: number; notes?: string }>();
 
-    data.forEach((entry: UserProgressRow) => {
+    data.forEach((entry) => {
       const day = parseInt(entry.topic_id.replace('day_', ''), 10);
 
       // Skip invalid entries
@@ -164,7 +168,7 @@ export async function fetchProgress(userId: string): Promise<DatabaseResult<Prog
 
       // Collect history entries from metadata
       if (entry.metadata?.history && Array.isArray(entry.metadata.history)) {
-        entry.metadata.history.forEach((histEntry) => {
+        entry.metadata.history.forEach((histEntry: any) => {
           const existing = historyMap.get(histEntry.day);
           if (!existing || histEntry.timestamp > existing.timestamp) {
             historyMap.set(histEntry.day, histEntry);

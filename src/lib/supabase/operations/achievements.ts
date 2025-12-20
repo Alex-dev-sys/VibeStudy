@@ -74,7 +74,7 @@ export async function fetchAchievements(
     }
 
     // Transform to Achievement format
-    const achievements = data.map((entry: UserAchievementRow) => ({
+    const achievements = data.map((entry) => ({
       id: entry.achievement_id,
       unlockedAt: entry.unlocked_at ? new Date(entry.unlocked_at).getTime() : Date.now()
     })) as Achievement[];

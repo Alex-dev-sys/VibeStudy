@@ -354,7 +354,7 @@ function generateResources(topic: string, languageId: string) {
 /**
  * Load themes for language
  */
-async function loadThemes(languageId: string) {
+async function loadThemes(languageId: string): Promise<Array<{ day: number; topic: string; category: string }>> {
   const themePath = path.join(
     __dirname,
     '..',
@@ -377,7 +377,7 @@ async function loadThemes(languageId: string) {
 /**
  * Build AI generation prompt
  */
-function buildGenerationPrompt(day: number, languageId: string, theme: any): string {
+function buildGenerationPrompt(day: number, languageId: string, theme: { day: number; topic: string; category: string }): string {
   return `Generate complete lesson content for Day ${day} of ${languageId} course on topic: ${theme.topic}`;
 }
 
