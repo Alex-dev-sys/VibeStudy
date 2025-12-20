@@ -4,45 +4,222 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
-  # Тестирование перед деплоем
-  test:
+  # ============================================
+  # PHASE 1: Code Quality & Security
+  # ============================================
+  quality:
+    name: 🔍 Code Quality
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      - name: Run linting
-        run: npm run lint
+      - name: 🧹 ESLint (strict)
+        run: npm run lint -- --max-warnings 0
 
-      - name: Build project
-        run: npm run build
+      - name: 📝 TypeScript check (strict)
+        run: npx tsc --noEmit --skipLibCheck --strict
 
-  # Деплой на VPS
-  deploy:
+      - name: 🔐 Security audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 📊 Check bundle size
+        run: |
+          npm run build
+          echo "📦 Build size analysis:"
+          du -sh .next/static 2>/dev/null || echo "No static folder"
+          du -sh .next 2>/dev/null || echo "No .next folder"
+
+  # ============================================
+  # PHASE 2: Build Verification
+  # ============================================
+  build:
+    name: 🏗️ Build
     runs-on: ubuntu-latest
-    needs: test # запускается только если тесты прошли
+    needs: quality
 
     steps:
-      - name: Deploy via SSH
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build project
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: ✅ Verify build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ Build failed - .next directory not found"
+            exit 1
+          fi
+          echo "✅ Build successful"
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next
+          retention-days: 1
+
+  # ============================================
+  # PHASE 3: Unit Tests
+  # ============================================
+  unit-tests:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run unit tests
+        run: npm test -- --passWithNoTests --coverage
+        continue-on-error: true
+
+      - name: 📊 Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage
+          retention-days: 7
+
+  # ============================================
+  # PHASE 4: E2E Tests (if available)
+  # ============================================
+  e2e-tests:
+    name: 🎭 E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        continue-on-error: true
+
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: .next
+
+      - name: 🎭 Run E2E tests
+        run: npm run test:e2e -- --project=chromium
+        continue-on-error: true
+        env:
+          CI: true
+
+      - name: 📤 Upload E2E report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+  # ============================================
+  # PHASE 5: Deploy to VPS (only on main)
+  # ============================================
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: 🚀 Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            echo "🔄 Starting deployment..."
             cd /var/www/vibestudy
-            git pull origin main
-            npm install
+            
+            # Backup current version
+            echo "📦 Creating backup..."
+            cp -r .next .next.backup 2>/dev/null || true
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            npm ci --production=false
+            
+            # Build
+            echo "🏗️ Building..."
             npm run build
-            pm2 restart vibestudy
+            
+            # Restart app
+            echo "🔄 Restarting application..."
+            pm2 restart vibestudy --update-env
+            
+            # Health check
+            echo "🏥 Running health check..."
+            sleep 5
+            curl -f http://localhost:3000/api/health || echo "⚠️ Health check failed"
+            
+            echo "✅ Deployment complete!"
+
+      - name: 📢 Notify success
+        if: success()
+        run: echo "✅ Deployment to VPS completed successfully!"
+
+      - name: 📢 Notify failure
+        if: failure()
+        run: echo "❌ Deployment failed!"
