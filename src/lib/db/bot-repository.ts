@@ -329,9 +329,11 @@ export const badgesDB = {
     },
 };
 
-export default {
+const botRepository = {
     botUsersDB,
     questsDB,
     leaderboardDB,
     badgesDB,
 };
+
+export default botRepository;

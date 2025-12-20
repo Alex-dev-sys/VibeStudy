@@ -76,7 +76,7 @@ export function MiniCodeChallenge({
         tg.MainButton.hide();
       }
     }
-  }, [checkResult, hasNext, t]);
+  }, [checkResult, hasNext, t, onNext]);
 
   const handleCheck = async () => {
     setIsChecking(true);

@@ -139,4 +139,6 @@ export class QuestService {
     }
 }
 
-export default new QuestService();
+const questService = new QuestService();
+
+export default questService;

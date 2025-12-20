@@ -339,7 +339,8 @@ export function useAIAssistant(externalIsOpen?: boolean): UseAIAssistantState {
       setError(null);
       lastMessageRef.current = null;
     }
-  }, [sessionId, sessionManager]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
   
   return {
     // UI State

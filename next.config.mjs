@@ -63,13 +63,11 @@ const nextConfig = {
   swcMinify: true,
 
   // Enable validation during build for code quality
-  // TODO: Fix 46 TypeScript errors in tests (mostly fc.option null vs undefined)
-  // See tests/helpers/test-arbitraries.ts for helper functions
   eslint: {
     ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true, // Temporarily true due to test type errors
+    ignoreBuildErrors: false, // Fixed all type errors!
   },
 
   // Webpack optimizations

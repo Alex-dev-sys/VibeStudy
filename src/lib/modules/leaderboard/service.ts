@@ -176,4 +176,6 @@ export class LeaderboardService {
 // Import getSupabase for language leaderboard
 import { getSupabase } from '@/lib/db/bot-repository';
 
-export default new LeaderboardService();
+const leaderboardService = new LeaderboardService();
+
+export default leaderboardService;

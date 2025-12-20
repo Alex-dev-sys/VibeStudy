@@ -39,7 +39,7 @@ export function usePerformance(componentName: string) {
 
   useEffect(() => {
     renderCount.current++;
-    
+
     if (process.env.NODE_ENV === 'development' && renderCount.current > 10) {
       console.warn(
         `[Performance] ${componentName} has rendered ${renderCount.current} times`
@@ -50,7 +50,7 @@ export function usePerformance(componentName: string) {
       ...prev,
       updateCount: renderCount.current,
     }));
-  });
+  }, [componentName]);
 
   return metrics;
 }

@@ -2,6 +2,19 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // Mobile detection - redirect to mobile-redirect page
+  const userAgent = request.headers.get('user-agent') || '';
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+
+  // Exclude API routes, static files, and mobile-redirect page itself
+  const isMobileRedirectPage = request.nextUrl.pathname === '/mobile-redirect';
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api');
+  const isStaticFile = request.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js)$/);
+
+  if (isMobile && !isMobileRedirectPage && !isApiRoute && !isStaticFile) {
+    return NextResponse.redirect(new URL('/mobile-redirect', request.url));
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
