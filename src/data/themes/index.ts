@@ -1,16 +1,16 @@
-import { javascriptThemes } from './javascript';
-import { javaThemes } from './java';
-import { goThemes } from './go';
-import { cppThemes } from './cpp';
-import { csharpThemes } from './csharp';
-import { pythonThemes } from './python';
-import { typescriptThemes } from './typescript';
+import { javascriptThemes, jsPathThemes } from './javascript';
+import { javaThemes, javaPathThemes } from './java';
+import { goThemes, goPathThemes } from './go';
+import { cppThemes, cppPathThemes } from './cpp';
+import { csharpThemes, csharpPathThemes } from './csharp';
+import { pythonThemes, pythonPathThemes } from './python';
+import { typescriptThemes, tsPathThemes } from './typescript';
 
 // Re-export types from types.ts
 export type { DayTheme, DayCategory, PracticeType, Difficulty } from './types';
 import type { DayTheme, DayCategory, Difficulty } from './types';
 
-// Маппинг языков на их темы
+// Маппинг языков на их темы (Default / Beginner)
 const languageThemesMap: Record<string, DayTheme[]> = {
   javascript: javascriptThemes,
   typescript: typescriptThemes,
@@ -21,13 +21,32 @@ const languageThemesMap: Record<string, DayTheme[]> = {
   csharp: csharpThemes,
 };
 
+// Маппинг всех путей на их темы
+const allPathThemes: Record<string, DayTheme[]> = {
+  ...jsPathThemes,
+  ...tsPathThemes,
+  ...pythonPathThemes,
+  ...javaPathThemes,
+  ...goPathThemes,
+  ...cppPathThemes,
+  ...csharpPathThemes,
+};
+
 /**
- * Получить тему для конкретного дня и языка
+ * Получить тему для конкретного дня и языка/пути
  * @param languageId - ID языка программирования
- * @param day - День обучения (1-90)
+ * @param day - День обучения
+ * @param pathId - (Опционально) ID пути обучения
  * @returns Тема дня или null если не найдена
  */
-export function getDayTheme(languageId: string, day: number): DayTheme | null {
+export function getDayTheme(languageId: string, day: number, pathId?: string): DayTheme | null {
+  // Пытаемся найти по pathId если передан
+  if (pathId && allPathThemes[pathId]) {
+    const theme = allPathThemes[pathId].find((t) => t.day === day);
+    if (theme) return theme;
+  }
+
+  // Fallback к языку (обычно beginner path)
   const themes = languageThemesMap[languageId.toLowerCase()];
   if (!themes) {
     console.warn(`Темы для языка "${languageId}" не найдены`);
@@ -36,7 +55,7 @@ export function getDayTheme(languageId: string, day: number): DayTheme | null {
 
   const theme = themes.find((t) => t.day === day);
   if (!theme) {
-    console.warn(`Тема для дня ${day} языка "${languageId}" не найдена`);
+    // Не спамим варнингами, так как длина пути может быть меньше 90 дней
     return null;
   }
 
@@ -44,11 +63,15 @@ export function getDayTheme(languageId: string, day: number): DayTheme | null {
 }
 
 /**
- * Получить все темы для языка
+ * Получить все темы для языка или пути
  * @param languageId - ID языка программирования
+ * @param pathId - (Опционально) ID пути обучения
  * @returns Массив всех тем или пустой массив
  */
-export function getAllThemes(languageId: string): DayTheme[] {
+export function getAllThemes(languageId: string, pathId?: string): DayTheme[] {
+  if (pathId && allPathThemes[pathId]) {
+    return allPathThemes[pathId];
+  }
   const themes = languageThemesMap[languageId.toLowerCase()];
   return themes || [];
 }
@@ -103,4 +126,5 @@ export {
   goThemes,
   cppThemes,
   csharpThemes,
+  allPathThemes
 };

@@ -1,111 +1,18 @@
+import { beginnerDays, gameDevDays, systemsDays } from '../paths/cpp/index';
+import { mapDaysToThemes } from './utils';
 import type { DayTheme } from './types';
 
-export const cppThemes: DayTheme[] = [
-  // Основы (Дни 1-15)
-  { day: 1, topic: "Типы данных и переменные", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 2, topic: "Арифметические операторы", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 3, topic: "Условные конструкции if/else", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 4, topic: "Оператор switch", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 5, topic: "Цикл for", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 6, topic: "Циклы while и do-while", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 7, topic: "Массивы фиксированного размера", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 8, topic: "Многомерные массивы", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 9, topic: "Функции: объявление и определение", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 10, topic: "Передача аргументов по значению и ссылке", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 11, topic: "Указатели: основы", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 12, topic: "Адресная арифметика указателей", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 13, topic: "Ссылки vs Указатели", difficulty: 3, category: 'basics', practiceType: 'theory' },
-  { day: 14, topic: "Константность (const) в указателях", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 15, topic: "Область видимости переменных", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  
-  // Память и строки (Дни 16-25)
-  { day: 16, topic: "Динамическая память: new и delete", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 17, topic: "Динамические массивы", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 18, topic: "Строки в стиле C", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 19, topic: "std::string", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 20, topic: "std::string_view (C++17)", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 21, topic: "Структуры (struct)", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 22, topic: "Объединения (union) и перечисления (enum)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 23, topic: "enum class (C++11)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 24, topic: "Потоки ввода-вывода (iostream)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 25, topic: "Форматирование вывода", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  
-  // ООП (Дни 26-40)
-  { day: 26, topic: "Классы: поля и методы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 27, topic: "Конструкторы и деструкторы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 28, topic: "Инкапсуляция и спецификаторы доступа", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 29, topic: "Ключевое слово this", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 30, topic: "Мини-проект: Консольная игра", difficulty: 3, category: 'project', practiceType: 'project' },
-  { day: 31, topic: "Наследование", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 32, topic: "Виртуальные функции и полиморфизм", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 33, topic: "Абстрактные классы и чистые виртуальные функции", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 34, topic: "Множественное наследование", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 35, topic: "Статические члены класса", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 36, topic: "Дружественные функции и классы (friend)", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 37, topic: "Перегрузка операторов", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 38, topic: "Конструктор копирования", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 39, topic: "Оператор присваивания", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 40, topic: "Правило \"Трех / Пяти / Ноля\"", difficulty: 4, category: 'oop', practiceType: 'theory' },
-  
-  // Modern C++ (Дни 41-52)
-  { day: 41, topic: "Умные указатели: std::unique_ptr", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 42, topic: "Умные указатели: std::shared_ptr", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 43, topic: "std::weak_ptr", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 44, topic: "Семантика перемещения (Move semantics)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 45, topic: "std::move и std::forward", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  { day: 46, topic: "Rvalue и Lvalue ссылки", difficulty: 5, category: 'advanced', practiceType: 'theory' },
-  { day: 47, topic: "Ключевое слово auto", difficulty: 2, category: 'advanced', practiceType: 'coding' },
-  { day: 48, topic: "Лямбда-выражения", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 49, topic: "Range-based for loop", difficulty: 2, category: 'advanced', practiceType: 'coding' },
-  { day: 50, topic: "std::optional (C++17)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 51, topic: "std::variant и std::any", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 52, topic: "Structured bindings (C++17)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  
-  // STL (Дни 53-62)
-  { day: 53, topic: "STL: std::vector", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 54, topic: "STL: std::list и std::forward_list", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 55, topic: "STL: std::map и std::unordered_map", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 56, topic: "STL: std::set и std::unordered_set", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 57, topic: "STL: std::stack, std::queue, std::deque", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 58, topic: "Итераторы в STL", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 59, topic: "Алгоритмы STL: сортировка и поиск", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 60, topic: "Мини-проект: Структуры данных", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 61, topic: "Алгоритмы STL: transform, accumulate", difficulty: 4, category: 'data-structures', practiceType: 'coding' },
-  { day: 62, topic: "Ranges (C++20)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  
-  // Шаблоны (Дни 63-68)
-  { day: 63, topic: "Шаблоны функций (templates)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 64, topic: "Шаблоны классов", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 65, topic: "Специализация шаблонов", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  { day: 66, topic: "Variadic templates", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  { day: 67, topic: "Concepts (C++20)", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  { day: 68, topic: "SFINAE и type traits", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  
-  // Многопоточность (Дни 69-75)
-  { day: 69, topic: "Многопоточность: std::thread", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 70, topic: "Мьютексы (std::mutex)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 71, topic: "std::lock_guard и std::unique_lock", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 72, topic: "Condition variables", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 73, topic: "std::future и std::promise", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 74, topic: "std::async", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 75, topic: "Атомарные операции (std::atomic)", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  
-  // Файлы, сеть, сборка (Дни 76-82)
-  { day: 76, topic: "Работа с файлами: fstream", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 77, topic: "Обработка исключений: try-catch", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 78, topic: "Пользовательские исключения", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 79, topic: "Пространства имен (namespace)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 80, topic: "Препроцессор: #define, #ifdef", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 81, topic: "Многофайловые проекты", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 82, topic: "CMake: основы", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  
-  // Тестирование и DevOps (Дни 83-90)
-  { day: 83, topic: "Google Test: юнит-тесты", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 84, topic: "Google Mock", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  { day: 85, topic: "Работа с JSON (nlohmann/json)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 86, topic: "Сетевое программирование (сокеты)", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 87, topic: "Паттерны: Singleton, Factory", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 88, topic: "Профилирование и оптимизация", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 89, topic: "Valgrind и sanitizers", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 90, topic: "Финальный проект: С++ приложение", difficulty: 5, category: 'project', practiceType: 'project' },
-];
+// Map path content to themes
+export const cppBeginnerThemes = mapDaysToThemes(beginnerDays, 'basics');
+export const cppGameDevThemes = mapDaysToThemes(gameDevDays, 'project');
+export const cppSystemsThemes = mapDaysToThemes(systemsDays, 'devops');
+
+// Export map by path ID
+export const cppPathThemes: Record<string, DayTheme[]> = {
+  'cpp-beginner': cppBeginnerThemes,
+  'cpp-game-dev': cppGameDevThemes,
+  'cpp-systems': cppSystemsThemes,
+};
+
+// Default export for backward compatibility
+export const cppThemes: DayTheme[] = cppBeginnerThemes;

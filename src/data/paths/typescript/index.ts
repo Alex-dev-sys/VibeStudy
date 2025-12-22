@@ -8,21 +8,48 @@ import { TS_BEGINNER, TS_FRONTEND, TS_FULLSTACK } from '../index';
 
 // ============= BEGINNER =============
 const beginnerTopics = [
-    'Введение в TypeScript', 'Типы: примитивы', 'Типы: массивы и объекты', 'Type vs Interface',
-    'Union и Intersection', 'Literal Types', 'Type Aliases', 'Опциональные свойства',
-    'Readonly', 'Enum', 'Функции и типы', 'Generics: основы',
-    'Generics: ограничения', 'Utility Types: Partial, Required', 'Utility Types: Pick, Omit',
-    'Utility Types: Record, Exclude', 'Type Guards', 'Discriminated Unions', 'Unknown vs Any',
-    'Never', 'Assertion', 'Декларации типов', 'tsconfig.json',
-    'Strict mode', 'Модули', 'Namespace', 'Declaration Files',
-    'DefinitelyTyped', 'Миграция JS → TS', 'Отладка', 'Best Practices',
-    'Проект: библиотека', 'Проект: CLI', 'Проект: типизация', 'Финал',
+    { topic: 'Введение в TypeScript', category: 'basics' },
+    { topic: 'Типы: примитивы', category: 'basics' },
+    { topic: 'Типы: массивы и объекты', category: 'data-structures' },
+    { topic: 'Type vs Interface', category: 'basics' },
+    { topic: 'Union и Intersection', category: 'types' },
+    { topic: 'Literal Types', category: 'types' },
+    { topic: 'Type Aliases', category: 'types' },
+    { topic: 'Опциональные свойства', category: 'types' },
+    { topic: 'Readonly', category: 'types' },
+    { topic: 'Enum', category: 'types' },
+    { topic: 'Функции и типы', category: 'basics' },
+    { topic: 'Generics: основы', category: 'generics' },
+    { topic: 'Generics: ограничения', category: 'generics' },
+    { topic: 'Utility Types: Partial, Required', category: 'utils' },
+    { topic: 'Utility Types: Pick, Omit', category: 'utils' },
+    { topic: 'Utility Types: Record, Exclude', category: 'utils' },
+    { topic: 'Type Guards', category: 'advanced' },
+    { topic: 'Discriminated Unions', category: 'advanced' },
+    { topic: 'Unknown vs Any', category: 'types' },
+    { topic: 'Never', category: 'types' },
+    { topic: 'Assertion', category: 'types' },
+    { topic: 'Декларации типов', category: 'advanced' },
+    { topic: 'tsconfig.json', category: 'config' },
+    { topic: 'Strict mode', category: 'config' },
+    { topic: 'Модули', category: 'basics' },
+    { topic: 'Namespace', category: 'advanced' },
+    { topic: 'Declaration Files', category: 'advanced' },
+    { topic: 'DefinitelyTyped', category: 'ecosystem' },
+    { topic: 'Миграция JS → TS', category: 'migration' },
+    { topic: 'Отладка', category: 'tools' },
+    { topic: 'Best Practices', category: 'best-practices' },
+    { topic: 'Проект: библиотека', category: 'project' },
+    { topic: 'Проект: CLI', category: 'project' },
+    { topic: 'Проект: типизация', category: 'project' },
+    { topic: 'Финал', category: 'project' },
 ];
 
 export const beginnerPath = TS_BEGINNER;
-export const beginnerDays: PathDayContent[] = beginnerTopics.map((topic, i) => ({
-    day: i + 1, topic, topicEn: topic, description: `TypeScript: ${topic}`,
-    theory: `# День ${i + 1}: ${topic}`, recap: `Объясни "${topic}"`,
+export const beginnerDays: PathDayContent[] = beginnerTopics.map((t, i) => ({
+    day: i + 1, topic: t.topic, topicEn: t.topic, description: `TypeScript: ${t.topic}`,
+    category: t.category,
+    theory: `# День ${i + 1}: ${t.topic}`, recap: `Объясни "${t.topic}"`,
     tasks: [
         { id: `ts-b-${i + 1}-1`, pathId: 'typescript-beginner', day: i + 1, difficulty: 'easy', prompt: 'Упражнение' },
         { id: `ts-b-${i + 1}-2`, pathId: 'typescript-beginner', day: i + 1, difficulty: 'easy', prompt: 'Закрепление' },
@@ -36,19 +63,20 @@ export const beginnerDays: PathDayContent[] = beginnerTopics.map((topic, i) => (
 // ============= FRONTEND =============
 const frontendTopics = Array.from({ length: 50 }, (_, i) => {
     const modules = [
-        ...Array(15).fill(null).map((_, j) => `React + TypeScript: day ${j + 1}`),
-        ...Array(10).fill(null).map((_, j) => `Styling: day ${j + 1}`),
-        ...Array(10).fill(null).map((_, j) => `State: day ${j + 1}`),
-        ...Array(10).fill(null).map((_, j) => `Testing: day ${j + 1}`),
-        ...Array(5).fill(null).map((_, j) => `Deploy: day ${j + 1}`),
+        ...Array(15).fill(null).map((_, j) => ({ topic: `React + TypeScript: day ${j + 1}`, category: 'react' })),
+        ...Array(10).fill(null).map((_, j) => ({ topic: `Styling: day ${j + 1}`, category: 'styling' })),
+        ...Array(10).fill(null).map((_, j) => ({ topic: `State: day ${j + 1}`, category: 'state' })),
+        ...Array(10).fill(null).map((_, j) => ({ topic: `Testing: day ${j + 1}`, category: 'testing' })),
+        ...Array(5).fill(null).map((_, j) => ({ topic: `Deploy: day ${j + 1}`, category: 'devops' })),
     ];
-    return modules[i] || `Day ${i + 1}`;
+    return modules[i] || { topic: `Day ${i + 1}`, category: 'frontend' };
 });
 
 export const frontendPath = TS_FRONTEND;
-export const frontendDays: PathDayContent[] = frontendTopics.map((topic, i) => ({
-    day: i + 1, topic, topicEn: topic, description: `TS Frontend: ${topic}`,
-    theory: `# День ${i + 1}: ${topic}`, recap: `Объясни "${topic}"`,
+export const frontendDays: PathDayContent[] = frontendTopics.map((t, i) => ({
+    day: i + 1, topic: t.topic, topicEn: t.topic, description: `TS Frontend: ${t.topic}`,
+    category: t.category,
+    theory: `# День ${i + 1}: ${t.topic}`, recap: `Объясни "${t.topic}"`,
     tasks: [
         { id: `ts-fe-${i + 1}-1`, pathId: 'typescript-frontend', day: i + 1, difficulty: 'easy', prompt: 'Упражнение' },
         { id: `ts-fe-${i + 1}-2`, pathId: 'typescript-frontend', day: i + 1, difficulty: 'easy', prompt: 'Закрепление' },
@@ -60,12 +88,13 @@ export const frontendDays: PathDayContent[] = frontendTopics.map((topic, i) => (
 }));
 
 // ============= FULLSTACK =============
-const fullstackTopics = Array.from({ length: 70 }, (_, i) => `Full-Stack TS: Day ${i + 1}`);
+const fullstackTopics = Array.from({ length: 70 }, (_, i) => ({ topic: `Full-Stack TS: Day ${i + 1}`, category: 'fullstack' }));
 
 export const fullstackPath = TS_FULLSTACK;
-export const fullstackDays: PathDayContent[] = fullstackTopics.map((topic, i) => ({
-    day: i + 1, topic, topicEn: topic, description: topic,
-    theory: `# День ${i + 1}: ${topic}`, recap: `Объясни "${topic}"`,
+export const fullstackDays: PathDayContent[] = fullstackTopics.map((t, i) => ({
+    day: i + 1, topic: t.topic, topicEn: t.topic, description: t.topic,
+    category: t.category,
+    theory: `# День ${i + 1}: ${t.topic}`, recap: `Объясни "${t.topic}"`,
     tasks: [
         { id: `ts-fs-${i + 1}-1`, pathId: 'typescript-fullstack', day: i + 1, difficulty: 'easy', prompt: 'Упражнение' },
         { id: `ts-fs-${i + 1}-2`, pathId: 'typescript-fullstack', day: i + 1, difficulty: 'easy', prompt: 'Закрепление' },

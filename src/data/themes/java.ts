@@ -1,111 +1,18 @@
+import { beginnerDays, backendDays, androidDays } from '../paths/java/index';
+import { mapDaysToThemes } from './utils';
 import type { DayTheme } from './types';
 
-export const javaThemes: DayTheme[] = [
-  // Основы (Дни 1-15)
-  { day: 1, topic: "Примитивные типы данных и переменные", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 2, topic: "Арифметические операторы", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 3, topic: "Условные операторы if-else", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 4, topic: "Оператор switch", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 5, topic: "Цикл for", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 6, topic: "Циклы while и do-while", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 7, topic: "Массивы: создание и перебор", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 8, topic: "Многомерные массивы", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 9, topic: "Методы: параметры и возвращаемые значения", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 10, topic: "Перегрузка методов (Overloading)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 11, topic: "Работа со строками: класс String", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 12, topic: "StringBuilder и StringBuffer", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 13, topic: "Рекурсия в Java", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 14, topic: "Пакеты (package) и import", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 15, topic: "Перечисления (enum)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  
-  // ООП (Дни 16-30)
-  { day: 16, topic: "Классы и объекты: поля и методы", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 17, topic: "Конструкторы классов", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 18, topic: "Ключевое слово this", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 19, topic: "Модификаторы доступа (public, private, protected)", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 20, topic: "Инкапсуляция: геттеры и сеттеры", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 21, topic: "Наследование (extends)", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 22, topic: "Переопределение методов (Overriding)", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 23, topic: "Полиморфизм", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 24, topic: "Абстрактные классы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 25, topic: "Интерфейсы: объявление и реализация", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 26, topic: "Множественные интерфейсы и default методы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 27, topic: "Статические поля и методы (static)", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 28, topic: "Ключевое слово final", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 29, topic: "Исключения: try-catch-finally", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 30, topic: "Мини-проект: Консольное ООП приложение", difficulty: 3, category: 'project', practiceType: 'project' },
-  
-  // Generics и Collections (Дни 31-42)
-  { day: 31, topic: "Generics: введение в обобщения", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 32, topic: "Обобщенные методы и классы", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 33, topic: "Bounded Type Parameters", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 34, topic: "Collections Framework: обзор", difficulty: 3, category: 'data-structures', practiceType: 'theory' },
-  { day: 35, topic: "ArrayList и LinkedList", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 36, topic: "HashSet и TreeSet", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 37, topic: "HashMap и TreeMap", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 38, topic: "Queue и Deque", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 39, topic: "Итераторы и цикл for-each", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 40, topic: "Comparable и Comparator", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 41, topic: "Лямбда-выражения", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 42, topic: "Функциональные интерфейсы", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  
-  // Stream API и I/O (Дни 43-52)
-  { day: 43, topic: "Stream API: создание и операции", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 44, topic: "Stream API: filter, map, flatMap", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 45, topic: "Stream API: reduce и collect", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 46, topic: "Optional: защита от NullPointerException", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 47, topic: "Работа с I/O: FileInputStream/FileOutputStream", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 48, topic: "BufferedReader и BufferedWriter", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 49, topic: "NIO.2: Path и Files", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 50, topic: "Сериализация объектов", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 51, topic: "Работа с JSON (Jackson)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 52, topic: "Работа с датами: LocalDate, LocalDateTime", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  
-  // Многопоточность (Дни 53-58)
-  { day: 53, topic: "Многопоточность: Thread и Runnable", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 54, topic: "Жизненный цикл потока", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 55, topic: "Синхронизация (synchronized)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 56, topic: "java.util.concurrent: ExecutorService", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 57, topic: "CompletableFuture", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 58, topic: "Atomic классы и ConcurrentCollections", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  
-  // Spring Boot (Дни 59-72)
-  { day: 59, topic: "Введение в Spring Framework", difficulty: 3, category: 'web', practiceType: 'theory' },
-  { day: 60, topic: "Мини-проект: Java приложение со Stream API", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 61, topic: "Spring Boot: создание проекта", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 62, topic: "Dependency Injection и IoC", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 63, topic: "Spring Beans и компоненты", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 64, topic: "REST контроллеры", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 65, topic: "Обработка запросов и ответов", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 66, topic: "Валидация данных", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 67, topic: "Spring Data JPA: основы", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 68, topic: "Entity и Repository", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 69, topic: "Связи сущностей (OneToMany, ManyToMany)", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 70, topic: "JPQL и нативные запросы", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 71, topic: "Flyway: миграции БД", difficulty: 3, category: 'database', practiceType: 'coding' },
-  { day: 72, topic: "Spring Security: основы", difficulty: 4, category: 'security', practiceType: 'coding' },
-  
-  // Security и тестирование (Дни 73-78)
-  { day: 73, topic: "JWT аутентификация", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 74, topic: "OAuth2 и Spring Security", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 75, topic: "OWASP и безопасность приложений", difficulty: 4, category: 'security', practiceType: 'theory' },
-  { day: 76, topic: "JUnit 5: юнит-тесты", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 77, topic: "Mockito: мокирование", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 78, topic: "Интеграционные тесты Spring Boot", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  
-  // Kafka и микросервисы (Дни 79-84)
-  { day: 79, topic: "Apache Kafka: основы", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 80, topic: "Kafka Producer и Consumer", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 81, topic: "Spring Kafka", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 82, topic: "Микросервисная архитектура", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 83, topic: "Spring Cloud: основы", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 84, topic: "Resilience4j: Circuit Breaker", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  
-  // DevOps и финал (Дни 85-90)
-  { day: 85, topic: "Docker для Java", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 86, topic: "Kubernetes: деплой Java приложения", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 87, topic: "Actuator и метрики", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 88, topic: "Логирование (SLF4J, Logback)", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 89, topic: "CI/CD с GitHub Actions", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 90, topic: "Финальный проект: Микросервис с Kafka", difficulty: 5, category: 'project', practiceType: 'project' },
-];
+// Map path content to themes
+export const javaBeginnerThemes = mapDaysToThemes(beginnerDays, 'basics');
+export const javaBackendThemes = mapDaysToThemes(backendDays, 'web');
+export const javaAndroidThemes = mapDaysToThemes(androidDays, 'project'); // Android is project-heavy/mobile
+
+// Export map by path ID
+export const javaPathThemes: Record<string, DayTheme[]> = {
+  'java-beginner': javaBeginnerThemes,
+  'java-backend': javaBackendThemes,
+  'java-android': javaAndroidThemes,
+};
+
+// Default export for backward compatibility
+export const javaThemes: DayTheme[] = javaBeginnerThemes;

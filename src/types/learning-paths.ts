@@ -93,6 +93,8 @@ export interface PathDayContent {
     recap: string;
     tasks: PathTask[];
     estimatedMinutes: number;
+    category?: string; // Optional override for theme mapping
+    practiceType?: string; // Optional override for theme mapping
 }
 
 /**

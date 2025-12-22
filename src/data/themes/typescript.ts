@@ -1,109 +1,18 @@
+import { beginnerDays, frontendDays, fullstackDays } from '../paths/typescript/index';
+import { mapDaysToThemes } from './utils';
 import type { DayTheme } from './types';
 
-export const typescriptThemes: DayTheme[] = [
-  // Основы типов (Дни 1-15)
-  { day: 1, topic: "Переменные и базовые типы (string, number, boolean)", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 2, topic: "Типы any, unknown и void", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 3, topic: "Массивы и кортежи (tuple)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 4, topic: "Перечисления (enum)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 5, topic: "Функции: типы параметров и возвращаемых значений", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 6, topic: "Опциональные параметры и параметры по умолчанию", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 7, topic: "Объединение типов (Union)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 8, topic: "Псевдонимы типов (type)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 9, topic: "Интерфейсы (interface)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 10, topic: "Различия между type и interface", difficulty: 3, category: 'basics', practiceType: 'theory' },
-  { day: 11, topic: "Литеральные типы", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 12, topic: "Пересечение типов (Intersection)", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 13, topic: "Приведение типов (Type Assertion)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 14, topic: "Типизация объектов", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 15, topic: "Работа с null и undefined", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  
-  // Продвинутые типы (Дни 16-25)
-  { day: 16, topic: "Оператор optional chaining (?.) и nullish coalescing (??)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 17, topic: "Сужение типов (Type Guarding)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 18, topic: "Пользовательские Type Guards", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 19, topic: "Тип never", difficulty: 3, category: 'advanced', practiceType: 'theory' },
-  { day: 20, topic: "Generics: основы", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 21, topic: "Generics в функциях", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 22, topic: "Generics в интерфейсах", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 23, topic: "Ограничения в Generics (extends)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 24, topic: "Ключевое слово keyof", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 25, topic: "Ключевое слово typeof", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  
-  // Utility Types и классы (Дни 26-35)
-  { day: 26, topic: "Utility Types: Partial, Required", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 27, topic: "Utility Types: Readonly, Record", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 28, topic: "Utility Types: Pick, Omit", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 29, topic: "Utility Types: Exclude, Extract, ReturnType", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 30, topic: "Мини-проект: Типизированная библиотека утилит", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 31, topic: "Классы: поля, методы и типизация", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 32, topic: "Модификаторы доступа (public, private, protected)", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 33, topic: "Наследование и абстрактные классы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 34, topic: "Реализация интерфейсов классами (implements)", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 35, topic: "Статические члены и геттеры/сеттеры", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  
-  // Mapped и Conditional Types (Дни 36-42)
-  { day: 36, topic: "Индексные типы (Indexed Access Types)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 37, topic: "Mapped Types", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 38, topic: "Conditional Types", difficulty: 5, category: 'advanced', practiceType: 'coding' },
-  { day: 39, topic: "Шаблонные строковые типы (Template Literal Types)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 40, topic: "Декораторы классов и методов", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 41, topic: "Модули и пространства имен", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 42, topic: "Настройка tsconfig.json", difficulty: 3, category: 'devops', practiceType: 'theory' },
-  
-  // React с TypeScript (Дни 43-55)
-  { day: 43, topic: "Введение в React + TypeScript", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 44, topic: "Типизация компонентов (FC, Props)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 45, topic: "Типизация useState и useReducer", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 46, topic: "Типизация useRef и useContext", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 47, topic: "Типизация событий (Event Handlers)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 48, topic: "Generic компоненты", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 49, topic: "Типизация форм и контролируемых компонентов", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 50, topic: "HOC и Render Props с типами", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 51, topic: "Кастомные хуки с типами", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 52, topic: "React Query / TanStack Query с TypeScript", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 53, topic: "Zustand / Redux Toolkit с TypeScript", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 54, topic: "Типизация API ответов", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 55, topic: "React Testing Library с TypeScript", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  
-  // Next.js с TypeScript (Дни 56-65)
-  { day: 56, topic: "Next.js + TypeScript: настройка проекта", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 57, topic: "Типизация App Router и страниц", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 58, topic: "Типизация Server Components", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 59, topic: "Типизация API Routes (Route Handlers)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 60, topic: "Мини-проект: Next.js + TypeScript приложение", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 61, topic: "tRPC: End-to-end типизация API", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 62, topic: "Zod: валидация с выводом типов", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 63, topic: "Prisma ORM с TypeScript", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 64, topic: "NextAuth.js с типизацией", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 65, topic: "Server Actions с типами", difficulty: 4, category: 'web', practiceType: 'coding' },
-  
-  // Node.js и Backend (Дни 66-75)
-  { day: 66, topic: "Node.js с TypeScript", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 67, topic: "Работа с файловой системой (типизация)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 68, topic: "Express.js с TypeScript", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 69, topic: "Middleware и типизация Request/Response", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 70, topic: "SQL и типобезопасные запросы", difficulty: 3, category: 'database', practiceType: 'coding' },
-  { day: 71, topic: "ORM: TypeORM или Drizzle", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 72, topic: "WebSocket с типизацией", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 73, topic: "Аутентификация: JWT с типами", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 74, topic: "Rate Limiting и безопасность API", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 75, topic: "OWASP и безопасное программирование", difficulty: 4, category: 'security', practiceType: 'theory' },
-  
-  // AI, тестирование и DevOps (Дни 76-90)
-  { day: 76, topic: "Работа с AI SDK (Vercel AI)", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 77, topic: "Streaming и типизация AI ответов", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 78, topic: "LangChain.js с TypeScript", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 79, topic: "Unit тестирование: Jest/Vitest", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 80, topic: "Типизация моков и тестов", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  { day: 81, topic: "E2E тестирование с Playwright", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  { day: 82, topic: "Паттерны в TypeScript: Factory, Strategy", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 83, topic: "Принципы SOLID в TypeScript", difficulty: 4, category: 'advanced', practiceType: 'theory' },
-  { day: 84, topic: "Монорепозитории (Turborepo, nx)", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 85, topic: "Docker для TypeScript приложений", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 86, topic: "CI/CD: GitHub Actions", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 87, topic: "Мониторинг и логирование", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 88, topic: "Оптимизация сборки и Tree Shaking", difficulty: 4, category: 'devops', practiceType: 'theory' },
-  { day: 89, topic: "Декларации типов для библиотек (.d.ts)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 90, topic: "Финальный проект: Full-stack TypeScript приложение", difficulty: 5, category: 'project', practiceType: 'project' },
-];
+// Map path content to themes
+export const tsBeginnerThemes = mapDaysToThemes(beginnerDays, 'basics');
+export const tsFrontendThemes = mapDaysToThemes(frontendDays, 'web');
+export const tsFullstackThemes = mapDaysToThemes(fullstackDays, 'web');
+
+// Export map by path ID
+export const tsPathThemes: Record<string, DayTheme[]> = {
+  'typescript-beginner': tsBeginnerThemes,
+  'typescript-frontend': tsFrontendThemes,
+  'typescript-fullstack': tsFullstackThemes,
+};
+
+// Default export for backward compatibility
+export const typescriptThemes: DayTheme[] = tsBeginnerThemes;

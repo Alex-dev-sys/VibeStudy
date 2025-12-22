@@ -1,6 +1,7 @@
 import { CurriculumDay } from '@/types';
 import { getLanguageById } from './languages';
 import { getDayTheme } from '@/data/themes';
+import { getPathContent } from '@/data/paths/content-registry';
 
 interface DayTopic {
   day: number;
@@ -122,10 +123,11 @@ const DAY_TOPICS: DayTopic[] = [
  * Получить тему дня для конкретного языка
  * @param day - День обучения (1-90)
  * @param languageId - ID языка программирования
+ * @param pathId - ID пути обучения (опционально)
  * @returns Объект с темой дня
  */
-export const getDayTopic = (day: number, languageId: string): DayTopic => {
-  const themeData = getDayTheme(languageId, day);
+export const getDayTopic = (day: number, languageId: string, pathId?: string): DayTopic => {
+  const themeData = getDayTheme(languageId, day, pathId);
 
   if (themeData) {
     return {
@@ -135,8 +137,16 @@ export const getDayTopic = (day: number, languageId: string): DayTopic => {
     };
   }
 
-  // Fallback к старым данным если тема не найдена
-  return DAY_TOPICS[day - 1] ?? DAY_TOPICS[0];
+  // Fallback к старым данным если тема не найдена и это Python
+  if (languageId === 'python' && day <= 90) {
+    return DAY_TOPICS[day - 1] ?? DAY_TOPICS[0];
+  }
+
+  return {
+    day,
+    topic: `День ${day}`,
+    description: 'Тема уточняется'
+  };
 };
 
 const MODULES: ModuleTemplate[] = [
@@ -222,13 +232,31 @@ const MODULES: ModuleTemplate[] = [
   }
 ];
 
-const TOTAL_DAYS = MODULES.reduce((sum, module) => sum + module.duration, 0);
+export const buildCurriculum = (languageId: string, pathId?: string): CurriculumDay[] => {
+  // 1. Попытка загрузить контент пути из реестра
+  if (pathId) {
+    const pathContent = getPathContent(pathId);
+    if (pathContent && pathContent.length > 0) {
+      return pathContent.map(day => {
+        // Извлекаем концепции из задач для фокуса (убираем дубликаты)
+        const taskConcepts = day.tasks?.flatMap(t => t.concepts || []) || [];
+        const uniqueFocus = Array.from(new Set([day.topic, ...taskConcepts])).slice(0, 4);
 
-if (TOTAL_DAYS !== 90) {
-  throw new Error(`Модули курса не суммируются в 90 дней (сейчас ${TOTAL_DAYS}).`);
-}
+        return {
+          day: day.day,
+          title: day.topic,
+          theory: day.theory || `Теория для темы: ${day.topic}`,
+          focus: uniqueFocus.length > 0 ? uniqueFocus : [day.topic],
+          recapQuestion: day.recap || 'Что вы узнали сегодня?',
+          theme: day.topic
+        };
+      });
+    }
+  }
 
-export const buildCurriculum = (languageId: string): CurriculumDay[] => {
+  // 2. Fallback: Генерация на основе старых шаблонов (только если нет пути или путь не найден)
+  // Это сохраняет работу старой логики для языков/путей, которые еще не перенесены полностью
+
   const language = getLanguageById(languageId);
   const descriptionEnhancer = ` на языке ${language.label}`;
 
@@ -240,7 +268,7 @@ export const buildCurriculum = (languageId: string): CurriculumDay[] => {
       const focusPoint = module.focus[i % module.focus.length];
       const theory = `${module.theorySnippet} Сегодняшняя тема: ${focusPoint}${descriptionEnhancer}. Дополнительное внимание уделяем практическим приёмам и читаем код коллег.`;
 
-      const themeData = getDayTheme(languageId, dayCounter);
+      const themeData = getDayTheme(languageId, dayCounter, pathId);
       const displayTitle = themeData ? themeData.topic : `${module.title}: день ${i + 1}`;
 
       days.push({

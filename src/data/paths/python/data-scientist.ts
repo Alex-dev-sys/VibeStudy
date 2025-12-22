@@ -100,6 +100,7 @@ import pandas as pd
 import numpy as np
 \`\`\``,
         recap: `Что ты узнал о "${t.topic}"?`,
+        category: t.category,
         tasks: [
             { id: `py-ds-${i + 1}-1`, pathId: 'python-data-scientist', day: i + 1, difficulty: 'easy', prompt: `Базовое упражнение: ${t.topic}` },
             { id: `py-ds-${i + 1}-2`, pathId: 'python-data-scientist', day: i + 1, difficulty: 'easy', prompt: 'Закрепление концепции' },

@@ -1,109 +1,24 @@
+import { days as beginnerDays } from '../paths/python/beginner';
+import { days as dsDays } from '../paths/python/data-scientist';
+import { days as backendDays } from '../paths/python/backend';
+import { days as mlDays } from '../paths/python/ml-engineer';
+import { mapDaysToThemes } from './utils';
 import type { DayTheme } from './types';
 
-export const pythonThemes: DayTheme[] = [
-  // Основы (Дни 1-15)
-  { day: 1, topic: "Переменные и базовые типы данных", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 2, topic: "Арифметические операторы", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 3, topic: "Базовые методы строк", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 4, topic: "Логический тип (bool) и операторы сравнения", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 5, topic: "Условный оператор if-else", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 6, topic: "Логические and, or, not", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 7, topic: "Цикл while", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 8, topic: "Цикл for и range()", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 9, topic: "Инструкции break и continue", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 10, topic: "Списки (list): индексы и срезы", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 11, topic: "Методы списков (append, pop, extend)", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 12, topic: "Сортировка списков: sort и sorted", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 13, topic: "Многомерные списки", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 14, topic: "Кортежи (tuple): свойства и применение", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 15, topic: "Словари (dict): ключи и значения", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  
-  // Структуры данных и функции (Дни 16-30)
-  { day: 16, topic: "Методы словарей (get, items, keys)", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 17, topic: "Множества (set) и их методы", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 18, topic: "Операции над множествами (объединение, пересечение)", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 19, topic: "Функции: объявление def и return", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 20, topic: "Позиционные и именованные аргументы", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 21, topic: "Распаковка аргументов *args и **kwargs", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 22, topic: "Области видимости (Local, Global, Enclosing)", difficulty: 3, category: 'basics', practiceType: 'theory' },
-  { day: 23, topic: "Анонимные функции lambda", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 24, topic: "Обработка исключений try-except", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 25, topic: "List Comprehensions", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 26, topic: "Dict и Set Comprehensions", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 27, topic: "Работа с файлами: open, read, write", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 28, topic: "Контекстные менеджеры with", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 29, topic: "Форматирование строк: f-strings", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 30, topic: "Мини-проект: Консольное приложение", difficulty: 3, category: 'project', practiceType: 'project' },
-  
-  // ООП (Дни 31-42)
-  { day: 31, topic: "Модули и пакеты (import)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 32, topic: "Классы и объекты", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 33, topic: "Конструктор __init__", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 34, topic: "Атрибуты и методы экземпляра", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 35, topic: "Наследование", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 36, topic: "Инкапсуляция: приватные атрибуты", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 37, topic: "Полиморфизм", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 38, topic: "Свойства @property", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 39, topic: "Классовые и статические методы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 40, topic: "Магические методы (__str__, __repr__)", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 41, topic: "Магические методы математики (__add__, __eq__)", difficulty: 4, category: 'oop', practiceType: 'coding' },
-  { day: 42, topic: "Декораторы функций", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  
-  // Data Science основы (Дни 43-55)
-  { day: 43, topic: "Введение в NumPy: массивы ndarray", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 44, topic: "NumPy: операции над массивами", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 45, topic: "NumPy: индексация и срезы", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 46, topic: "NumPy: broadcasting и векторизация", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 47, topic: "Введение в Pandas: Series и DataFrame", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 48, topic: "Pandas: чтение и запись данных (CSV, Excel)", difficulty: 2, category: 'ai-ml', practiceType: 'coding' },
-  { day: 49, topic: "Pandas: фильтрация и выборка данных", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 50, topic: "Pandas: группировка и агрегация", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 51, topic: "Pandas: обработка пропущенных значений", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 52, topic: "Pandas: merge и join таблиц", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 53, topic: "Визуализация: Matplotlib основы", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 54, topic: "Визуализация: Seaborn", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 55, topic: "Регулярные выражения (модуль re)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  
-  // Web и базы данных (Дни 56-65)
-  { day: 56, topic: "Работа с JSON", difficulty: 2, category: 'web', practiceType: 'coding' },
-  { day: 57, topic: "Работа с датами (datetime)", difficulty: 2, category: 'advanced', practiceType: 'coding' },
-  { day: 58, topic: "SQL: CREATE TABLE и типы данных", difficulty: 2, category: 'database', practiceType: 'coding' },
-  { day: 59, topic: "SQL: INSERT, UPDATE, DELETE", difficulty: 2, category: 'database', practiceType: 'coding' },
-  { day: 60, topic: "Мини-проект: Анализ данных с Pandas", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 61, topic: "SQL: SELECT, WHERE, JOIN", difficulty: 3, category: 'database', practiceType: 'coding' },
-  { day: 62, topic: "Работа с БД через SQLite", difficulty: 3, category: 'database', practiceType: 'coding' },
-  { day: 63, topic: "Протокол HTTP: методы и коды", difficulty: 3, category: 'web', practiceType: 'theory' },
-  { day: 64, topic: "Библиотека requests", difficulty: 2, category: 'web', practiceType: 'coding' },
-  { day: 65, topic: "Архитектура REST API", difficulty: 3, category: 'web', practiceType: 'theory' },
-  
-  // FastAPI (Дни 66-72)
-  { day: 66, topic: "Основы FastAPI (роутинг)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 67, topic: "FastAPI: параметры запросов и тело", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 68, topic: "Pydantic: модели данных и валидация", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 69, topic: "FastAPI: зависимости (Depends)", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 70, topic: "SQLAlchemy ORM: основы", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 71, topic: "SQLAlchemy: связи моделей", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 72, topic: "Миграции базы данных (Alembic)", difficulty: 4, category: 'database', practiceType: 'coding' },
-  
-  // Machine Learning (Дни 73-82)
-  { day: 73, topic: "Введение в Machine Learning", difficulty: 3, category: 'ai-ml', practiceType: 'theory' },
-  { day: 74, topic: "Scikit-learn: предобработка данных", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 75, topic: "Scikit-learn: линейная регрессия", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 76, topic: "Scikit-learn: классификация (логистическая регрессия)", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 77, topic: "Scikit-learn: Decision Trees и Random Forest", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 78, topic: "Оценка моделей: метрики и кросс-валидация", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 79, topic: "Работа с AI API (OpenAI, Anthropic)", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 80, topic: "LangChain: основы работы с LLM", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 81, topic: "RAG: Retrieval Augmented Generation", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  { day: 82, topic: "Создание AI чат-бота", difficulty: 4, category: 'ai-ml', practiceType: 'coding' },
-  
-  // Асинхронность и DevOps (Дни 83-90)
-  { day: 83, topic: "Асинхронность: async и await", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 84, topic: "Библиотека asyncio", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 85, topic: "Юнит-тестирование (pytest)", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 86, topic: "Логирование и переменные окружения", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 87, topic: "Docker: Dockerfile для Python", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 88, topic: "Docker Compose", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 89, topic: "CI/CD пайплайны", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 90, topic: "Финальный проект: ML приложение с API", difficulty: 5, category: 'project', practiceType: 'project' },
-];
+// Map path content to themes
+export const pythonBeginnerThemes = mapDaysToThemes(beginnerDays, 'basics');
+export const pythonDataScientistThemes = mapDaysToThemes(dsDays, 'ai-ml');
+export const pythonBackendThemes = mapDaysToThemes(backendDays, 'web');
+export const pythonMlEngineerThemes = mapDaysToThemes(mlDays, 'ai-ml');
+
+// Export map by path ID
+export const pythonPathThemes: Record<string, DayTheme[]> = {
+  'python-beginner': pythonBeginnerThemes,
+  'python-data-scientist': pythonDataScientistThemes,
+  'python-backend': pythonBackendThemes,
+  'python-ml-engineer': pythonMlEngineerThemes,
+};
+
+// Default export for backward compatibility (defaults to beginner)
+export const pythonThemes: DayTheme[] = pythonBeginnerThemes;
+

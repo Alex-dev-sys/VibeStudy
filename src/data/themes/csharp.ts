@@ -1,111 +1,18 @@
+import { beginnerDays, unityDays, dotnetDays } from '../paths/csharp/index';
+import { mapDaysToThemes } from './utils';
 import type { DayTheme } from './types';
 
-export const csharpThemes: DayTheme[] = [
-  // Основы (Дни 1-15)
-  { day: 1, topic: "Типы данных и переменные", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 2, topic: "Арифметические операции", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 3, topic: "Условные операторы if-else", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 4, topic: "Оператор switch и switch expression", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 5, topic: "Циклы for и foreach", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 6, topic: "Циклы while и do-while", difficulty: 1, category: 'basics', practiceType: 'coding' },
-  { day: 7, topic: "Массивы: одномерные и многомерные", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 8, topic: "Методы: параметры и возвращаемые значения", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 9, topic: "Параметры ref, out, in", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  { day: 10, topic: "Перегрузка методов", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 11, topic: "Работа со строками и StringBuilder", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 12, topic: "Перечисления (enum)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 13, topic: "Кортежи (ValueTuple)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 14, topic: "Nullable types и операторы ?. ??", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 15, topic: "Pattern Matching", difficulty: 3, category: 'basics', practiceType: 'coding' },
-  
-  // ООП (Дни 16-30)
-  { day: 16, topic: "Классы и объекты", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 17, topic: "Конструкторы", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 18, topic: "Свойства (Properties): геттеры и сеттеры", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 19, topic: "Модификаторы доступа", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 20, topic: "Наследование", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 21, topic: "Полиморфизм: virtual, override", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 22, topic: "Абстрактные классы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 23, topic: "Интерфейсы", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 24, topic: "Статические члены класса", difficulty: 2, category: 'oop', practiceType: 'coding' },
-  { day: 25, topic: "Структуры (struct) и records", difficulty: 3, category: 'oop', practiceType: 'coding' },
-  { day: 26, topic: "Обобщения (Generics)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 27, topic: "Ограничения Generics (where)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 28, topic: "Обработка исключений: try-catch-finally", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 29, topic: "Делегаты: delegate", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 30, topic: "Мини-проект: Консольное ООП приложение", difficulty: 3, category: 'project', practiceType: 'project' },
-  
-  // Коллекции и LINQ (Дни 31-42)
-  { day: 31, topic: "Коллекции: List<T>", difficulty: 2, category: 'data-structures', practiceType: 'coding' },
-  { day: 32, topic: "Dictionary<K, V>", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 33, topic: "HashSet<T>, Queue<T>, Stack<T>", difficulty: 3, category: 'data-structures', practiceType: 'coding' },
-  { day: 34, topic: "События (event)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 35, topic: "Лямбда-выражения", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 36, topic: "LINQ: основы запросов", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 37, topic: "LINQ: фильтрация, сортировка", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 38, topic: "LINQ: группировка и агрегация", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 39, topic: "LINQ: Join операции", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 40, topic: "Расширяющие методы (Extension methods)", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 41, topic: "Работа с файлами (System.IO)", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 42, topic: "Сериализация: JSON (System.Text.Json)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  
-  // Асинхронность (Дни 43-50)
-  { day: 43, topic: "Асинхронное программирование: async и await", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 44, topic: "Task и Task<T>", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 45, topic: "Параллельные операции (Parallel.ForEach)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 46, topic: "CancellationToken", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 47, topic: "Многопоточность: Thread", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 48, topic: "Синхронизация (lock, Semaphore)", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 49, topic: "Работа с датами: DateTime, TimeSpan", difficulty: 2, category: 'basics', practiceType: 'coding' },
-  { day: 50, topic: "Регулярные выражения", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  
-  // ASP.NET Core (Дни 51-65)
-  { day: 51, topic: "Основы .NET архитектуры", difficulty: 3, category: 'web', practiceType: 'theory' },
-  { day: 52, topic: "Dependency Injection в .NET", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 53, topic: "ASP.NET Core: введение", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 54, topic: "Контроллеры и роутинг", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 55, topic: "Middleware", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 56, topic: "Создание REST API", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 57, topic: "Валидация данных (FluentValidation)", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 58, topic: "Entity Framework Core: основы", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 59, topic: "EF Core: миграции", difficulty: 3, category: 'database', practiceType: 'coding' },
-  { day: 60, topic: "Мини-проект: REST API с EF Core", difficulty: 4, category: 'project', practiceType: 'project' },
-  { day: 61, topic: "EF Core: связи моделей", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 62, topic: "EF Core: LINQ запросы", difficulty: 4, category: 'database', practiceType: 'coding' },
-  { day: 63, topic: "Работа с конфигурациями", difficulty: 2, category: 'web', practiceType: 'coding' },
-  { day: 64, topic: "Логирование (Serilog)", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 65, topic: "Swagger и документация API", difficulty: 2, category: 'web', practiceType: 'coding' },
-  
-  // Безопасность (Дни 66-70)
-  { day: 66, topic: "Аутентификация и авторизация", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 67, topic: "JWT токены в ASP.NET", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 68, topic: "Identity Server / OpenIddict", difficulty: 4, category: 'security', practiceType: 'coding' },
-  { day: 69, topic: "OWASP и безопасность приложений", difficulty: 4, category: 'security', practiceType: 'theory' },
-  { day: 70, topic: "Rate Limiting и защита API", difficulty: 3, category: 'security', practiceType: 'coding' },
-  
-  // Blazor (Дни 71-77)
-  { day: 71, topic: "Введение в Blazor", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 72, topic: "Blazor компоненты", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 73, topic: "Blazor: формы и валидация", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 74, topic: "Blazor: routing и навигация", difficulty: 3, category: 'web', practiceType: 'coding' },
-  { day: 75, topic: "Blazor: работа с API", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 76, topic: "Blazor: состояние приложения", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 77, topic: "Blazor Server vs WebAssembly", difficulty: 3, category: 'web', practiceType: 'theory' },
-  
-  // Тестирование (Дни 78-81)
-  { day: 78, topic: "xUnit: юнит-тесты", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 79, topic: "Moq: мокирование", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  { day: 80, topic: "Интеграционные тесты ASP.NET", difficulty: 4, category: 'testing', practiceType: 'coding' },
-  { day: 81, topic: "FluentAssertions", difficulty: 3, category: 'testing', practiceType: 'coding' },
-  
-  // Продвинутые темы и DevOps (Дни 82-90)
-  { day: 82, topic: "SignalR (WebSocket)", difficulty: 4, category: 'web', practiceType: 'coding' },
-  { day: 83, topic: "Background Services", difficulty: 3, category: 'advanced', practiceType: 'coding' },
-  { day: 84, topic: "MediatR и CQRS паттерн", difficulty: 4, category: 'advanced', practiceType: 'coding' },
-  { day: 85, topic: "Работа с AI API", difficulty: 3, category: 'ai-ml', practiceType: 'coding' },
-  { day: 86, topic: "Docker для .NET приложений", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 87, topic: "Kubernetes: деплой .NET", difficulty: 4, category: 'devops', practiceType: 'coding' },
-  { day: 88, topic: "Health Checks и мониторинг", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 89, topic: "CI/CD с GitHub Actions", difficulty: 3, category: 'devops', practiceType: 'coding' },
-  { day: 90, topic: "Финальный проект: Full-stack Blazor приложение", difficulty: 5, category: 'project', practiceType: 'project' },
-];
+// Map path content to themes
+export const csharpBeginnerThemes = mapDaysToThemes(beginnerDays, 'basics');
+export const csharpUnityThemes = mapDaysToThemes(unityDays, 'project');
+export const csharpDotnetThemes = mapDaysToThemes(dotnetDays, 'web');
+
+// Export map by path ID
+export const csharpPathThemes: Record<string, DayTheme[]> = {
+  'csharp-beginner': csharpBeginnerThemes,
+  'csharp-game-unity': csharpUnityThemes,
+  'csharp-dotnet': csharpDotnetThemes,
+};
+
+// Default export for backward compatibility
+export const csharpThemes: DayTheme[] = csharpBeginnerThemes;

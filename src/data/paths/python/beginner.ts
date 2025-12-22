@@ -14,6 +14,7 @@ export const days: PathDayContent[] = [
         day: 1,
         topic: 'Введение в Python и установка',
         topicEn: 'Introduction to Python and Setup',
+        category: 'basics',
         description: 'Знакомство с Python, установка среды, первая программа',
         theory: `# День 1: Добро пожаловать в Python! 🐍
 
@@ -55,6 +56,7 @@ print("Код выполнится")  # Комментарий после код
         day: 2,
         topic: 'Переменные и типы данных',
         topicEn: 'Variables and Data Types',
+        category: 'basics',
         description: 'Создание переменных, числа, строки, булевы значения',
         theory: `# День 2: Переменные — память программы 📦
 
@@ -96,6 +98,7 @@ print(type(age))    # <class 'int'>
         day: 3,
         topic: 'Арифметические операции',
         topicEn: 'Arithmetic Operations',
+        category: 'basics',
         description: 'Сложение, вычитание, умножение, деление, остаток',
         theory: `# День 3: Математика в Python 🔢
 
@@ -138,6 +141,7 @@ result = (2 + 3) * 4    # 20
         day: 4,
         topic: 'Ввод данных от пользователя',
         topicEn: 'User Input',
+        category: 'basics',
         description: 'Функция input(), преобразование типов',
         theory: `# День 4: Интерактивные программы 💬
 
@@ -182,6 +186,7 @@ print(f"Меня зовут {name}, мне {age} лет")
         day: 5,
         topic: 'Строки и их методы',
         topicEn: 'Strings and Methods',
+        category: 'basics',
         description: 'Работа со строками, индексация, срезы, методы',
         theory: `# День 5: Работа со строками 📝
 
@@ -229,6 +234,7 @@ print(len(text))          # 15 (длина)
         day: 6,
         topic: 'Логические операторы и сравнение',
         topicEn: 'Logical Operators and Comparisons',
+        category: 'basics',
         description: 'Операторы сравнения, and, or, not',
         theory: `# День 6: Логика в программировании 🧠
 
@@ -279,6 +285,7 @@ can_drive = age >= 18 and has_license  # True
         day: 7,
         topic: 'Условный оператор if-else',
         topicEn: 'Conditional Statements',
+        category: 'basics',
         description: 'Ветвление программы, if, elif, else',
         theory: `# День 7: Принятие решений 🔀
 
@@ -338,6 +345,7 @@ print(f"Оценка: {grade}")
         day: 8,
         topic: 'Цикл while',
         topicEn: 'While Loop',
+        category: 'basics',
         description: 'Циклы с условием, управление итерациями',
         theory: `# День 8: Цикл while 🔄
 
@@ -394,6 +402,7 @@ while n < 10:
         day: 9,
         topic: 'Цикл for и range',
         topicEn: 'For Loop and range()',
+        category: 'basics',
         description: 'Итерация по последовательностям, функция range',
         theory: `# День 9: Цикл for — итерация по элементам 🔁
 
@@ -447,6 +456,7 @@ for i in range(3):
         day: 10,
         topic: 'Практика циклов',
         topicEn: 'Loop Practice',
+        category: 'basics',
         description: 'Комбинирование циклов и условий, паттерны',
         theory: `# День 10: Мастерство циклов 💪
 
@@ -512,54 +522,55 @@ for i in range(1, 16):
 for (let day = 11; day <= 45; day++) {
     const topics = [
         // Week 3: Lists
-        { topic: 'Списки: создание и индексация', topicEn: 'Lists: Creation and Indexing' },
-        { topic: 'Методы списков', topicEn: 'List Methods' },
-        { topic: 'Срезы списков', topicEn: 'List Slicing' },
-        { topic: 'Списки и циклы', topicEn: 'Lists and Loops' },
-        { topic: 'Вложенные списки', topicEn: 'Nested Lists' },
-        { topic: 'List Comprehension', topicEn: 'List Comprehension' },
-        { topic: 'Практика со списками', topicEn: 'List Practice' },
+        { topic: 'Списки: создание и индексация', topicEn: 'Lists: Creation and Indexing', category: 'data-structures' },
+        { topic: 'Методы списков', topicEn: 'List Methods', category: 'data-structures' },
+        { topic: 'Срезы списков', topicEn: 'List Slicing', category: 'data-structures' },
+        { topic: 'Списки и циклы', topicEn: 'Lists and Loops', category: 'data-structures' },
+        { topic: 'Вложенные списки', topicEn: 'Nested Lists', category: 'data-structures' },
+        { topic: 'List Comprehension', topicEn: 'List Comprehension', category: 'data-structures' },
+        { topic: 'Практика со списками', topicEn: 'List Practice', category: 'data-structures' },
         // Week 4: Dictionaries & Tuples
-        { topic: 'Кортежи', topicEn: 'Tuples' },
-        { topic: 'Словари: основы', topicEn: 'Dictionaries: Basics' },
-        { topic: 'Методы словарей', topicEn: 'Dictionary Methods' },
-        { topic: 'Словари и циклы', topicEn: 'Dictionaries and Loops' },
-        { topic: 'Dict Comprehension', topicEn: 'Dictionary Comprehension' },
-        { topic: 'Множества (set)', topicEn: 'Sets' },
-        { topic: 'Практика структур данных', topicEn: 'Data Structures Practice' },
+        { topic: 'Кортежи', topicEn: 'Tuples', category: 'data-structures' },
+        { topic: 'Словари: основы', topicEn: 'Dictionaries: Basics', category: 'data-structures' },
+        { topic: 'Методы словарей', topicEn: 'Dictionary Methods', category: 'data-structures' },
+        { topic: 'Словари и циклы', topicEn: 'Dictionaries and Loops', category: 'data-structures' },
+        { topic: 'Dict Comprehension', topicEn: 'Dictionary Comprehension', category: 'data-structures' },
+        { topic: 'Множества (set)', topicEn: 'Sets', category: 'data-structures' },
+        { topic: 'Практика структур данных', topicEn: 'Data Structures Practice', category: 'data-structures' },
         // Week 5: Functions
-        { topic: 'Функции: основы', topicEn: 'Functions: Basics' },
-        { topic: 'Параметры и аргументы', topicEn: 'Parameters and Arguments' },
-        { topic: 'Возврат значений', topicEn: 'Return Values' },
-        { topic: 'Области видимости', topicEn: 'Variable Scope' },
-        { topic: '*args и **kwargs', topicEn: '*args and **kwargs' },
-        { topic: 'Лямбда-функции', topicEn: 'Lambda Functions' },
-        { topic: 'Практика функций', topicEn: 'Functions Practice' },
+        { topic: 'Функции: основы', topicEn: 'Functions: Basics', category: 'basics' },
+        { topic: 'Параметры и аргументы', topicEn: 'Parameters and Arguments', category: 'basics' },
+        { topic: 'Возврат значений', topicEn: 'Return Values', category: 'basics' },
+        { topic: 'Области видимости', topicEn: 'Variable Scope', category: 'basics' },
+        { topic: '*args и **kwargs', topicEn: '*args and **kwargs', category: 'basics' },
+        { topic: 'Лямбда-функции', topicEn: 'Lambda Functions', category: 'basics' },
+        { topic: 'Практика функций', topicEn: 'Functions Practice', category: 'basics' },
         // Week 6: Files & Errors
-        { topic: 'Чтение файлов', topicEn: 'Reading Files' },
-        { topic: 'Запись в файлы', topicEn: 'Writing Files' },
-        { topic: 'Работа с JSON', topicEn: 'Working with JSON' },
-        { topic: 'Обработка ошибок: try-except', topicEn: 'Error Handling: try-except' },
-        { topic: 'Типы исключений', topicEn: 'Exception Types' },
-        { topic: 'Контекстный менеджер with', topicEn: 'Context Manager: with' },
-        { topic: 'Практика файлов и ошибок', topicEn: 'Files and Errors Practice' },
+        { topic: 'Чтение файлов', topicEn: 'Reading Files', category: 'files' },
+        { topic: 'Запись в файлы', topicEn: 'Writing Files', category: 'files' },
+        { topic: 'Работа с JSON', topicEn: 'Working with JSON', category: 'files' },
+        { topic: 'Обработка ошибок: try-except', topicEn: 'Error Handling: try-except', category: 'basics' },
+        { topic: 'Типы исключений', topicEn: 'Exception Types', category: 'basics' },
+        { topic: 'Контекстный менеджер with', topicEn: 'Context Manager: with', category: 'files' },
+        { topic: 'Практика файлов и ошибок', topicEn: 'Files and Errors Practice', category: 'files' },
         // Week 7: OOP Basics
-        { topic: 'Классы и объекты', topicEn: 'Classes and Objects' },
-        { topic: 'Атрибуты и методы', topicEn: 'Attributes and Methods' },
-        { topic: '__init__ и self', topicEn: '__init__ and self' },
-        { topic: 'Инкапсуляция', topicEn: 'Encapsulation' },
-        { topic: 'Наследование', topicEn: 'Inheritance' },
-        { topic: 'Полиморфизм', topicEn: 'Polymorphism' },
-        { topic: 'Финальный проект Beginner', topicEn: 'Final Beginner Project' },
+        { topic: 'Классы и объекты', topicEn: 'Classes and Objects', category: 'oop' },
+        { topic: 'Атрибуты и методы', topicEn: 'Attributes and Methods', category: 'oop' },
+        { topic: '__init__ и self', topicEn: '__init__ and self', category: 'oop' },
+        { topic: 'Инкапсуляция', topicEn: 'Encapsulation', category: 'oop' },
+        { topic: 'Наследование', topicEn: 'Inheritance', category: 'oop' },
+        { topic: 'Полиморфизм', topicEn: 'Polymorphism', category: 'oop' },
+        { topic: 'Финальный проект Beginner', topicEn: 'Final Beginner Project', category: 'project' },
     ];
 
     const topicIndex = day - 11;
-    const topicData = topics[topicIndex] || { topic: `День ${day}`, topicEn: `Day ${day}` };
+    const topicData = topics[topicIndex] || { topic: `День ${day}`, topicEn: `Day ${day}`, category: 'basics' };
 
     days.push({
         day,
         topic: topicData.topic,
         topicEn: topicData.topicEn,
+        category: (topicData as any).category,
         description: `Изучение темы: ${topicData.topic}`,
         theory: `# День ${day}: ${topicData.topic}
 

@@ -36,7 +36,7 @@ export class SessionManager {
     this.sessions = new Map();
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.cleanupTimer = null;
-    
+
     // Start automatic cleanup
     this.startCleanup();
   }
@@ -44,7 +44,7 @@ export class SessionManager {
   /**
    * Create a new chat session
    */
-  createSession(userId: string, context: { day: number; languageId: string; taskId?: string }): ChatSession {
+  createSession(userId: string, context: { day: number; languageId: string; taskId?: string; pathId?: string }): ChatSession {
     const session: ChatSession = {
       id: this.generateSessionId(),
       userId,
@@ -63,7 +63,7 @@ export class SessionManager {
    */
   getSession(sessionId: string): ChatSession | null {
     const session = this.sessions.get(sessionId);
-    
+
     if (!session) {
       return null;
     }
@@ -82,7 +82,7 @@ export class SessionManager {
    */
   addMessage(sessionId: string, message: Message): void {
     const session = this.sessions.get(sessionId);
-    
+
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
@@ -104,7 +104,7 @@ export class SessionManager {
    */
   getRecentMessages(sessionId: string, count: number): Message[] {
     const session = this.sessions.get(sessionId);
-    
+
     if (!session) {
       return [];
     }
