@@ -33,8 +33,10 @@ export const unityDays: PathDayContent[] = createPath('cs-unity', 'csharp-game-u
 export const dotnetPath = CSHARP_DOTNET;
 export const dotnetDays: PathDayContent[] = createPath('cs-net', 'csharp-dotnet', 55, '.NET');
 
-export default {
+const csharpPaths = {
     beginner: { path: beginnerPath, days: beginnerDays },
     unity: { path: unityPath, days: unityDays },
     dotnet: { path: dotnetPath, days: dotnetDays },
 };
+
+export default csharpPaths;

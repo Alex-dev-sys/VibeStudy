@@ -46,8 +46,10 @@ export const backendDays: PathDayContent[] = createPath('java-be', 'java-backend
 export const androidPath = JAVA_ANDROID;
 export const androidDays: PathDayContent[] = createPath('java-and', 'java-android', 65, i => `Android: Day ${i + 1}`);
 
-export default {
+const javaPaths = {
     beginner: { path: beginnerPath, days: beginnerDays },
     backend: { path: backendPath, days: backendDays },
     android: { path: androidPath, days: androidDays },
 };
+
+export default javaPaths;

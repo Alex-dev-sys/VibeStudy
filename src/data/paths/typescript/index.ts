@@ -105,8 +105,10 @@ export const fullstackDays: PathDayContent[] = fullstackTopics.map((t, i) => ({
     estimatedMinutes: 45,
 }));
 
-export default {
+const typescriptPaths = {
     beginner: { path: beginnerPath, days: beginnerDays },
     frontend: { path: frontendPath, days: frontendDays },
     fullstack: { path: fullstackPath, days: fullstackDays },
 };
+
+export default typescriptPaths;

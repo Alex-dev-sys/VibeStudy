@@ -110,4 +110,6 @@ const generateDays = (): PathDayContent[] => {
 };
 
 export const days: PathDayContent[] = generateDays();
-export default { path, days };
+const mlEngineerPathData = { path, days };
+
+export default mlEngineerPathData;

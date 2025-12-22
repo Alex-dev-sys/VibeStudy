@@ -33,8 +33,10 @@ export const backendDays: PathDayContent[] = createPath('go-be', 'go-backend', 5
 export const devopsPath = GO_DEVOPS;
 export const devopsDays: PathDayContent[] = createPath('go-do', 'go-devops', 60, 'DevOps');
 
-export default {
+const goPaths = {
     beginner: { path: beginnerPath, days: beginnerDays },
     backend: { path: backendPath, days: backendDays },
     devops: { path: devopsPath, days: devopsDays },
 };
+
+export default goPaths;

@@ -602,4 +602,6 @@ print("День ${day}")
     });
 }
 
-export default { path, days };
+const beginnerPathData = { path, days };
+
+export default beginnerPathData;

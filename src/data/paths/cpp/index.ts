@@ -33,8 +33,10 @@ export const gameDevDays: PathDayContent[] = createPath('cpp-gd', 'cpp-game-dev'
 export const systemsPath = CPP_SYSTEMS;
 export const systemsDays: PathDayContent[] = createPath('cpp-sys', 'cpp-systems', 70, 'Systems');
 
-export default {
+const cppPaths = {
     beginner: { path: beginnerPath, days: beginnerDays },
     gameDev: { path: gameDevPath, days: gameDevDays },
     systems: { path: systemsPath, days: systemsDays },
 };
+
+export default cppPaths;

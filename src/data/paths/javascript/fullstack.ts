@@ -57,4 +57,6 @@ export const days: PathDayContent[] = topics.map((topic, i) => ({
     estimatedMinutes: 45,
 }));
 
-export default { path, days };
+const fullstackPathData = { path, days };
+
+export default fullstackPathData;

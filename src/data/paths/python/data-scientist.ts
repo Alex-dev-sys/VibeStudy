@@ -114,4 +114,6 @@ import numpy as np
 
 export const days: PathDayContent[] = generateDays();
 
-export default { path, days };
+const dataScientistPathData = { path, days };
+
+export default dataScientistPathData;

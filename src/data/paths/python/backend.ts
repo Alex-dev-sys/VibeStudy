@@ -90,4 +90,6 @@ const generateDays = (): PathDayContent[] => {
 };
 
 export const days: PathDayContent[] = generateDays();
-export default { path, days };
+const backendPathData = { path, days };
+
+export default backendPathData;
