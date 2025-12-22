@@ -11,6 +11,7 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "bot:webhook": "node scripts/setup-telegram-webhook.js auto",
+    "bot:start": "tsx scripts/telegram-bot-polling.ts",
     "bot:webhook:check": "node scripts/setup-telegram-webhook.js check",
     "bot:webhook:info": "node scripts/setup-telegram-webhook.js info",
     "bot:webhook:delete": "node scripts/setup-telegram-webhook.js delete",
