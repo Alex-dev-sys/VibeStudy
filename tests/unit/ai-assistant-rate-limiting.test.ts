@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Property-based tests for AI Assistant Rate Limiting
  * Feature: ai-learning-assistant
  */
@@ -48,7 +48,8 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
     // Clear rate limiter state
-    rateLimiter.destroy();
+    // Clear rate limiter state could be done via reset but we don't have a userId here easily
+    // We'll just skip it if destroy is not available
   });
 
   afterEach(() => {
@@ -78,7 +79,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           // Act: Make requests up to the limit
           const results: boolean[] = [];
           for (let i = 0; i < testBucket.limit; i++) {
-            const allowed = rateLimiter.check(identifier, testBucket.limit, testBucket.windowMs);
+            const allowed = await rateLimiter.check(identifier, testBucket.limit, testBucket.windowMs);
             results.push(allowed);
           }
 
@@ -86,13 +87,13 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           expect(results.every(r => r === true)).toBe(true);
 
           // Act: Make one more request (should exceed limit)
-          const exceededResult = rateLimiter.check(identifier, testBucket.limit, testBucket.windowMs);
+          const exceededResult = await rateLimiter.check(identifier, testBucket.limit, testBucket.windowMs);
 
           // Assert: Request exceeding limit should be blocked
           expect(exceededResult).toBe(false);
 
           // Cleanup
-          rateLimiter.reset(identifier);
+          await rateLimiter.reset(identifier);
         }
       ),
       { numRuns: 100 }
@@ -110,24 +111,24 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
         async (identifier, bucket) => {
           // Act: Exhaust the rate limit
           for (let i = 0; i < bucket.limit; i++) {
-            rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
           }
 
           // Verify we're rate limited
-          const blockedBefore = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+          const blockedBefore = await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
           expect(blockedBefore).toBe(false);
 
           // Act: Advance time past the window
           advanceTime(bucket.windowMs + 100);
 
           // Act: Try again after window expires
-          const allowedAfter = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+          const allowedAfter = await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
 
           // Assert: Should be allowed after window expires
           expect(allowedAfter).toBe(true);
 
           // Cleanup
-          rateLimiter.reset(identifier);
+          await rateLimiter.reset(identifier);
         }
       ),
       { numRuns: 100 }
@@ -147,22 +148,22 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
           // Act: Exhaust rate limit for user1
           for (let i = 0; i < testBucket.limit; i++) {
-            rateLimiter.check(user1, testBucket.limit, testBucket.windowMs);
+            await rateLimiter.check(user1, testBucket.limit, testBucket.windowMs);
           }
 
           // Verify user1 is rate limited
-          const user1Blocked = rateLimiter.check(user1, testBucket.limit, testBucket.windowMs);
+          const user1Blocked = await rateLimiter.check(user1, testBucket.limit, testBucket.windowMs);
           expect(user1Blocked).toBe(false);
 
           // Act: Check if user2 can still make requests
-          const user2Allowed = rateLimiter.check(user2, testBucket.limit, testBucket.windowMs);
+          const user2Allowed = await rateLimiter.check(user2, testBucket.limit, testBucket.windowMs);
 
           // Assert: User2 should not be affected by user1's rate limit
           expect(user2Allowed).toBe(true);
 
           // Cleanup
-          rateLimiter.reset(user1);
-          rateLimiter.reset(user2);
+          await rateLimiter.reset(user1);
+          await rateLimiter.reset(user2);
         }
       ),
       { numRuns: 100 }
@@ -184,17 +185,17 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
           // Act: Make some requests (but not all)
           for (let i = 0; i < actualRequests; i++) {
-            rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
           }
 
           // Act: Get remaining requests
-          const remaining = rateLimiter.getRemaining(identifier, bucket.limit);
+          const remaining = await rateLimiter.getRemaining(identifier, bucket.limit);
 
           // Assert: Remaining should be limit - requests made
           expect(remaining).toBe(bucket.limit - actualRequests);
 
           // Act: Get reset time
-          const resetTime = rateLimiter.getResetTime(identifier);
+          const resetTime = await rateLimiter.getResetTime(identifier);
 
           // Assert: Reset time should be in the future
           expect(resetTime).not.toBeNull();
@@ -204,7 +205,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           }
 
           // Cleanup
-          rateLimiter.reset(identifier);
+          await rateLimiter.reset(identifier);
         }
       ),
       { numRuns: 100 }
@@ -234,7 +235,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           });
 
           // Act: Evaluate rate limit
-          const state = evaluateRateLimit(request, testBucket, { bucketId: 'test' });
+          const state = await evaluateRateLimit(request, testBucket, { bucketId: 'test' });
 
           // Assert: State should include all necessary notification data
           expect(state).toHaveProperty('allowed');
@@ -268,12 +269,12 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
         async (identifier, bucket) => {
           // Act: Exhaust the rate limit
           for (let i = 0; i < bucket.limit; i++) {
-            rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
           }
 
           // Act: Get state when rate limited
-          const remaining = rateLimiter.getRemaining(identifier, bucket.limit);
-          const resetTime = rateLimiter.getResetTime(identifier);
+          const remaining = await rateLimiter.getRemaining(identifier, bucket.limit);
+          const resetTime = await rateLimiter.getResetTime(identifier);
 
           // Assert: Remaining should be 0
           expect(remaining).toBe(0);
@@ -287,7 +288,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           }
 
           // Cleanup
-          rateLimiter.reset(identifier);
+          await rateLimiter.reset(identifier);
         }
       ),
       { numRuns: 100 }
@@ -307,8 +308,8 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
           // Act: Make requests and track remaining count
           for (let i = 0; i < bucket.limit; i++) {
-            rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
-            const remaining = rateLimiter.getRemaining(identifier, bucket.limit);
+            await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            const remaining = await rateLimiter.getRemaining(identifier, bucket.limit);
             remainingValues.push(remaining);
           }
 
@@ -321,7 +322,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           expect(remainingValues[remainingValues.length - 1]).toBe(0);
 
           // Cleanup
-          rateLimiter.reset(identifier);
+          await rateLimiter.reset(identifier);
         }
       ),
       { numRuns: 100 }
@@ -346,7 +347,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
             const bucket = { limit, windowMs };
 
             // Act: Evaluate rate limit
-            const state = evaluateRateLimit(request, bucket, { bucketId: 'api-test' });
+            const state = await evaluateRateLimit(request, bucket, { bucketId: 'api-test' });
 
             // Assert: First request should be allowed
             expect(state.allowed).toBe(true);
@@ -377,11 +378,11 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
             // Act: Make requests up to limit
             for (let i = 0; i < limit; i++) {
-              evaluateRateLimit(request, bucket, { bucketId });
+              await evaluateRateLimit(request, bucket, { bucketId });
             }
 
             // Act: Try one more request
-            const state = evaluateRateLimit(request, bucket, { bucketId });
+            const state = await evaluateRateLimit(request, bucket, { bucketId });
 
             // Assert: Should be blocked
             expect(state.allowed).toBe(false);
@@ -448,19 +449,19 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
             // Act: Exhaust limit
             for (let i = 0; i < limit; i++) {
-              rateLimiter.check(identifier, limit, windowMs);
+              await rateLimiter.check(identifier, limit, windowMs);
             }
 
             // Assert: Remaining should be 0
-            const remaining = rateLimiter.getRemaining(identifier, limit);
+            const remaining = await rateLimiter.getRemaining(identifier, limit);
             expect(remaining).toBe(0);
 
             // Assert: Next request should be blocked
-            const blocked = rateLimiter.check(identifier, limit, windowMs);
+            const blocked = await rateLimiter.check(identifier, limit, windowMs);
             expect(blocked).toBe(false);
 
             // Cleanup
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
           }
         ),
         { numRuns: 100 }
@@ -478,28 +479,28 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
           async (identifier, bucket) => {
             // Act: Exhaust limit
             for (let i = 0; i < bucket.limit; i++) {
-              rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+              await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
             }
 
             // Verify blocked
-            const blockedBefore = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            const blockedBefore = await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
             expect(blockedBefore).toBe(false);
 
             // Act: Reset
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
 
             // Act: Try again after reset
-            const allowedAfter = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+            const allowedAfter = await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
 
             // Assert: Should be allowed after reset
             expect(allowedAfter).toBe(true);
 
             // Assert: Remaining should be reset
-            const remaining = rateLimiter.getRemaining(identifier, bucket.limit);
+            const remaining = await rateLimiter.getRemaining(identifier, bucket.limit);
             expect(remaining).toBe(bucket.limit - 1); // -1 because we just made a request
 
             // Cleanup
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
           }
         ),
         { numRuns: 100 }
@@ -519,7 +520,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
             // Act: Make many concurrent requests
             const results: boolean[] = [];
             for (let i = 0; i < concurrentRequests; i++) {
-              const allowed = rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
+              const allowed = await rateLimiter.check(identifier, bucket.limit, bucket.windowMs);
               results.push(allowed);
             }
 
@@ -535,7 +536,7 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
             }
 
             // Cleanup
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
           }
         ),
         { numRuns: 100 }
@@ -551,18 +552,18 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
             const shortWindow = 100; // 100ms
 
             // Act: Make requests
-            const allowed1 = rateLimiter.check(identifier, limit, shortWindow);
+            const allowed1 = await rateLimiter.check(identifier, limit, shortWindow);
             expect(allowed1).toBe(true);
 
             // Act: Advance time past window
             advanceTime(shortWindow + 10);
 
             // Act: Should be allowed again
-            const allowed2 = rateLimiter.check(identifier, limit, shortWindow);
+            const allowed2 = await rateLimiter.check(identifier, limit, shortWindow);
             expect(allowed2).toBe(true);
 
             // Cleanup
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
           }
         ),
         { numRuns: 100 }
@@ -579,29 +580,29 @@ describe('AI Assistant Rate Limiting - Property Tests', () => {
 
             // Act: Exhaust limit
             for (let i = 0; i < limit; i++) {
-              rateLimiter.check(identifier, limit, longWindow);
+              await rateLimiter.check(identifier, limit, longWindow);
             }
 
             // Assert: Should be blocked
-            const blocked = rateLimiter.check(identifier, limit, longWindow);
+            const blocked = await rateLimiter.check(identifier, limit, longWindow);
             expect(blocked).toBe(false);
 
             // Act: Advance time but not past window
             advanceTime(longWindow / 2);
 
             // Assert: Still blocked
-            const stillBlocked = rateLimiter.check(identifier, limit, longWindow);
+            const stillBlocked = await rateLimiter.check(identifier, limit, longWindow);
             expect(stillBlocked).toBe(false);
 
             // Act: Advance past window
             advanceTime(longWindow / 2 + 100);
 
             // Assert: Now allowed
-            const nowAllowed = rateLimiter.check(identifier, limit, longWindow);
+            const nowAllowed = await rateLimiter.check(identifier, limit, longWindow);
             expect(nowAllowed).toBe(true);
 
             // Cleanup
-            rateLimiter.reset(identifier);
+            await rateLimiter.reset(identifier);
           }
         ),
         { numRuns: 50 } // Fewer runs due to time manipulation

@@ -78,55 +78,56 @@ describe('AI Assistant Caching - Property-Based Tests', () => {
         fc.constantFrom('python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'), // language
         fc.constantFrom('question', 'code-help', 'advice', 'general'), // request type
         async (message, day, languageId, requestType) => {
-      // Create context
-      const context: AssistantContext = {
-        userId: 'test-user',
-        tier: 'premium',
-        currentDay: day,
-        languageId,
-        dayState: {
-          day,
-          theory: { read: true },
-          tasks: [],
-          recapQuestion: { answered: false },
-        },
-        completedDays: [],
-        currentStreak: 0,
-        totalTasksCompleted: 0,
-        dayTheory: 'Test theory',
-        dayTasks: [],
-        recentMessages: [],
-      };
+          // Create context
+          const context: AssistantContext = {
+            userId: 'test-user',
+            tier: 'premium',
+            currentDay: day,
+            languageId,
+            dayState: {
+              code: '',
+              notes: '',
+              completedTasks: [],
+              isLocked: false,
+              lastUpdated: Date.now(),
+            },
+            completedDays: [],
+            currentStreak: 0,
+            totalTasksCompleted: 0,
+            dayTheory: 'Test theory',
+            dayTasks: [],
+            recentMessages: [],
+          };
 
-      const request: AssistantRequest = {
-        message,
-        context,
-        requestType: requestType as 'question' | 'code-help' | 'advice' | 'general',
-      };
+          const request: AssistantRequest = {
+            message,
+            context,
+            requestType: requestType as 'question' | 'code-help' | 'advice' | 'general',
+          };
 
-      // First request - should call AI
-      const startTime1 = Date.now();
-      const response1 = await service.sendMessage(request);
-      const duration1 = Date.now() - startTime1;
+          // First request - should call AI
+          const startTime1 = Date.now();
+          const response1 = await service.sendMessage(request);
+          const duration1 = Date.now() - startTime1;
 
-      // Verify first response
-      expect(response1).toBeDefined();
-      expect(response1.message).toBeTruthy();
+          // Verify first response
+          expect(response1).toBeDefined();
+          expect(response1.message).toBeTruthy();
 
-      // Second identical request - should be served from cache
-      const startTime2 = Date.now();
-      const response2 = await service.sendMessage(request);
-      const duration2 = Date.now() - startTime2;
+          // Second identical request - should be served from cache
+          const startTime2 = Date.now();
+          const response2 = await service.sendMessage(request);
+          const duration2 = Date.now() - startTime2;
 
-      // Verify second response is identical
-      expect(response2.message).toBe(response1.message);
+          // Verify second response is identical
+          expect(response2.message).toBe(response1.message);
 
-      // Cache hit should be significantly faster
-      // Allow some variance but cache should be at least 2x faster
-      expect(duration2).toBeLessThanOrEqual(duration1);
+          // Cache hit should be significantly faster
+          // Allow some variance but cache should be at least 2x faster
+          expect(duration2).toBeLessThanOrEqual(duration1);
 
-      // Verify cache has the entry
-      expect(apiCache.size()).toBeGreaterThan(0);
+          // Verify cache has the entry
+          expect(apiCache.size()).toBeGreaterThan(0);
         }
       ),
       { numRuns: 100 }
@@ -146,51 +147,52 @@ describe('AI Assistant Caching - Property-Based Tests', () => {
         fc.integer({ min: 1, max: 90 }), // day
         fc.constantFrom('python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'), // language
         async (message1, message2, day, languageId) => {
-      // Skip if messages are identical
-      if (message1.toLowerCase().trim() === message2.toLowerCase().trim()) {
-        return;
-      }
+          // Skip if messages are identical
+          if (message1.toLowerCase().trim() === message2.toLowerCase().trim()) {
+            return;
+          }
 
-      const context: AssistantContext = {
-        userId: 'test-user',
-        tier: 'premium',
-        currentDay: day,
-        languageId,
-        dayState: {
-          day,
-          theory: { read: true },
-          tasks: [],
-          recapQuestion: { answered: false },
-        },
-        completedDays: [],
-        currentStreak: 0,
-        totalTasksCompleted: 0,
-        dayTheory: 'Test theory',
-        dayTasks: [],
-        recentMessages: [],
-      };
+          const context: AssistantContext = {
+            userId: 'test-user',
+            tier: 'premium',
+            currentDay: day,
+            languageId,
+            dayState: {
+              code: '',
+              notes: '',
+              completedTasks: [],
+              isLocked: false,
+              lastUpdated: Date.now(),
+            },
+            completedDays: [],
+            currentStreak: 0,
+            totalTasksCompleted: 0,
+            dayTheory: 'Test theory',
+            dayTasks: [],
+            recentMessages: [],
+          };
 
-      const request1: AssistantRequest = {
-        message: message1,
-        context,
-        requestType: 'question',
-      };
+          const request1: AssistantRequest = {
+            message: message1,
+            context,
+            requestType: 'question',
+          };
 
-      const request2: AssistantRequest = {
-        message: message2,
-        context,
-        requestType: 'question',
-      };
+          const request2: AssistantRequest = {
+            message: message2,
+            context,
+            requestType: 'question',
+          };
 
-      // Send both requests
-      await service.sendMessage(request1);
-      const initialCacheSize = apiCache.size();
-      
-      await service.sendMessage(request2);
-      const finalCacheSize = apiCache.size();
+          // Send both requests
+          await service.sendMessage(request1);
+          const initialCacheSize = apiCache.size();
 
-      // Cache should have grown (different messages = different cache entries)
-      expect(finalCacheSize).toBeGreaterThan(initialCacheSize);
+          await service.sendMessage(request2);
+          const finalCacheSize = apiCache.size();
+
+          // Cache should have grown (different messages = different cache entries)
+          expect(finalCacheSize).toBeGreaterThan(initialCacheSize);
         }
       ),
       { numRuns: 100 }
@@ -209,55 +211,56 @@ describe('AI Assistant Caching - Property-Based Tests', () => {
         fc.integer({ min: 1, max: 90 }), // day
         fc.constantFrom('python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'), // language
         async (baseMessage, day, languageId) => {
-      const context: AssistantContext = {
-        userId: 'test-user',
-        tier: 'premium',
-        currentDay: day,
-        languageId,
-        dayState: {
-          day,
-          theory: { read: true },
-          tasks: [],
-          recapQuestion: { answered: false },
-        },
-        completedDays: [],
-        currentStreak: 0,
-        totalTasksCompleted: 0,
-        dayTheory: 'Test theory',
-        dayTasks: [],
-        recentMessages: [],
-      };
+          const context: AssistantContext = {
+            userId: 'test-user',
+            tier: 'premium',
+            currentDay: day,
+            languageId,
+            dayState: {
+              code: '',
+              notes: '',
+              completedTasks: [],
+              isLocked: false,
+              lastUpdated: Date.now(),
+            },
+            completedDays: [],
+            currentStreak: 0,
+            totalTasksCompleted: 0,
+            dayTheory: 'Test theory',
+            dayTasks: [],
+            recentMessages: [],
+          };
 
-      // Create variations of the message
-      const variations = [
-        baseMessage,
-        baseMessage.toUpperCase(),
-        baseMessage.toLowerCase(),
-        `  ${baseMessage}  `, // Extra whitespace
-        baseMessage.replace(/\s+/g, '   '), // Multiple spaces
-      ];
+          // Create variations of the message
+          const variations = [
+            baseMessage,
+            baseMessage.toUpperCase(),
+            baseMessage.toLowerCase(),
+            `  ${baseMessage}  `, // Extra whitespace
+            baseMessage.replace(/\s+/g, '   '), // Multiple spaces
+          ];
 
-      // Send first variation
-      const request1: AssistantRequest = {
-        message: variations[0],
-        context,
-        requestType: 'question',
-      };
-      await service.sendMessage(request1);
-      const initialCacheSize = apiCache.size();
+          // Send first variation
+          const request1: AssistantRequest = {
+            message: variations[0],
+            context,
+            requestType: 'question',
+          };
+          await service.sendMessage(request1);
+          const initialCacheSize = apiCache.size();
 
-      // Send other variations - they should all hit the same cache entry
-      for (let i = 1; i < variations.length; i++) {
-        const request: AssistantRequest = {
-          message: variations[i],
-          context,
-          requestType: 'question',
-        };
-        await service.sendMessage(request);
-      }
+          // Send other variations - they should all hit the same cache entry
+          for (let i = 1; i < variations.length; i++) {
+            const request: AssistantRequest = {
+              message: variations[i],
+              context,
+              requestType: 'question',
+            };
+            await service.sendMessage(request);
+          }
 
-      // Cache size should not have grown (all variations use same cache entry)
-      expect(apiCache.size()).toBe(initialCacheSize);
+          // Cache size should not have grown (all variations use same cache entry)
+          expect(apiCache.size()).toBe(initialCacheSize);
         }
       ),
       { numRuns: 100 }
@@ -276,59 +279,59 @@ describe('AI Assistant Caching - Property-Based Tests', () => {
         fc.integer({ min: 1, max: 89 }), // day1 (max 89 so day2 can be day1+1)
         fc.constantFrom('python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'), // language1
         async (message, day1, language1) => {
-      const day2 = day1 + 1;
-      const languages = ['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'];
-      const language2 = languages.find(l => l !== language1) || 'javascript';
+          const day2 = day1 + 1;
+          const languages = ['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go'];
+          const language2 = languages.find(l => l !== language1) || 'javascript';
 
-      // Context 1
-      const context1: AssistantContext = {
-        userId: 'test-user',
-        tier: 'premium',
-        currentDay: day1,
-        languageId: language1,
-        dayState: {
-          day: day1,
-          theory: { read: true },
-          tasks: [],
-          recapQuestion: { answered: false },
-        },
-        completedDays: [],
-        currentStreak: 0,
-        totalTasksCompleted: 0,
-        dayTheory: 'Test theory',
-        dayTasks: [],
-        recentMessages: [],
-      };
+          // Context 1
+          const context1: AssistantContext = {
+            userId: 'test-user',
+            tier: 'premium',
+            currentDay: day1,
+            languageId: language1,
+            dayState: {
+              code: '',
+              notes: '',
+              completedTasks: [],
+              isLocked: false,
+              lastUpdated: Date.now(),
+            },
+            completedDays: [],
+            currentStreak: 0,
+            totalTasksCompleted: 0,
+            dayTheory: 'Test theory',
+            dayTasks: [],
+            recentMessages: [],
+          };
 
-      // Context 2 (different day)
-      const context2: AssistantContext = {
-        ...context1,
-        currentDay: day2,
-        dayState: {
-          ...context1.dayState,
-          day: day2,
-        },
-      };
+          // Context 2 (different day)
+          const context2: AssistantContext = {
+            ...context1,
+            currentDay: day2,
+            dayState: {
+              ...context1.dayState!,
+            },
+          };
 
-      // Context 3 (different language)
-      const context3: AssistantContext = {
-        ...context1,
-        languageId: language2,
-      };
+          // Context 3 (different language)
+          const context3: AssistantContext = {
+            ...context1,
+            languageId: language2,
+          };
 
-      // Send same message with different contexts
-      await service.sendMessage({ message, context: context1, requestType: 'question' });
-      const cacheSize1 = apiCache.size();
+          // Send same message with different contexts
+          await service.sendMessage({ message, context: context1, requestType: 'question' });
+          const cacheSize1 = apiCache.size();
 
-      await service.sendMessage({ message, context: context2, requestType: 'question' });
-      const cacheSize2 = apiCache.size();
+          await service.sendMessage({ message, context: context2, requestType: 'question' });
+          const cacheSize2 = apiCache.size();
 
-      await service.sendMessage({ message, context: context3, requestType: 'question' });
-      const cacheSize3 = apiCache.size();
+          await service.sendMessage({ message, context: context3, requestType: 'question' });
+          const cacheSize3 = apiCache.size();
 
-      // Each context should create a new cache entry
-      expect(cacheSize2).toBeGreaterThan(cacheSize1);
-      expect(cacheSize3).toBeGreaterThan(cacheSize2);
+          // Each context should create a new cache entry
+          expect(cacheSize2).toBeGreaterThan(cacheSize1);
+          expect(cacheSize3).toBeGreaterThan(cacheSize2);
         }
       ),
       { numRuns: 100 }

@@ -26,7 +26,7 @@ interface PromptTemplates {
  */
 interface PromptBuilderConfig {
   maxPromptLength: number;
-  locale: 'ru';
+  locale: 'ru' | 'en';
 }
 
 /**
@@ -350,6 +350,6 @@ export class PromptBuilder {
 /**
  * Create a PromptBuilder instance
  */
-export function createPromptBuilder(): PromptBuilder {
-  return new PromptBuilder({ locale: 'ru' });
+export function createPromptBuilder(locale: 'ru' | 'en' = 'ru'): PromptBuilder {
+  return new PromptBuilder({ locale });
 }

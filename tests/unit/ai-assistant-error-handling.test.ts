@@ -49,8 +49,8 @@ const assistantRequestArbitrary = fc.record({
   message: fc.string({ minLength: 1, maxLength: 2000 }),
   context: assistantContextArbitrary,
   requestType: requestTypeArbitrary,
-  code: fc.option(fc.string({ minLength: 10, maxLength: 500 })),
-  taskId: fc.option(fc.uuid()),
+  code: fc.option(fc.string({ minLength: 10, maxLength: 500 }), { nil: undefined }),
+  taskId: fc.option(fc.uuid(), { nil: undefined }),
 });
 
 /**
@@ -168,10 +168,10 @@ describe('AI Assistant Error Handling - Property Tests', () => {
           // Mock AI client to fail
           const { callChatCompletionWithTier } = await import('@/lib/ai-client');
           const mockCall = callChatCompletionWithTier as ReturnType<typeof vi.fn>;
-          
+
           // Clear previous mocks
           mockCall.mockClear();
-          
+
           // Mock to fail all attempts
           mockCall.mockRejectedValue(new Error('Service failure'));
 
@@ -244,7 +244,7 @@ describe('AI Assistant Error Handling - Property Tests', () => {
                 errors.push(error.message);
               }
             }
-            
+
             // Clear mock for next scenario
             mockCall.mockClear();
           }

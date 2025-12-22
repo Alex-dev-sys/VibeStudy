@@ -19,10 +19,10 @@ const codeBlockArbitrary = fc.record({
  * Arbitrary generator for Message metadata
  */
 const messageMetadataArbitrary = fc.record({
-  codeBlocks: fc.option(fc.array(codeBlockArbitrary, { minLength: 0, maxLength: 3 })),
-  suggestions: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 100 }), { minLength: 0, maxLength: 5 })),
-  relatedTopics: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 50 }), { minLength: 0, maxLength: 5 })),
-  requestType: fc.option(fc.constantFrom('question', 'code-help', 'advice', 'general')),
+  codeBlocks: fc.option(fc.array(codeBlockArbitrary, { minLength: 0, maxLength: 3 }), { nil: undefined }),
+  suggestions: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 100 }), { minLength: 0, maxLength: 5 }), { nil: undefined }),
+  relatedTopics: fc.option(fc.array(fc.string({ minLength: 1, maxLength: 50 }), { minLength: 0, maxLength: 5 }), { nil: undefined }),
+  requestType: fc.option(fc.constantFrom('question', 'code-help', 'advice', 'general'), { nil: undefined }),
 });
 
 /**
@@ -34,7 +34,7 @@ const messageArbitrary = fc.record({
   role: fc.constantFrom('user', 'assistant', 'system'),
   content: fc.string({ minLength: 1, maxLength: 2000 }),
   timestamp: fc.integer({ min: 0, max: Date.now() + 1000000 }),
-  metadata: fc.option(messageMetadataArbitrary),
+  metadata: fc.option(messageMetadataArbitrary, { nil: undefined }),
 });
 
 describe('AI Assistant Message Model - Property Tests', () => {
@@ -49,14 +49,14 @@ describe('AI Assistant Message Model - Property Tests', () => {
       fc.property(messageArbitrary, (message: Message) => {
         // Every message must have a timestamp property
         expect(message).toHaveProperty('timestamp');
-        
+
         // Timestamp must be a number
         expect(typeof message.timestamp).toBe('number');
-        
+
         // Timestamp must be a valid positive number (not NaN, not negative)
         expect(message.timestamp).toBeGreaterThanOrEqual(0);
         expect(Number.isFinite(message.timestamp)).toBe(true);
-        
+
         // Timestamp should be a reasonable Unix timestamp (after year 2000, before far future)
         const year2000 = 946684800000; // Jan 1, 2000 in milliseconds
         const farFuture = Date.now() + (100 * 365 * 24 * 60 * 60 * 1000); // 100 years from now
@@ -76,16 +76,16 @@ describe('AI Assistant Message Model - Property Tests', () => {
         expect(message).toHaveProperty('role');
         expect(message).toHaveProperty('content');
         expect(message).toHaveProperty('timestamp');
-        
+
         // ID and sessionId must be non-empty strings
         expect(typeof message.id).toBe('string');
         expect(message.id.length).toBeGreaterThan(0);
         expect(typeof message.sessionId).toBe('string');
         expect(message.sessionId.length).toBeGreaterThan(0);
-        
+
         // Role must be one of the valid values
         expect(['user', 'assistant', 'system']).toContain(message.role);
-        
+
         // Content must be a non-empty string
         expect(typeof message.content).toBe('string');
         expect(message.content.length).toBeGreaterThan(0);
@@ -100,11 +100,11 @@ describe('AI Assistant Message Model - Property Tests', () => {
         if (message.metadata) {
           // If metadata exists, it should be an object
           expect(typeof message.metadata).toBe('object');
-          
+
           // If codeBlocks exist, they should be an array
           if (message.metadata.codeBlocks) {
             expect(Array.isArray(message.metadata.codeBlocks)).toBe(true);
-            
+
             // Each code block should have language and code
             message.metadata.codeBlocks.forEach((block: CodeBlock) => {
               expect(block).toHaveProperty('language');
@@ -113,7 +113,7 @@ describe('AI Assistant Message Model - Property Tests', () => {
               expect(typeof block.code).toBe('string');
             });
           }
-          
+
           // If suggestions exist, they should be an array of strings
           if (message.metadata.suggestions) {
             expect(Array.isArray(message.metadata.suggestions)).toBe(true);
@@ -121,7 +121,7 @@ describe('AI Assistant Message Model - Property Tests', () => {
               expect(typeof suggestion).toBe('string');
             });
           }
-          
+
           // If relatedTopics exist, they should be an array of strings
           if (message.metadata.relatedTopics) {
             expect(Array.isArray(message.metadata.relatedTopics)).toBe(true);
@@ -143,7 +143,7 @@ describe('AI Assistant Message Model - Property Tests', () => {
         (messages: Message[]) => {
           // Sort messages by timestamp
           const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
-          
+
           // Verify that timestamps are in order
           for (let i = 1; i < sortedMessages.length; i++) {
             expect(sortedMessages[i].timestamp).toBeGreaterThanOrEqual(sortedMessages[i - 1].timestamp);

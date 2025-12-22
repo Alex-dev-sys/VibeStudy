@@ -16,11 +16,11 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
   beforeEach(() => {
     // Clear localStorage
     localStorage.clear();
-    
+
     // Reset stores to default state
     useProgressStore.getState().resetProgress();
     useAchievementsStore.getState().resetAchievements();
-    
+
     // Create fresh context aggregator
     resetContextAggregator();
     contextAggregator = new ContextAggregator();
@@ -53,9 +53,9 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
             contextAggregator.invalidateCache(userId);
-            
+
             const uniqueCompletedDays = Array.from(new Set(completedDays)).sort((a, b) => a - b);
-            
+
             // Mark each day as complete
             for (const day of uniqueCompletedDays) {
               progressStore.setActiveDay(day);
@@ -69,7 +69,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             expect(context.completedDays).toBeDefined();
             expect(Array.isArray(context.completedDays)).toBe(true);
             expect(context.completedDays.length).toBe(uniqueCompletedDays.length);
-            
+
             // All completed days should be in the context
             uniqueCompletedDays.forEach(day => {
               expect(context.completedDays).toContain(day);
@@ -92,9 +92,9 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             const achievementsStore = useAchievementsStore.getState();
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
-            
+
             progressStore.setLanguage(languageId);
-            
+
             const uniqueCompletedDays = Array.from(new Set(completedDays)).sort((a, b) => a - b);
             for (const day of uniqueCompletedDays) {
               progressStore.setActiveDay(day);
@@ -108,7 +108,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             expect(progress.completedDays).toBeDefined();
             expect(progress.completedDays.length).toBe(uniqueCompletedDays.length);
             expect(progress.languageId).toBe(languageId);
-            
+
             // Verify all completed days are present
             uniqueCompletedDays.forEach(day => {
               expect(progress.completedDays).toContain(day);
@@ -142,7 +142,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
             contextAggregator.invalidateCache(userId);
-            
+
             // Update achievement stats
             achievementsStore.updateStats({
               totalTasksCompleted: totalTasks,
@@ -190,7 +190,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             expect(achievements.stats.currentStreak).toBe(currentStreak);
             expect(achievements.stats.longestStreak).toBe(longestStreak);
             expect(achievements.stats.totalTasksCompleted).toBe(totalTasks);
-            
+
             // Unlocked achievements array should exist
             expect(Array.isArray(achievements.unlockedAchievements)).toBe(true);
           }
@@ -214,13 +214,13 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
             contextAggregator.invalidateCache(userId);
-            
+
             const uniqueCompletedDays = Array.from(new Set(completedDays)).sort((a, b) => a - b);
             for (const day of uniqueCompletedDays) {
               progressStore.setActiveDay(day);
               progressStore.markDayComplete(day);
             }
-            
+
             achievementsStore.updateStats({
               totalTasksCompleted: totalTasks,
               currentStreak: streak,
@@ -233,7 +233,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             expect(context.completedDays.length).toBe(uniqueCompletedDays.length);
             expect(context.totalTasksCompleted).toBe(totalTasks);
             expect(context.currentStreak).toBe(streak);
-            
+
             // Verify completed days match
             uniqueCompletedDays.forEach(day => {
               expect(context.completedDays).toContain(day);
@@ -258,9 +258,9 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
             contextAggregator.invalidateCache(userId);
-            
+
             progressStore.setActiveDay(day);
-            
+
             // Complete some tasks (filter out duplicates)
             const uniqueTasks = Array.from(new Set(completedTasks));
             for (const taskId of uniqueTasks) {
@@ -274,12 +274,12 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             // Day state should exist after toggling tasks
             if (uniqueTasks.length > 0) {
               expect(context.dayState).toBeDefined();
-              expect(context.dayState.completedTasks).toBeDefined();
-              expect(Array.isArray(context.dayState.completedTasks)).toBe(true);
-              
+              expect(context.dayState!.completedTasks).toBeDefined();
+              expect(Array.isArray(context.dayState!.completedTasks)).toBe(true);
+
               // All completed tasks should be in the day state
               uniqueTasks.forEach(taskId => {
-                expect(context.dayState.completedTasks).toContain(taskId);
+                expect(context.dayState!.completedTasks).toContain(taskId);
               });
             }
           }
@@ -304,7 +304,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             progressStore.resetProgress();
             achievementsStore.resetAchievements();
             contextAggregator.invalidateCache(userId);
-            
+
             progressStore.setLanguage(languageId);
             progressStore.setActiveDay(day);
 
@@ -321,7 +321,7 @@ describe('AI Assistant Progress Inclusion - Property Tests', () => {
             expect(context.totalTasksCompleted).toBeDefined();
             expect(context.dayTheory).toBeDefined();
             expect(context.recentMessages).toBeDefined();
-            
+
             // Verify types
             expect(typeof context.userId).toBe('string');
             expect(typeof context.tier).toBe('string');

@@ -18,7 +18,7 @@ import type { UserTier } from '@/types';
 interface AIAssistantServiceConfig {
   maxRetries: number;
   retryDelay: number;
-  locale: 'ru';
+  locale: 'ru' | 'en';
 }
 
 /**
@@ -131,7 +131,7 @@ export class AIAssistantService {
       );
 
       modelUsed = aiResponse.model || 'unknown';
-      
+
       console.log('[AIService] AI response received, length:', aiResponse.raw?.length || 0);
       console.log('[AIService] First 200 chars:', aiResponse.raw?.substring(0, 200));
 
@@ -149,7 +149,7 @@ export class AIAssistantService {
         console.error('[AIService] Invalid response format:', parsedResponse);
         throw new Error('Invalid AI response format');
       }
-      
+
       console.log('[AIService] Response validated successfully');
 
       // Cache the response (5 minute TTL for AI assistant responses)
@@ -238,7 +238,7 @@ export class AIAssistantService {
   ): Promise<{ raw: string; model?: string }> {
     try {
       console.log(`[AIService] Calling AI (attempt ${attempt}/${this.config.maxRetries})`);
-      
+
       const result = await callChatCompletion({
         messages,
         temperature: 0.7,
@@ -246,14 +246,14 @@ export class AIAssistantService {
       });
 
       console.log('[AIService] AI call successful');
-      
+
       return {
         raw: result.raw,
         model: result.model,
       };
     } catch (error) {
       console.error(`[AIService] AI call failed (attempt ${attempt}):`, error);
-      
+
       if (attempt < this.config.maxRetries) {
         // Wait before retry
         await this.delay(this.config.retryDelay * attempt);
