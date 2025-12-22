@@ -19,6 +19,10 @@ process.on('SIGINT', () => {
 });
 
 // Start the bot
+console.log('📝 Available env keys:', Object.keys(process.env).filter(key =>
+  key.includes('BOT') || key.includes('TOKEN') || key.includes('SUPABASE')
+));
+
 startBot().catch((error) => {
   console.error('❌ Критическая ошибка:', error);
   process.exit(1);
