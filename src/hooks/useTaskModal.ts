@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useKnowledgeProfileStore } from '@/store/knowledge-profile-store';
 import { useTranslations, useLocaleStore } from '@/store/locale-store';
+import { useAnalyticsStore } from '@/store/analytics-store';
 import { announceLiveRegion } from '@/lib/accessibility/focus-manager';
 import type { GeneratedTask } from '@/types';
 
@@ -56,6 +57,7 @@ export function useTaskModal({
   const { locale } = useLocaleStore();
   const recordAttempt = useKnowledgeProfileStore((state) => state.recordAttempt);
   const updateTopicMastery = useKnowledgeProfileStore((state) => state.updateTopicMastery);
+  const trackAnalytics = useAnalyticsStore((state) => state.trackTaskComplete);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -146,6 +148,22 @@ export function useTaskModal({
         setShowConfetti(true);
         announceLiveRegion(`${t.notifications.congratulations} ${t.notifications.taskCompleted}`, 'assertive');
       }
+
+      // Track analytics (Fire and forget)
+      trackAnalytics(day, task.id, result.success);
+
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: task.id,
+          day,
+          startTime,
+          endTime: Date.now(),
+          success: result.success,
+          attempts: newAttemptsCount
+        })
+      }).catch(err => console.error('Failed to track analytics:', err));
     } catch (error) {
       setCheckResult(null);
       setOutput(`❌ ${t.taskModal.checkError}`);
