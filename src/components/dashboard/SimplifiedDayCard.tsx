@@ -25,15 +25,15 @@ export function SimplifiedDayCard({ day, previousDay, languageId }: SimplifiedDa
     requestInitialGeneration,
     regenerateTask,
     regeneratingTaskId
-  } = useTaskGenerator({ 
-    currentDay: day, 
-    previousDay, 
-    languageId, 
-    autoLoad: false 
+  } = useTaskGenerator({
+    currentDay: day,
+    previousDay,
+    languageId,
+    autoLoad: false
   });
 
   const language = useMemo(
-    () => LANGUAGES.find((item) => item.id === languageId)!,
+    () => LANGUAGES.find((item) => item.id === languageId) ?? LANGUAGES[0],
     [languageId]
   );
 

@@ -24,7 +24,7 @@ export default function LearningDashboard() {
   const activePath = activePathId ? getPathById(activePathId) : null;
   const maxDays = activePath?.duration ?? 90;
 
-  const curriculum = useMemo(() => buildCurriculum(languageId), [languageId]);
+  const curriculum = useMemo(() => buildCurriculum(languageId, activePathId || undefined), [languageId, activePathId]);
   const currentDay = curriculum.find((day) => day.day === activeDay) ?? curriculum[0];
   const previousDay = curriculum.find((day) => day.day === activeDay - 1);
 
