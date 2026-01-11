@@ -2,32 +2,16 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useHelpStore } from '@/store/help-store';
 import { useCosmicTheme } from '@/store/cosmic-theme-store';
-import { HelpCircle, Trash2, Settings, AlertTriangle } from 'lucide-react';
+import { Trash2, Settings, AlertTriangle } from 'lucide-react';
 import { toast } from '@/lib/ui/toast';
 import { Modal } from '@/components/ui/modal';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function SettingsSection() {
-  const { getMostAccessedTopics } = useHelpStore();
   const { theme, setTheme } = useCosmicTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleViewHelpStats = () => {
-    const topTopics = getMostAccessedTopics(5);
-    if (topTopics.length === 0) {
-      toast.info('Статистика помощи', 'Ты еще не использовал справочную систему');
-      return;
-    }
-
-    const message = topTopics
-      .map((topic, index) => `${index + 1}. ${topic.topicId}: ${topic.count} раз`)
-      .join('\n');
-
-    toast.info('Самые просматриваемые темы', message);
-  };
 
   const handleDeleteAllData = () => {
     setShowDeleteModal(true);
@@ -125,23 +109,6 @@ export function SettingsSection() {
             </div>
           </div>
 
-          {/* Help Statistics */}
-          <button
-            onClick={handleViewHelpStats}
-            className="flex w-full items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3 transition-colors hover:bg-white/10"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400">
-                <HelpCircle className="h-4 w-4" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium text-white">Статистика помощи</p>
-                <p className="text-xs text-white/50">Часто просматриваемые темы</p>
-              </div>
-            </div>
-            <span className="text-xs text-white/40">Показать</span>
-          </button>
-
           {/* Delete All Data */}
           <button
             onClick={handleDeleteAllData}
@@ -197,4 +164,3 @@ export function SettingsSection() {
     </motion.div>
   );
 }
-
