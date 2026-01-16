@@ -4,7 +4,6 @@
  */
 
 import { Address } from '@ton/core';
-import TonWeb from 'tonweb';
 import { createHmac, randomBytes } from 'crypto';
 import { retryBlockchain } from '@/lib/utils/retry';
 
@@ -29,27 +28,47 @@ export type TierType = typeof TON_PRICING.PREMIUM.tier | typeof TON_PRICING.PRO_
 // Environment variables
 const TON_WALLET_ADDRESS = process.env.TON_WALLET_ADDRESS;
 const TONCENTER_API_KEY = process.env.TONCENTER_API_KEY;
-const TON_API_KEY = process.env.TON_API_KEY;
 
 // TON network configuration
-const MAINNET_API_URL = 'https://toncenter.com/api/v2/jsonRPC';
-const TESTNET_API_URL = 'https://testnet.toncenter.com/api/v2/jsonRPC';
+const MAINNET_API_URL = 'https://toncenter.com/api/v2';
+const TESTNET_API_URL = 'https://testnet.toncenter.com/api/v2';
 
 // Use testnet for development, mainnet for production
 const isProduction = process.env.NODE_ENV === 'production';
-const API_URL = isProduction ? MAINNET_API_URL : TESTNET_API_URL;
+const API_BASE_URL = isProduction ? MAINNET_API_URL : TESTNET_API_URL;
 
 /**
- * Initialize TonWeb client
+ * Make API call to toncenter
  */
-function getTonWebClient() {
+async function toncenterRequest<T>(method: string, params: Record<string, string | number> = {}): Promise<T> {
   if (!TONCENTER_API_KEY) {
     throw new Error('TONCENTER_API_KEY is not configured');
   }
 
-  return new TonWeb(new TonWeb.HttpProvider(API_URL, {
-    apiKey: TONCENTER_API_KEY,
-  }));
+  const queryParams = new URLSearchParams({
+    ...Object.fromEntries(
+      Object.entries(params).map(([k, v]) => [k, String(v)])
+    ),
+    api_key: TONCENTER_API_KEY,
+  });
+
+  const response = await fetch(`${API_BASE_URL}/${method}?${queryParams.toString()}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Toncenter API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    throw new Error(data.error || 'Toncenter API error');
+  }
+
+  return data.result;
 }
 
 /**
@@ -149,7 +168,7 @@ export interface PaymentData {
 export function createPaymentData(tier: TierType, userId: string): PaymentData {
   const pricing = tier === 'premium' ? TON_PRICING.PREMIUM : TON_PRICING.PRO_PLUS;
   const comment = generatePaymentComment(userId);
-  
+
   // Convert TON to nanoTON (1 TON = 10^9 nanoTON)
   const amountNano = (pricing.amount * 1_000_000_000).toString();
 
@@ -176,9 +195,9 @@ export interface TonTransaction {
 }
 
 /**
- * Raw transaction response from TON API
+ * Raw transaction response from toncenter API
  */
-interface TonApiTransaction {
+interface ToncenterTransaction {
   transaction_id?: { hash?: string };
   in_msg?: {
     source?: string;
@@ -196,16 +215,18 @@ export async function getWalletTransactions(
   limit: number = 100
 ): Promise<TonTransaction[]> {
   return retryBlockchain(async () => {
-    const tonweb = getTonWebClient();
     const walletAddress = getWalletAddress();
 
-    const response = await tonweb.provider.getTransactions(walletAddress, limit);
+    const transactions = await toncenterRequest<ToncenterTransaction[]>('getTransactions', {
+      address: walletAddress,
+      limit,
+    });
 
-    if (!Array.isArray(response)) {
+    if (!Array.isArray(transactions)) {
       return [];
     }
 
-    return response.map((tx: TonApiTransaction) => ({
+    return transactions.map((tx: ToncenterTransaction) => ({
       hash: tx.transaction_id?.hash || '',
       from: tx.in_msg?.source || '',
       to: tx.in_msg?.destination || walletAddress,
