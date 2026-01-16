@@ -1,36 +1,17 @@
-export const formatDayLabel = (day: number) => `День ${day}`;
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-export const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
-export const partition = <T>(array: T[], size: number): T[][] => {
-  const result: T[][] = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
-  }
-  return result;
-};
-
-export const safeJSONParse = <T>(value: string | null, fallback: T): T => {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch (error) {
-    console.warn('Не удалось распарсить JSON', error);
-    return fallback;
-  }
-};
-
-export const generateUID = () => crypto.randomUUID();
-
+// Difficulty color mapping for tasks/challenges
 export const difficultyColorMap: Record<string, string> = {
-  easy: 'text-emerald-300',
-  medium: 'text-sky-300',
-  hard: 'text-orange-300',
-  advanced: 'text-fuchsia-300',
-  challenge: 'text-rose-300'
-};
-
-export function cn(...inputs: Array<string | false | null | undefined>) {
-  return inputs.filter(Boolean).join(' ');
+  easy: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  medium: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  hard: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  beginner: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  intermediate: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  advanced: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
 }
 

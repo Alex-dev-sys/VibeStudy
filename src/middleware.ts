@@ -1,6 +1,121 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// CSRF token validation using Web Crypto API (Edge Runtime compatible)
+const CSRF_HEADER_NAME = 'x-csrf-token';
+const CSRF_COOKIE_NAME = 'csrf_token';
+
+function getCsrfSecret(): string | null {
+  return process.env.CSRF_SECRET || null;
+}
+// Convert ArrayBuffer to hex string
+function arrayBufferToHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Create HMAC-SHA256 signature using Web Crypto API
+async function createHmacSignature(secret: string, data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret) as BufferSource;
+  const dataToSign = encoder.encode(data) as BufferSource;
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    dataToSign
+  );
+
+  return arrayBufferToHex(signature).slice(0, 16);
+}
+
+async function verifyCsrfToken(token: string): Promise<boolean> {
+  const secret = getCsrfSecret();
+  if (!secret) {
+    // No secret configured - skip validation in development
+    if (process.env.NODE_ENV === 'production') {
+      return false;
+    }
+    return true;
+  }
+
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return false;
+    }
+
+    const [randomToken, timestamp, providedSignature] = parts;
+
+    // Check token expiration (24 hours)
+    const tokenAge = Date.now() - parseInt(timestamp, 10);
+    if (tokenAge > 24 * 60 * 60 * 1000) {
+      return false;
+    }
+
+    // Verify signature using Web Crypto
+    const expectedSignature = await createHmacSignature(secret, `${randomToken}:${timestamp}`);
+
+    return providedSignature === expectedSignature;
+  } catch {
+    return false;
+  }
+}
+
+async function validateCsrfForRequest(request: NextRequest): Promise<boolean> {
+  const headerToken = request.headers.get(CSRF_HEADER_NAME);
+  const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+
+  // Both must exist
+  if (!headerToken || !cookieToken) {
+    return false;
+  }
+
+  // Both must match
+  if (headerToken !== cookieToken) {
+    return false;
+  }
+
+  // Token must be valid
+  return await verifyCsrfToken(headerToken);
+}
+
+// Endpoints exempt from CSRF protection (webhooks, external callbacks)
+const CSRF_EXEMPT_PATHS = [
+  '/api/webhook',
+  '/api/telegram/webhook',
+  '/api/cron/',
+  '/api/health',
+  '/api/ton/create-payment', // Initial payment creation needs no CSRF
+];
+
+function needsCsrfProtection(request: NextRequest): boolean {
+  const method = request.method.toUpperCase();
+  if (!['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+    return false;
+  }
+
+  const pathname = request.nextUrl.pathname;
+
+  // Check if path is exempt
+  for (const exemptPath of CSRF_EXEMPT_PATHS) {
+    if (pathname.startsWith(exemptPath)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export async function middleware(request: NextRequest) {
   // Mobile detection - redirect to mobile-redirect page
   const userAgent = request.headers.get('user-agent') || '';
@@ -13,6 +128,17 @@ export async function middleware(request: NextRequest) {
 
   if (isMobile && !isMobileRedirectPage && !isApiRoute && !isStaticFile) {
     return NextResponse.redirect(new URL('/mobile-redirect', request.url));
+  }
+
+  // CSRF Protection for API mutation endpoints
+  if (isApiRoute && needsCsrfProtection(request)) {
+    const isValidCsrf = await validateCsrfForRequest(request);
+    if (!isValidCsrf) {
+      return NextResponse.json(
+        { error: 'CSRF_TOKEN_INVALID', message: 'Invalid or missing CSRF token' },
+        { status: 403 }
+      );
+    }
   }
 
   let response = NextResponse.next({
@@ -104,3 +230,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
+

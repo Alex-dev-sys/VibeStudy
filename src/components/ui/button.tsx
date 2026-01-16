@@ -1,127 +1,79 @@
-'use client';
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2 } from "lucide-react"
 
-import { cva, type VariantProps } from 'class-variance-authority';
-import { Slot } from '@radix-ui/react-slot';
-import { clsx } from 'clsx';
-import { motion, type HTMLMotionProps } from 'framer-motion';
-import type { ButtonHTMLAttributes } from 'react';
-import { useState } from 'react';
-import { LoadingSpinner } from './LoadingSpinner';
-import { useReducedMotion } from '@/lib/accessibility/reduced-motion';
+import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-full transition-all duration-200 transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary focus-visible:ring-offset-[#0c061c] disabled:pointer-events-none disabled:cursor-not-allowed',
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        primary:
-          'bg-gradient-to-r from-[#ff0094] via-[#ff5bc8] to-[#ffd200] text-[#25031f] font-bold shadow-[0_20px_45px_rgba(255,0,148,0.45)] hover:brightness-110 hover:shadow-[0_28px_60px_rgba(255,0,148,0.55)] hover:-translate-y-1 hover:scale-[1.02] disabled:bg-[var(--disabled-bg)] disabled:border disabled:border-[var(--disabled-border)] disabled:text-[var(--disabled-text)] disabled:shadow-none disabled:from-transparent disabled:via-transparent disabled:to-transparent disabled:brightness-100 disabled:translate-y-0 disabled:scale-100 z-[var(--z-content)]',
+        default:
+          "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:brightness-110 hover:-translate-y-0.5",
+        gradient:
+          "bg-gradient-to-r from-[hsl(330,100%,50%)] via-[hsl(340,90%,65%)] to-[hsl(49,100%,50%)] text-[hsl(270,50%,10%)] font-bold shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/60 hover:brightness-110 hover:-translate-y-1",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background/50 shadow-sm hover:bg-accent/20 hover:text-accent-foreground hover:border-primary/50 backdrop-blur-sm",
         secondary:
-          'bg-white/10 text-white/90 font-medium hover:bg-white/15 shadow-[0_8px_20px_rgba(12,6,28,0.25)] hover:shadow-[0_12px_28px_rgba(12,6,28,0.35)] hover:-translate-y-0.5 disabled:bg-[var(--disabled-bg)] disabled:text-[var(--disabled-text)] disabled:shadow-none disabled:translate-y-0',
-        ghost: 'bg-white/5 text-white/80 font-normal hover:bg-white/10 hover:text-white/95 hover:-translate-y-0.5 disabled:text-[var(--disabled-text)] disabled:bg-transparent disabled:translate-y-0'
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:-translate-y-0.5",
+        ghost:
+          "hover:bg-accent/20 hover:text-accent-foreground",
+        link:
+          "text-primary underline-offset-4 hover:underline",
+        glow:
+          "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_20px_rgba(255,0,148,0.3)] hover:shadow-[0_0_30px_rgba(255,0,148,0.5)] hover:bg-primary/30 hover:-translate-y-0.5",
+        // Alias for backward compatibility
+        primary:
+          "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:brightness-110 hover:-translate-y-0.5",
       },
       size: {
-        sm: 'px-3 py-1.5 text-sm min-h-[44px] min-w-[44px]',
-        md: 'px-5 py-2.5 text-base min-h-[44px] min-w-[44px]',
-        lg: 'px-8 py-4 text-lg min-h-[56px] min-w-[56px] font-bold'
-      }
+        default: "h-10 px-5 py-2",
+        sm: "h-9 rounded-lg px-4 text-xs",
+        lg: "h-12 rounded-xl px-8 text-base font-semibold",
+        xl: "h-14 rounded-2xl px-10 text-lg font-bold",
+        icon: "h-10 w-10 rounded-xl",
+        // Alias for backward compatibility
+        md: "h-10 px-5 py-2",
+      },
     },
     defaultVariants: {
-      variant: 'primary',
-      size: 'md'
-    }
+      variant: "default",
+      size: "default",
+    },
   }
-);
+)
 
-export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDrag' | 'onDragEnd' | 'onDragStart'>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  isLoading?: boolean;
-  ariaLabel?: string;
-  ariaDescribedBy?: string;
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  isLoading?: boolean
+  ariaLabel?: string
 }
 
-export function Button({ 
-  variant, 
-  size, 
-  asChild = false, 
-  className, 
-  isLoading, 
-  children, 
-  disabled, 
-  onClick, 
-  ariaLabel,
-  ariaDescribedBy,
-  type = 'button',
-  ...props 
-}: ButtonProps) {
-  const [isPressed, setIsPressed] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-  
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (disabled || isLoading) return;
-    
-    // Visual feedback
-    setIsPressed(true);
-    
-    // Haptic feedback on mobile
-    if ('vibrate' in navigator) {
-      navigator.vibrate(10);
-    }
-    
-    // Call original onClick
-    if (onClick) {
-      onClick(e);
-    }
-    
-    // Reset pressed state after animation
-    setTimeout(() => setIsPressed(false), 200);
-  };
-  
-  const buttonClassName = clsx(
-    buttonVariants({ variant, size }), 
-    isPressed && 'brightness-90',
-    className
-  );
-
-  const ariaProps = {
-    'aria-label': ariaLabel,
-    'aria-describedby': ariaDescribedBy,
-    'aria-busy': isLoading,
-    'aria-disabled': disabled || isLoading,
-  };
-  
-  if (asChild) {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, isLoading = false, disabled, children, ariaLabel, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
     return (
-      <Slot 
-        className={buttonClassName}
-        onClick={handleClick}
-        {...ariaProps}
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        disabled={disabled || isLoading}
+        aria-label={ariaLabel}
         {...props}
       >
+        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
         {children}
-      </Slot>
-    );
+      </Comp>
+    )
   }
-  
-  return (
-    <motion.button
-      type={type}
-      className={buttonClassName}
-      disabled={disabled || isLoading}
-      onClick={handleClick}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-      transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 17 }}
-      {...ariaProps}
-      {...(props as HTMLMotionProps<'button'>)}
-    >
-      {isLoading && (
-        <>
-          <LoadingSpinner size={size === 'sm' ? 'sm' : size === 'lg' ? 'md' : 'sm'} />
-          <span className="sr-only">Loading...</span>
-        </>
-      )}
-      {children}
-    </motion.button>
-  );
-}
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+
 

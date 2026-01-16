@@ -8,17 +8,46 @@ import { createHmac, randomBytes } from 'crypto';
 import { NextRequest } from 'next/server';
 
 const CSRF_TOKEN_LENGTH = 32;
-const CSRF_SECRET = process.env.CSRF_SECRET || 'default-csrf-secret-change-in-production';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 const CSRF_COOKIE_NAME = 'csrf_token';
+
+// Lazy-loaded CSRF secret to avoid errors during build
+let _csrfSecret: string | null = null;
+let _devSecret: string | null = null;
+
+function getCsrfSecret(): string {
+  // Return cached secret if available
+  if (_csrfSecret) {
+    return _csrfSecret;
+  }
+
+  const secret = process.env.CSRF_SECRET;
+  if (secret) {
+    _csrfSecret = secret;
+    return secret;
+  }
+
+  // No secret configured
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CSRF_SECRET environment variable is required in production');
+  }
+
+  // In development, generate a stable random secret for the session
+  if (!_devSecret) {
+    _devSecret = 'dev-csrf-secret-' + Date.now().toString(36);
+    console.warn('[CSRF] ⚠️ CSRF_SECRET not set. Using random secret for development only.');
+  }
+  return _devSecret;
+}
 
 /**
  * Generate a CSRF token with cryptographic signature
  */
 export function generateCsrfToken(): string {
+  const secret = getCsrfSecret();
   const randomToken = randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
   const timestamp = Date.now().toString();
-  const signature = createHmac('sha256', CSRF_SECRET)
+  const signature = createHmac('sha256', secret)
     .update(`${randomToken}:${timestamp}`)
     .digest('hex')
     .slice(0, 16);
@@ -45,7 +74,8 @@ export function verifyCsrfToken(token: string): boolean {
     }
 
     // Verify signature
-    const expectedSignature = createHmac('sha256', CSRF_SECRET)
+    const secret = getCsrfSecret();
+    const expectedSignature = createHmac('sha256', secret)
       .update(`${randomToken}:${timestamp}`)
       .digest('hex')
       .slice(0, 16);

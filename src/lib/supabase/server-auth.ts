@@ -52,7 +52,8 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     if (data.user) {
-      console.log('[server-auth] User authenticated:', data.user.id);
+      // Redact user ID for privacy - only log first 8 characters
+      console.log('[server-auth] User authenticated:', data.user.id.slice(0, 8) + '...');
     } else {
       console.log('[server-auth] No user found in session');
     }
