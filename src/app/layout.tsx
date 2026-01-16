@@ -98,7 +98,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://emkc.org" />
         <link rel="dns-prefetch" href="https://emkc.org" />
       </head>
-      <body className={`${inter.className} bg-gradient-soft bg-no-repeat bg-cover`}>
+      <body className={`${inter.className} bg-[#0a0a0a] min-h-screen`}>
         <ErrorBoundary>
           <RealtimeProvider>
             <OnboardingProvider>
