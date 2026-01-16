@@ -10,7 +10,6 @@ import {
   type TierType,
 } from '@/lib/core/ton-client';
 import { log } from '@/lib/logger/structured-logger';
-import { evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 
 // Payment verification schema
 const verifyPaymentSchema = z.object({
@@ -74,21 +73,6 @@ function createSupabaseServerClient() {
 
 export async function POST(request: NextRequest): Promise<NextResponse<VerifyPaymentResponse>> {
   try {
-    // Rate limiting to prevent payment verification spam
-    const rateState = await evaluateRateLimit(request, { limit: 20, windowMs: 60 * 1000 }, {
-      bucketId: 'ton-verify-payment'
-    });
-
-    if (!rateState.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many verification attempts. Please wait.',
-        },
-        { status: 429, headers: buildRateLimitHeaders(rateState) }
-      );
-    }
-
     // Get authenticated user
     const user = await getCurrentUser();
     if (!user) {
@@ -284,7 +268,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
     return NextResponse.json(
       {
         success: false,
-        error: 'An unexpected error occurred. Please try again.',
+        error: error instanceof Error ? error.message : 'Internal server error',
       },
       { status: 500 }
     );

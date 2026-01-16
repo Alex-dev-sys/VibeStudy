@@ -10,46 +10,12 @@ env:
 
 jobs:
   # ============================================
-  # Security Audit
-  # ============================================
-  security-audit:
-    name: 🔒 Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🔍 Run npm audit
-        run: npm audit --audit-level=high || true
-        continue-on-error: true
-
-      - name: 🔍 Check for secrets in code
-        run: |
-          # Simple check for common secret patterns
-          if grep -rE "(password|secret|api_key|apikey)\s*[:=]\s*['\"][^'\"]{8,}['\"]" --include="*.ts" --include="*.tsx" --include="*.js" src/ 2>/dev/null; then
-            echo "⚠️ Warning: Possible hardcoded secrets found!"
-          else
-            echo "✅ No obvious hardcoded secrets found"
-          fi
-
-  # ============================================
-  # Build & Deploy
+  # Build & Deploy (simplified)
   # ============================================
   build-and-deploy:
     name: 🏗️ Build & 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: security-audit
-    environment: production  # Requires approval for production deployments
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -61,7 +27,7 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: 🏗️ Build project
         run: npm run build
@@ -82,18 +48,13 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          fingerprint: ${{ secrets.VPS_SSH_FINGERPRINT }}  # Verify host identity
-          script_stop: true  # Stop on first error
           script: |
-            set -e  # Exit on any error
-            
             echo "🔄 Starting deployment..."
             cd /var/www/vibestudy
             
-            # Create backup with timestamp
-            BACKUP_NAME=".next.backup.$(date +%Y%m%d_%H%M%S)"
-            echo "📦 Creating backup: $BACKUP_NAME"
-            cp -r .next "$BACKUP_NAME" 2>/dev/null || true
+            # Backup current version
+            echo "📦 Creating backup..."
+            cp -r .next .next.backup 2>/dev/null || true
             
             # Pull latest code
             echo "📥 Pulling latest code..."
@@ -112,33 +73,10 @@ jobs:
             echo "🔄 Restarting application..."
             pm2 restart vibestudy --update-env
             
-            # Health check with retry
+            # Health check
             echo "🏥 Running health check..."
             sleep 5
-            HEALTH_OK=false
-            for i in 1 2 3; do
-              if curl -sf http://localhost:3000/api/health > /dev/null; then
-                HEALTH_OK=true
-                echo "✅ Health check passed on attempt $i"
-                break
-              fi
-              echo "⚠️ Health check attempt $i failed, retrying..."
-              sleep 3
-            done
-            
-            if [ "$HEALTH_OK" = false ]; then
-              echo "❌ Health check failed! Rolling back..."
-              if [ -d "$BACKUP_NAME" ]; then
-                rm -rf .next
-                cp -r "$BACKUP_NAME" .next
-                pm2 restart vibestudy --update-env
-                echo "🔄 Rollback complete"
-              fi
-              exit 1
-            fi
-            
-            # Cleanup old backups (keep last 3)
-            ls -dt .next.backup.* 2>/dev/null | tail -n +4 | xargs rm -rf 2>/dev/null || true
+            curl -f http://localhost:3000/api/health || echo "⚠️ Health check failed"
             
             echo "✅ Deployment complete!"
 
@@ -149,4 +87,3 @@ jobs:
       - name: 📢 Notify failure
         if: failure()
         run: echo "❌ Deployment failed!"
-

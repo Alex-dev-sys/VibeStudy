@@ -8,7 +8,6 @@ import {
   type TierType,
 } from '@/lib/core/ton-client';
 import { log } from '@/lib/logger/structured-logger';
-import { evaluateRateLimit, buildRateLimitHeaders } from '@/lib/core/rate-limit';
 
 /**
  * API Route: Create TON Payment
@@ -74,21 +73,6 @@ function createSupabaseServerClient() {
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreatePaymentResponse>> {
   try {
-    // Rate limiting - prevent payment spam
-    const rateState = await evaluateRateLimit(request, { limit: 10, windowMs: 60 * 1000 }, {
-      bucketId: 'ton-create-payment'
-    });
-
-    if (!rateState.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many payment requests. Please wait.',
-        },
-        { status: 429, headers: buildRateLimitHeaders(rateState) }
-      );
-    }
-
     // Check if TON is configured
     if (!isTonConfigured()) {
       return NextResponse.json(
@@ -204,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreatePay
     return NextResponse.json(
       {
         success: false,
-        error: 'An unexpected error occurred. Please try again.',
+        error: error instanceof Error ? error.message : 'Internal server error',
       },
       { status: 500 }
     );

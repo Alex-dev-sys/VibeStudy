@@ -1,43 +1,24 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+'use client';
 
-import { cn } from "@/lib/utils"
+import { clsx } from 'clsx';
+import type { HTMLAttributes } from 'react';
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-xl border px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground border-border/50",
-      },
-      // Legacy 'tone' prop support for backward compatibility
-      tone: {
-        accent: "border-primary/30 bg-primary/20 text-primary",
-        neutral: "border-border/50 bg-secondary/50 text-muted-foreground",
-        soft: "border-border/30 bg-muted/50 text-muted-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
-
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof badgeVariants> { }
-
-function Badge({ className, variant, tone, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant, tone }), className)} {...props} />
-  )
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  tone?: 'accent' | 'soft' | 'neutral';
 }
 
-export { Badge, badgeVariants }
+export function Badge({ className, tone = 'accent', ...props }: BadgeProps) {
+  const toneClasses = {
+    accent: 'bg-gradient-to-r from-[#ff0094]/25 to-[#ffd200]/20 text-[#ffbdf7] shadow-[0_8px_18px_rgba(255,0,148,0.25)]',
+    soft: 'bg-[rgba(255,255,255,0.25)] text-white/80',
+    neutral: 'bg-[rgba(255,255,255,0.15)] text-white/65'
+  } as const;
+
+  return (
+    <span
+      className={clsx('inline-flex items-center rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide', toneClasses[tone], className)}
+      {...props}
+    />
+  );
+}
 
