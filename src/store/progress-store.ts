@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { createWithEqualityFn } from 'zustand/traditional';
 import { persist } from 'zustand/middleware';
 import type { DayStateSnapshot, ProgressRecord } from '@/types';
 import { useAchievementsStore } from './achievements-store';
@@ -59,7 +59,7 @@ const defaultRecord: ProgressRecord = {
   history: []
 };
 
-export const useProgressStore = create<ProgressStore>()(
+export const useProgressStore = createWithEqualityFn<ProgressStore>()(
   persist(
     (set, get) => ({
       activeDay: 1,
