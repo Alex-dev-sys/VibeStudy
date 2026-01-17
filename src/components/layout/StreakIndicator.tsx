@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useProgressStore } from '@/store/progress-store';
@@ -13,14 +13,29 @@ export function StreakIndicator({ streak }: StreakIndicatorProps) {
   // Only subscribe to the history array, not the entire record object
   const history = useProgressStore((state) => state.record.history);
 
-  const isStreakAtRisk = useMemo(() => {
-    if (!history || history.length === 0) return false;
+  const [isStreakAtRisk, setIsStreakAtRisk] = useState(false);
+
+  useEffect(() => {
+    if (!history || history.length === 0) {
+      setIsStreakAtRisk(false);
+      return;
+    }
 
     const lastActivity = history[history.length - 1]?.timestamp;
-    if (!lastActivity) return false;
+    if (!lastActivity) {
+      setIsStreakAtRisk(false);
+      return;
+    }
 
-    const hoursSinceActivity = (Date.now() - lastActivity) / (1000 * 60 * 60);
-    return hoursSinceActivity > 20; // Warn if no activity in 20 hours
+    const checkRisk = () => {
+      const hoursSinceActivity = (Date.now() - lastActivity) / (1000 * 60 * 60);
+      setIsStreakAtRisk(hoursSinceActivity > 20);
+    };
+
+    checkRisk();
+    // Optional: Set up an interval to check periodically if the user stays on the page
+    const interval = setInterval(checkRisk, 60000); // Check every minute
+    return () => clearInterval(interval);
   }, [history]);
 
   return (
