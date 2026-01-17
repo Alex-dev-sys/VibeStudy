@@ -792,5 +792,10 @@ body {
 
   body {
     @apply bg-background text-foreground;
+    background-color: #0a0a0a; /* Failsafe for transparency */
+  }
+
+  html {
+    background-color: #0a0a0a; /* Failsafe for transparency */
   }
 }

@@ -28,10 +28,10 @@ export function Navigation() {
 
   return (
     <>
-      {/* Desktop Navigation */}
+      {/* Desktop & Mobile Top Navigation */}
       <nav
         className={cn(
-          "hidden md:flex fixed top-0 left-0 right-0 z-[100] border-b border-white/10 shadow-lg transition-all duration-300",
+          "flex fixed top-0 left-0 right-0 z-[100] border-b border-white/10 shadow-lg transition-all duration-300",
           isLanding
             ? "bg-[#050505]"
             : "backdrop-blur-2xl bg-[#0a0515]/80"
@@ -61,8 +61,8 @@ export function Navigation() {
             </Link>
           </div>
 
-          {/* Nav Items - Center */}
-          <div className="flex items-center justify-center gap-2">
+          {/* Nav Items - Center (Hidden on mobile) */}
+          <div className="hidden md:flex items-center justify-center gap-2">
             {!isLanding && NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -194,10 +194,7 @@ export function Navigation() {
 
       {/* Spacer for fixed navigation - only for app pages */}
       {!isLanding && (
-        <>
-          <div className="hidden md:block h-[72px]" aria-hidden="true" />
-          <div className="md:hidden h-[80px]" aria-hidden="true" />
-        </>
+        <div className="h-[72px]" aria-hidden="true" />
       )}
     </>
   );
