@@ -81,7 +81,6 @@ import { AutoMigrationGate } from '@/components/migration/AutoMigrationGate';
 import { Navigation } from '@/components/layout/Navigation';
 import { Toaster } from 'sonner';
 import { AriaAnnouncer } from '@/lib/accessibility/aria-announcer';
-import { SkipLinks } from '@/lib/accessibility/skip-links';
 import { CosmicBackground } from '@/components/layout/CosmicBackground';
 
 export default function RootLayout({
@@ -107,7 +106,6 @@ export default function RootLayout({
             <OnboardingProvider>
               {/* Accessibility Components */}
               <AriaAnnouncer />
-              <SkipLinks />
 
               {/* Global Background */}
               <CosmicBackground />
